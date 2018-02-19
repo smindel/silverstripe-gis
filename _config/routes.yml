@@ -1,0 +1,6 @@
+---
+Name: gisroutes
+---
+SilverStripe\Control\Director:
+  rules:
+    'giswebservice': 'Smindel\GIS\Control\WebService'

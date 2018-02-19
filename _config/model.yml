@@ -1,0 +1,21 @@
+---
+Name: gisfieldtypes
+---
+SilverStripe\Core\Injector\Injector:
+  Geography:
+    class: Smindel\GIS\ORM\FieldType\DBGeography
+---
+Name: gissearchfilters
+---
+SilverStripe\Core\Injector\Injector:
+  DataListFilter.WithinGeo:
+    class: Smindel\GIS\ORM\Filters\WithinGeoFilter
+  DataListFilter.DWithinGeo:
+    class: Smindel\GIS\ORM\Filters\DWithinGeoFilter
+---
+Name: gissearchaliases
+---
+SilverStripe\Core\Injector\Injector:
+  WithinGeoFilter: '%$DataListFilter.WithinGeo'
+SilverStripe\Core\Injector\Injector:
+  DWithinGeoFilter: '%$DataListFilter.DWithinGeo'

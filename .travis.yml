@@ -1,0 +1,36 @@
+language: php 
+
+sudo: true
+
+matrix:
+  fast_finish: true
+  include:
+    - php: 7.1
+      env: DB=MYSQL CORE_RELEASE=4
+    - php: 7.1
+      env: DB=PGSQL CORE_RELEASE=4
+
+services:
+  - mysql
+  - postgresql
+
+addons:
+  postgresql: 9.6
+  apt:
+    sources:
+      - mysql-5.7-trusty
+    packages:
+      - mysql-server
+      - postgresql-9.6-postgis-2.3
+dist: trusty
+sudo: required
+
+before_script:
+  - git clone git://github.com/silverstripe/silverstripe-travis-support.git ~/travis-support
+  - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss
+  - cd ~/builds/ss
+  - vendor/bin/sake dev/build
+  - if [[ $DB == PGSQL ]]; then psql -U postgres -d SS_ss -c "create extension postgis"; fi
+
+script: 
+  - vendor/bin/phpunit vendor/smindel/silverstripe-gis/

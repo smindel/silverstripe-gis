@@ -1,0 +1,30 @@
+{
+    "name": "smindel/silverstripe-gis",
+    "description": "Geographic types for SilverStripe",
+    "type": "silverstripe-vendormodule",
+    "keywords": [
+        "silverstripe",
+        "types",
+        "geospacial",
+        "gis"
+    ],
+    "license": "MIT",
+    "require": {
+        "silverstripe/framework": "^4@dev",
+        "silverstripe/vendor-plugin": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/PHPUnit": "~5.7"
+    },
+    "extra": {
+        "expose": [
+            "client"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Smindel\\GIS\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
