@@ -29,7 +29,7 @@ class WebService extends Controller
         $geometryField = array_search('Geography', Config::inst()->get($modelClass, 'db'));
 
         $propertyMap = Config::inst()->get($modelClass, 'web_service');
-        if ($propertyMap == true) $propertyMap = Config::inst()->get($modelClass, 'summary_fields');
+        if ($propertyMap == true) $propertyMap = ['ID' => 'ID', 'Title' => 'Title'] + Config::inst()->get($modelClass, 'summary_fields');
 
         foreach ($list as $item) {
 
@@ -44,11 +44,13 @@ class WebService extends Controller
             } else {
                 $properties = [];
                 foreach ($propertyMap as $fieldName => $propertyName) {
-                    $properties[$propertyName] = $item->$fieldName;
+                    $properties[$propertyName] = $item->relField($fieldName);
                 }
             }
 
             $array = DBGeography::to_array($geometry);
+
+            if (!$array['type'] || !$array['coordinates']) continue;
 
             $collection[] = [
                 'type' => 'Feature',

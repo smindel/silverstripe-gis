@@ -92,6 +92,6 @@ A GridField component for displaying and filtering Geographies is under construc
 
 ### Web Services
 
+The module exposes DataObjects in a web service in GeoJSON format.
 
-
-Filterable web services, specifically WFS and GeoJson are under construction.
+Filterable web services, specifically WFS are under construction.

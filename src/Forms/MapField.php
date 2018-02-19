@@ -9,7 +9,7 @@ use Smindel\GIS\ORM\FieldType\DBGeography;
 
 class MapField extends FormField
 {
-    // protected $inputType = 'hidden';
+    protected $inputType = 'hidden';
 
     public function Field($properties = array())
     {

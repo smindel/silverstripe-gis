@@ -16,7 +16,11 @@ jQuery(function($) {
                 attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            // var marker = L.marker(center).addTo(map);
+            $.getJSON('giswebservice/' + $(this).data('listClass') + '.geojson', {}, function(data){
+                L.geoJSON(data).bindPopup(function (layer) {
+                    return '<a href="' + me.data('editUrl').replace('/$ID/', '/' + layer.feature.properties.ID + '/') + '">' + layer.feature.properties.Title + '</a>';
+                }).addTo(map);
+            });
 
             this.hover(
                 function(){ $(this).css({height:'400px'});var timer = setInterval(function(){map.invalidateSize()},5); setTimeout(function(){clearInterval(timer)}, 1000); },

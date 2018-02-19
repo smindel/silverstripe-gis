@@ -157,10 +157,16 @@ class DBGeography extends DBComposite
     public static function to_array($ewkt)
     {
         if (preg_match(self::EWKT_PATTERN, $ewkt, $matches)) {
+            $type = str_replace(['polygon', 'linestring'], ['Polygon', 'LineString'], ucfirst(strtolower($matches[3])));
+            $coordinates = preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]);
             return [
                 'srid' => $matches[1],
-                'type' => ucfirst(strtolower($matches[3])),
-                'coordinates' => json_decode(str_replace(['(', ')'], ['[', ']'], preg_replace('/\(([\d\.-]+)\s+([\d\.-]+)\)/', "[$1,$2]", $matches[4])), true),
+                'type' => $type,
+                'coordinates' => json_decode(str_replace(
+                    ['(', ')'],
+                    $type == 'Point' ? '' : ['[', ']'],
+                    $coordinates
+                ), true),
             ];
         }
     }
