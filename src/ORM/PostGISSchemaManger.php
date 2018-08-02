@@ -10,6 +10,10 @@ use SilverStripe\Control\Director;
 http://postgis.net/docs/PostGIS_Special_Functions_Index.html#PostGIS_3D_Functions
 */
 
+if (!class_exists(PostgreSQLSchemaManager::class)) {
+    return;
+}
+
 class PostGISSchemaManger extends PostgreSQLSchemaManager
 {
     public function geography($values)

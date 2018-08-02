@@ -44,6 +44,23 @@ jQuery(function($) {
                     marker.setLatLng([latlng.lat, latlng.lng]);
                     return false;
                 };
+
+                map.addControl(new L.Control.Search({
+                  url: '//nominatim.openstreetmap.org/search?format=json&q={s}',
+                  jsonpParam: 'json_callback',
+                  propertyName: 'display_name',
+                  propertyLoc: ['lat','lon'],
+                  marker: marker,
+                  moveToLocation: function (latlng, title, map) {
+                    me.setFieldValue([latlng.lat,latlng.lng]);
+                    updateMarker(latlng);
+                    map.flyTo(latlng);
+                  },
+                  autoCollapse: true,
+                  autoType: false,
+                  minLength: 2
+                }));
+
                 map.on('click', function(e) {
                     me.setFieldValue([e.latlng.lat,e.latlng.lng]);
                     updateMarker(e.latlng);
@@ -62,17 +79,29 @@ jQuery(function($) {
             getFieldValue: function() {
                 var field = this.getFormField(),
                     fieldValue = field.val(),
-                    coords;
+                    location, coords, epsg, proj;
 
                 if (fieldValue) {
-                    coords = fieldValue.match(/\w+\(([\d\.-\s]+)\)/)[1].split(' ');
+                    location = fieldValue.match(/^srid=(\d+);\w+\(([\d\.-\s]+)\)/i);
+                    epsg = location[1];
+                    coords = location[2].split(' ');
+                    if (epsg != '4326') {
+                        proj = proj4('EPSG:' + epsg);
+                        coords = proj.inverse([coords[1], coords[0]]);
+                    }
                     return [coords[1], coords[0]];
                 }
             },
             setFieldValue: function(val) {
                 var field = this.getFormField(),
                     fieldValue = field.val(),
-                    coords;
+                    coords, matches;
+
+                matches = fieldValue.match(/^srid=(\d+);/i);
+                if (matches[1] != '4326') {
+                  proj = proj4('EPSG:' + matches[1]);
+                  val = proj.forward([val[1], val[0]]);
+                }
 
                 fieldValue = fieldValue.replace(/\w+\([\d\.-\s]*\)/, 'POINT(' + val[1] + ' ' + val[0] + ')');
                 field.val(fieldValue);

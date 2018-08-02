@@ -5,6 +5,7 @@ namespace Smindel\GIS\ORM\FieldType;
 use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBComposite;
+use SilverStripe\Core\Config\Config;
 use Smindel\GIS\Forms\MapField;
 
 class DBGeography extends DBComposite
@@ -12,6 +13,8 @@ class DBGeography extends DBComposite
     const POINT = 'POINT';
 
     private static $default_location = [10,53.5];
+
+    private static $default_projection = 4326;
 
     CONST EWKT_PATTERN = '/^SRID=(\d+);(([A-Z]+)\s*(\(.+\)))$/i';
 
@@ -78,8 +81,10 @@ class DBGeography extends DBComposite
         return DBField::setValue($value, $record, $markChanged);
     }
 
-    public static function fromArray($array, $srid = 4326)
+    public static function fromArray($array, $srid = null)
     {
+        $srid = $srid ?: Config::inst()->get(self::class, 'default_projection');
+
         if (is_numeric($array[0])) {
             $type = 'POINT';
             $coords = implode(' ', $array);
@@ -157,16 +162,10 @@ class DBGeography extends DBComposite
     public static function to_array($ewkt)
     {
         if (preg_match(self::EWKT_PATTERN, $ewkt, $matches)) {
-            $type = str_replace(['polygon', 'linestring'], ['Polygon', 'LineString'], ucfirst(strtolower($matches[3])));
-            $coordinates = preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]);
             return [
                 'srid' => $matches[1],
-                'type' => $type,
-                'coordinates' => json_decode(str_replace(
-                    ['(', ')'],
-                    $type == 'Point' ? '' : ['[', ']'],
-                    $coordinates
-                ), true),
+                'type' => ucfirst(strtolower($matches[3])),
+                'coordinates' => json_decode(str_replace(['(', ')'], ['[', ']'], preg_replace('/\(([\d\.-]+)\s+([\d\.-]+)\)/', "[$1,$2]", $matches[4])), true),
             ];
         }
     }
@@ -181,8 +180,10 @@ class DBGeography extends DBComposite
         return DB::query('select ' . DB::get_schema()->translateDistanceQuery($geo1,$geo2))->value();
     }
 
-    public static function split_ewkt($ewkt, $fallbackSrid = 4326)
+    public static function split_ewkt($ewkt, $fallbackSrid = null)
     {
+        $fallbackSrid = $fallbackSrid ?: Config::inst()->get(self::class, 'default_projection');
+
         if (preg_match(DBGeography::EWKT_PATTERN, $ewkt, $matches)) {
             $wkt = $matches[2];
             $srid = (int)$matches[1];
