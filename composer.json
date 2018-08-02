@@ -26,6 +26,5 @@
         "psr-4": {
             "Smindel\\GIS\\": "src/"
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
