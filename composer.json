@@ -10,7 +10,7 @@
     ],
     "license": "MIT",
     "require": {
-        "silverstripe/framework": "^4@dev",
+        "silverstripe/framework": "^4",
         "silverstripe/vendor-plugin": "^1.0",
         "proj4php/proj4php": "^2.0"
     },
