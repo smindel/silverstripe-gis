@@ -21,18 +21,43 @@ jQuery(function($) {
 
             var map = L.map(this[0]).setView(center, 13);
 
-            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+            var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+            var satelite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+            });
 
-            L.geoJson.ajax('giswebservice/Catalyst-SilverGeo-Model-Location.GeoJson')
-              .bindPopup(function (layer) {
-                return '<a href="' + gridFieldUrl + '/item/' + layer.feature.properties.ID + '">' + layer.feature.properties.Title + '</a>';
-              })
-              .addTo(map)
-              .on('data:loaded', function(){
-                map.fitBounds(this.getBounds());
+            var baseMaps = {
+                "Streets": streets,
+                "Satelite": satelite
+            };
+
+            var list = this.data('list'), clustered = L.geoJson();
+            for (var id in list) {
+              clustered.addData({
+                  type: 'Feature',
+                  properties: {
+                    ID: id,
+                    Title: list[id][0]
+                  },
+                  'geometry': {
+                      type: list[id][1],
+                      coordinates: list[id][2]
+                  }
               });
+            }
+
+            var data = L.markerClusterGroup()
+                .addLayer(clustered)
+                .bindPopup(function (layer) {
+                    return '<a href="' + gridFieldUrl + '/item/' + layer.feature.properties.ID + '">' + layer.feature.properties.Title + '</a>';
+                })
+                .addTo(map);
+
+            map.fitBounds(data.getBounds());
+
+            L.control.layers(baseMaps, { "Data": data }).addTo(map);
+
 
             map.addControl(new L.Control.Search({
               url: '//nominatim.openstreetmap.org/search?format=json&q={s}',

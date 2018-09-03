@@ -34,6 +34,16 @@ After installing PostGIS or if you are using MySQL5.7+ you can install the modul
 
 ## Using the module
 
+### Configuration
+
+The module supports WGS 84 aka LatLon (EPSG:4326) and optionally one other configurable projection.
+
+Config::inst()->set(DBGeography::class, 'default_location', [5900755,1782733]); // defaults to [10,53.5]
+Config::inst()->set(DBGeography::class, 'default_projection', 2193);            // defaults to 4326
+Config::inst()->set(DBGeography::class, 'projections', [
+    2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+]);                                                                             // New Zealand Transverse Mercator https://epsg.io/2193
+
 ### Adding Geography attributes to DataObjects
 
 Add Geography attributes like any other attribute using the new type Geography:

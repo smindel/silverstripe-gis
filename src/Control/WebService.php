@@ -43,6 +43,10 @@ class WebService extends Controller
 
         foreach ($list as $item) {
 
+            if (!$item->canView()) {
+                continue;
+            }
+
             if ($item->hasMethod('getWebServiseGeometry')) {
                 $geometry = $item->getWebServiseGeometry();
             } else {
