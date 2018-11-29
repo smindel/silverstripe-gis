@@ -24,8 +24,13 @@ Adds support for geographic types.
 
 MySQL natively supports geodetic coordinate systems for geometries since version 5.7.6. When using Postgres you have to install PostGIS:
 
-1. `sudo apt-get install postgis`
-2. `sudo -u postgres psql SS_gis -c "create extension postgis;"`
+- `sudo apt-get install postgis`
+- `sudo -u postgres psql SS_gis -c "create extension postgis;"`
+
+If you get errors try:
+
+- `sudo apt-get install postgresql-9.5-postgis-scripts`
+- `sudo apt-get install postgresql-9.5-postgis-2.2`
 
 After installing PostGIS or if you are using MySQL5.7+ you can install the module like this:
 

@@ -52,9 +52,9 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
 
         return array(
             'header' => sprintf(
-                '<div class="grid-field-map" data-map-center="%s" data-list=\'%s\'></div>',
+                '<div class="grid-field-map" data-map-center="%s" data-list="%s"></div>',
                 DBGeography::from_array(Config::inst()->get(DBGeography::class, 'default_location')),
-                self::get_geojson_from_list($gridField->getList())
+                htmlentities(self::get_geojson_from_list($gridField->getList()), ENT_QUOTES, 'UTF-8')
             ),
         );
     }

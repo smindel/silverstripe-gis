@@ -21,8 +21,8 @@ jQuery(function($) {
 
             var map = L.map(this[0]).setView(center, 13);
 
-            var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-            var satelite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+            var streets = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+            var satelite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
                 maxZoom: 20,
                 subdomains:['mt0','mt1','mt2','mt3']
             });
@@ -34,7 +34,6 @@ jQuery(function($) {
 
             var list = this.data('list'), clustered = L.geoJson();
             Object.keys(list).forEach(function(key,index) {
-                console.log(list[key][2])
                 clustered.addData({
                     type: 'Feature',
                     properties: {
@@ -55,7 +54,7 @@ jQuery(function($) {
                 })
                 .addTo(map);
 
-            map.fitBounds(data.getBounds());
+            if (Object.keys(list).length) map.fitBounds(data.getBounds());
 
             L.control.layers(baseMaps, { "Data": data }).addTo(map);
 

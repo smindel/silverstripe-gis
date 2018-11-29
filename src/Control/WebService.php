@@ -2,6 +2,7 @@
 
 namespace Smindel\GIS\Control;
 
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\ORM\FieldType\DBGeography;
@@ -12,6 +13,16 @@ class WebService extends Controller
         '$Model//$z/$x/$y' => 'handleAction',
         // '$Model' => 'handleAction',
     );
+
+    /**
+     * Buffer in pixel by wich the tile box is enlarged which is used for
+     * filtering the data. That's in orderer to include points from a bordering
+     * tile that was cut and that wouldn't be rendered in this tile in order to
+     * show a complete point.
+     *
+     * @param int
+     */
+    private static $tileBuffer = 5;
 
     public function index($request)
     {
@@ -70,87 +81,76 @@ class WebService extends Controller
             'features' => $collection,
         ];
 
-        return json_encode($raw);
+        $response = Controller::curr()->getResponse();
+        $response->addHeader('Content-Type', 'application/geo+json');
+        $response->setBody(json_encode($raw));
+        return $response;
     }
 
     public static function format_png($list, $request)
     {
-        $z = $request->param('z');
-        $x = $request->param('x');
-        $y = $request->param('y');
-        list($lon1, $lat1) = self::xyz2lonlat($x, $y, $z);
-        list($lon2, $lat2) = self::xyz2lonlat($x + 1, $y + 1, $z);
-        $lond = $lon2 - $lon1;
-        $latd = $lat2 - $lat1;
+        $tileZ = $request->param('z');
+        $tileX = $request->param('x');
+        $tileY = $request->param('y');
+        list($lon1, $lat1) = self::xyz2lonlat($tileX, $tileY, $tileZ);
+        list($lon2, $lat2) = self::xyz2lonlat($tileX + 1, $tileY + 1, $tileZ);
 
-        // $points = $list->filter(
-        //     'Location:IntersectsGeo',
-        //     DBGeography::from_array([[
-        //         [$lon1, $lat1],
-        //         [$lon2, $lat1],
-        //         [$lon2, $lat2],
-        //         [$lon1, $lat2],
-        //         [$lon1, $lat1]
-        //     ]], 4326)
-        // );
+        $topLeft = [
+            (($lon1 + 180) / 360) * 256 * pow(2, $tileZ),
+            (0.5 - log((1 + sin($lat1 * pi()/180)) / (1 - sin($lat1 * pi()/180))) / (4 * pi())) * 256 * pow(2, $tileZ),
+        ];
 
-        $points = $list->filter(
-            'Location:IntersectsGeo',
+        $geographyField = DBGeography::of($list->dataClass());
+
+        $buffer = [
+            ($lon2 - $lon1) / 256 * self::config()->get('tileBuffer'),
+            ($lat2 - $lat1) / 256 * self::config()->get('tileBuffer'),
+        ];
+
+        $bounds = [
+            'type' => 'Polygon',
+            'srid' => 4326,
+            'coordinates' => [[
+                [$lon1 - $buffer[0], $lat1 - $buffer[1]],
+                [$lon2 + $buffer[0], $lat1 - $buffer[1]],
+                [$lon2 + $buffer[0], $lat2 + $buffer[1]],
+                [$lon1 - $buffer[0], $lat2 + $buffer[1]],
+                [$lon1 - $buffer[0], $lat1 - $buffer[1]],
+            ]],
+        ];
+
+        $filteredList = $list->filter(
+            $geographyField . ':IntersectsGeo',
             DBGeography::from_array(DBGeography::to_srid(
-                [
-                    'type' => 'Polygon',
-                    'srid' => 4326,
-                    'coordinates' => [[
-                        [$lon1, $lat1],
-                        [$lon2, $lat1],
-                        [$lon2, $lat2],
-                        [$lon1, $lat2],
-                        [$lon1, $lat1]
-                    ]],
-                ],
+                $bounds,
                 Config::inst()->get(DBGeography::class, 'default_projection')
             )['coordinates'])
         );
 
-        $tile = imagecreate(256, 256);
-        $background_color = imagecolorallocatealpha($tile, 0, 0, 0, 127);
-        $text_color = imagecolorallocate($tile, 233, 14, 91);
-        $point_color = imagecolorallocate($tile, 255, 0, 0);
-        $area_color = imagecolorallocatealpha($tile, 255, 0, 0, 96);
-        $boxpadding = 2;
-
-        foreach ($points as $point) {
-            $array = DBGeography::to_srid(DBGeography::to_array($point->Location), 4326);
-            if ($array['type'] == 'Polygon') {
-                foreach ($array['coordinates'] as $coords) {
-                    $xy = [];
-                    foreach ($coords as $coord) {
-                        list($lon, $lat) = $coord;
-                        $x = ($lon - $lon1) / $lond * 256;
-                        $y = ($lat - $lat1) / $latd * 256;
-                        $xy[] = $x;
-                        $xy[] = $y;
-                        imagefilledrectangle($tile, $x - $boxpadding, $y - $boxpadding, $x + $boxpadding, $y + $boxpadding, $point_color);
+        $generator = function ($tileWidth, $tileHeight) use ($filteredList, $geographyField, $topLeft, $tileZ) {
+            foreach ($filteredList as $dataObject) {
+                $array = DBGeography::to_srid(DBGeography::to_array($dataObject->$geographyField), 4326);
+                $tileCoordinates = DBGeography::each(
+                    $array,
+                    function ($lonlat) use ($topLeft, $tileWidth, $tileHeight, $tileZ) {
+                        return [
+                            (($lonlat[0] + 180) / 360) * $tileWidth * pow(2, $tileZ) - $topLeft[0],
+                            (0.5 - log((1 + sin($lonlat[1] * pi()/180)) / (1 - sin($lonlat[1] * pi()/180))) / (4 * pi())) * $tileHeight * pow(2, $tileZ) - $topLeft[1],
+                        ];
                     }
-                    imagefilledpolygon($tile, $xy, count($xy) / 2, $area_color);
-                    imagepolygon($tile, $xy, count($xy) / 2, $point_color);
-                }
-            } else {
-                list($lon, $lat) = $array['coordinates'];
-                $x = ($lon - $lon1) / $lond * 256;
-                $y = ($lat - $lat1) / $latd * 256;
-                imagefilledrectangle($tile, $x - $boxpadding, $y - $boxpadding, $x + $boxpadding, $y + $boxpadding, $point_color);
+                );
+                yield $dataObject->customise([
+                    '_type' => $array['type'],
+                    '_tileCoordinates' => $tileCoordinates,
+                ]);
             }
-        }
+        };
 
-        ob_start();
-        imagepng($tile);
-        $binary = ob_get_clean();
-        imagedestroy($tile);
+        $renderer = Injector::inst()->get('TileRenderer');
 
         $response = Controller::curr()->getResponse();
-        $response->addHeader('Content-Type', 'image/png');
-        $response->setBody($binary);
+        $response->addHeader('Content-Type', $renderer->getContentType());
+        $response->setBody($renderer->render($generator));
         return $response;
     }
 
@@ -158,8 +158,7 @@ class WebService extends Controller
     {
         $n = pow(2, $z);
         $lon_deg = $x / $n * 360.0 - 180.0;
-        $lat_rad = atan(sinh(M_PI * (1 - 2 * $y / $n)));
-        $lat_deg = $lat_rad * 180.0 / M_PI;
+        $lat_deg = rad2deg(atan(sinh(pi() * (1 - 2 * $y / $n))));
         return [$lon_deg, $lat_deg];
     }
 }

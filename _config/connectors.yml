@@ -1,5 +1,5 @@
 ---
-Name: gisconfig
+Name: gisconfig-connectors
 After: '#postgresqlconnectors'
 ---
 SilverStripe\Core\Injector\Injector:

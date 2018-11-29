@@ -13,8 +13,8 @@ class ORMTest extends SapphireTest
 
     public function setUp()
     {
-        Config::inst()->set(DBGeography::class, 'default_projection', 4326);
-        Config::inst()->set(DBGeography::class, 'projections', [
+        Config::modify()->set(DBGeography::class, 'default_projection', 4326);
+        Config::modify()->set(DBGeography::class, 'projections', [
             2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
         ]);
         parent::setUp();

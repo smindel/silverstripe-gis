@@ -13,8 +13,8 @@ jQuery(function($) {
                 var me = this;
 
                 var map = L.map(this[0], { worldCopyJump: true, maxBoundsViscosity: 1.0 });
-                var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-                var satelite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                var streets = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+                var satelite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
                     maxZoom: 20,
                     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
                 });
@@ -89,7 +89,7 @@ jQuery(function($) {
             },
             getFeatureFromFormFieldValue: function() {
                 var wkt = this.getFormField().val(),
-                    parts = wkt.match(/^srid=(\d+);(point|polygon)\(([-\d\.\s\(\),]+)\)/i),
+                    parts = wkt.match(/^srid=(\d+);(point|linestring|polygon|multipolygon)\(([-\d\.\s\(\),]+)\)/i),
                     srid, proj, type, json, coordinates;
 
                 if (!parts) return null;
@@ -114,7 +114,6 @@ jQuery(function($) {
                 }) + ']';
 
                 coordinates = JSON.parse(json);
-                console.log(wkt, coordinates);
 
                 return Array.isArray(coordinates[0][0])
                     ? L.polygon(coordinates[0])
@@ -157,8 +156,6 @@ jQuery(function($) {
                     wkt += '))';
                 }
                 this.getFormField().val(wkt)
-                console.log(latlngs);
-                console.log(wkt);
             },
             getCenter: function () {
                 var feature = this.getFeature();
@@ -336,8 +333,6 @@ jQuery(function($) {
                     if (e.layerType == 'marker') {}
                     me.setFieldValue(e.layer);
                 }).on('draw:edited', function(e) {
-                    console.log(e);
-                    console.log(e.layers);
                     e.layers.eachLayer(function(layer) {
                         drawnItems.clearLayers().addLayer(layer);
                         me.setFieldValue(layer);
@@ -361,7 +356,7 @@ jQuery(function($) {
 
                 map.fitBounds(polygon.getBounds());
 
-                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+                L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
 
                 this.hover(function() {
                     var timer = setInterval(function() {
@@ -424,7 +419,7 @@ jQuery(function($) {
                 return JSON.parse(coordinates);
             },
             setFieldValue: function(layer) {
-                console.log(layer);
+
                 var field = this.getFormField(),
                     fieldValue = field.val(),
                     latlngs = layer.getLatLngs()[0],
@@ -452,7 +447,6 @@ jQuery(function($) {
                 }
                 fieldValue += '))';
                 field.val(fieldValue);
-                console.log(fieldValue);
             }
         });
 

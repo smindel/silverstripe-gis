@@ -85,6 +85,11 @@ class DBGeography extends DBComposite
         return DBField::setValue($value, $record, $markChanged);
     }
 
+    public static function of($dataObjectClass)
+    {
+        return $dataObjectClass::config()->get('default_geography') ?: array_search('Geography', $dataObjectClass::config()->get('db'));
+    }
+
     public static function from_array($array, $srid = null)
     {
         $srid = $srid ?: Config::inst()->get(self::class, 'default_projection');
@@ -165,6 +170,12 @@ class DBGeography extends DBComposite
 
     public static function to_array($ewkt)
     {
+        $types = [
+            'point' => 'Point',
+            'linestring' => 'LineString',
+            'polygon' => 'Polygon',
+            'multipolygon' => 'MultiPolygon',
+        ];
         if (preg_match(self::EWKT_PATTERN, $ewkt, $matches)) {
             $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
             if (strtolower($matches[3]) != 'point') {
@@ -172,7 +183,7 @@ class DBGeography extends DBComposite
             }
             return [
                 'srid' => $matches[1],
-                'type' => ucfirst(strtolower($matches[3])),
+                'type' => $types[strtolower($matches[3])],
                 'coordinates' => json_decode($coords, true)[0],
             ];
         }
@@ -220,7 +231,7 @@ class DBGeography extends DBComposite
         if (!self::$proj4->hasDef('EPSG:' . $srid)) {
             $projDefs = Config::inst()->get(DBGeography::class, 'projections');
             if (!isset($projDefs[$srid])) {
-                throw new Exception("Cannot use unregistered SRID $srid. Register it's PROJ.4 definition in DBGeography::projections. Visit <a href=\"https://epsg.io/$srid\">epsg.io</a>");
+                throw new Exception("Cannot use unregistered SRID $srid. Register it's <a href=\"http://spatialreference.org/ref/epsg/$srid/proj4/\">PROJ.4 definition</a> in DBGeography::projections.");
             }
             self::$proj4->addDef('EPSG:' . $srid        , $projDefs[$srid]);
         }
@@ -228,7 +239,7 @@ class DBGeography extends DBComposite
         return new Proj('EPSG:' . $srid, self::$proj4);
     }
 
-    public static function reproject($coordinates, $fromProj, $toProj)
+    public static function reproject_old($coordinates, $fromProj, $toProj)
     {
         if (is_array($coordinates[0])) {
             foreach ($coordinates as &$coordinate) {
@@ -238,6 +249,29 @@ class DBGeography extends DBComposite
         }
 
         return array_slice(self::$proj4->transform($toProj, new Point($coordinates[0], $coordinates[1], $fromProj))->toArray(), 0, 2);
+    }
+
+    public static function reproject($coordinates, $fromProj, $toProj)
+    {
+        return self::each($coordinates, function($coordinate) use ($fromProj, $toProj) {
+            return array_slice(self::$proj4->transform($toProj, new Point($coordinate[0], $coordinate[1], $fromProj))->toArray(), 0, 2);
+        });
+    }
+
+    public static function each($coordinates, $callback)
+    {
+        if (isset($coordinates['coordinates'])) {
+            $coordinates = $coordinates['coordinates'];
+        }
+
+        if (is_array($coordinates[0])) {
+            foreach ($coordinates as &$coordinate) {
+                $coordinate = self::each($coordinate, $callback);
+            }
+            return $coordinates;
+        }
+
+        return $callback($coordinates);
     }
 
     public function scaffoldFormField($title = null, $params = null)
