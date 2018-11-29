@@ -32,7 +32,7 @@ class MapField extends FormField
     public function setValue($value, $data = null)
     {
         if ($value instanceof DBGeography) $value = $value->getValue();
-        if (!$value) $value = DBGeography::fromArray(Config::inst()->get(DBGeography::class, 'default_location'));
+        if (!$value) $value = DBGeography::from_array(Config::inst()->get(DBGeography::class, 'default_location'));
 
         $this->value = $value;
         return $this;

@@ -40,6 +40,12 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
         return [sprintf('%sST_Covers(ST_GeographyFromText(?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null) => $value];
     }
 
+    public function translateFilterIntersects($field, $value, $inclusive)
+    {
+        $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
+        return [sprintf('%sST_Intersects(ST_GeographyFromText(?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null) => $value];
+    }
+
     public function translateFilterDWithin($field, $value, $inclusive)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);

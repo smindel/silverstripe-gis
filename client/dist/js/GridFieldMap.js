@@ -33,19 +33,20 @@ jQuery(function($) {
             };
 
             var list = this.data('list'), clustered = L.geoJson();
-            for (var id in list) {
-              clustered.addData({
-                  type: 'Feature',
-                  properties: {
-                    ID: id,
-                    Title: list[id][0]
-                  },
-                  'geometry': {
-                      type: list[id][1],
-                      coordinates: list[id][2]
-                  }
-              });
-            }
+            Object.keys(list).forEach(function(key,index) {
+                console.log(list[key][2])
+                clustered.addData({
+                    type: 'Feature',
+                    properties: {
+                      ID: key,
+                      Title: list[key][0]
+                    },
+                    'geometry': {
+                        type: list[key][1],
+                        coordinates: list[key][2]
+                    }
+                });
+            })
 
             var data = L.markerClusterGroup()
                 .addLayer(clustered)

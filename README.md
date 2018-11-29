@@ -22,7 +22,7 @@ Adds support for geographic types.
 
 ## Installation
 
-MySQL natively supports geodetic coordinate systems for geometries since version 5.7. When using Postgres you have to install PostGIS:
+MySQL natively supports geodetic coordinate systems for geometries since version 5.7.6. When using Postgres you have to install PostGIS:
 
 1. `sudo apt-get install postgis`
 2. `sudo -u postgres psql SS_gis -c "create extension postgis;"`
@@ -60,11 +60,11 @@ class City extends DataObject
 
 ### Transforming Geographies from PHP to WKT
 
-Internally Geographies are represented as extended Well Known Text (eWKT, https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects). You can use the helper DBGeography::fromArray() to create eWKT from PHP arrays:
+Internally Geographies are represented as extended Well Known Text (eWKT, https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects). You can use the helper DBGeography::from_array() to create eWKT from PHP arrays:
 
-- `DBGeography::fromArray([10,30])` creates "SRID=0000;POINT (30 10)"
-- `DBGeography::fromArray([[10,30],[30,10],[40,40]])` creates "SRID=0000;LINESTRING (30 10, 10 30, 40 40)"
-- `DBGeography::fromArray([[[10,30],[40,40],[40,20],[20,10],[10,30]]])` creates "SRID=0000;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
+- `DBGeography::from_array([10,30])` creates "SRID=0000;POINT (30 10)"
+- `DBGeography::from_array([[10,30],[30,10],[40,40]])` creates "SRID=0000;LINESTRING (30 10, 10 30, 40 40)"
+- `DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]])` creates "SRID=0000;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
 
 ### Spacial queries
 
@@ -72,19 +72,25 @@ Internally Geographies are represented as extended Well Known Text (eWKT, https:
 
 To find all DataObjects within a polygon:
 
-`$cities = City::get()->('Location:Whithin', DBGeography::fromArray([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));`
+`$cities = City::get()->filter('Location:WithinGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));`
+
+#### Query Overlap
+
+To find all DataObjects intersects with a polygon:
+
+`$cities = City::get()->filter('Location:IntersectsGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));`
 
 #### Query Whithin Distance
 
 To find all DataObjects within a 100000m of a point:
 
-`$cities = City::get()->('Location:DWhithin', [DBGeography::fromArray([10,30]), 100000]);`
+`$cities = City::get()->filter('Location:DWithinGeo', [DBGeography::from_array([10,30]), 100000]);`
 
 #### Compute Distance
 
 To compute the distance in meters between two points:
 
-`$distance = DBGeography::distance(DBGeography::fromArray([10,30]), DBGeography::fromArray([40,40]));`
+`$distance = DBGeography::distance(DBGeography::from_array([10,30]), DBGeography::from_array([40,40]));`
 
 ### Geographies and forms
 

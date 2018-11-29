@@ -89,7 +89,7 @@ jQuery(function($) {
             },
             getFeatureFromFormFieldValue: function() {
                 var wkt = this.getFormField().val(),
-                    parts = wkt.match(/^srid=(\d+);(point|polygon)\(([\d\.\s\(\),]+)\)/i),
+                    parts = wkt.match(/^srid=(\d+);(point|polygon)\(([-\d\.\s\(\),]+)\)/i),
                     srid, proj, type, json, coordinates;
 
                 if (!parts) return null;
@@ -197,8 +197,8 @@ jQuery(function($) {
 
                 var map = L.map(this[0]).setView(coords, 13);
 
-                var streets = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-                var satelite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                var streets = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
+                var satelite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
                     maxZoom: 20,
                     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
                 });

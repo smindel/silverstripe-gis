@@ -53,7 +53,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         return array(
             'header' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list=\'%s\'></div>',
-                DBGeography::fromArray(Config::inst()->get(DBGeography::class, 'default_location')),
+                DBGeography::from_array(Config::inst()->get(DBGeography::class, 'default_location')),
                 self::get_geojson_from_list($gridField->getList())
             ),
         );
@@ -97,7 +97,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                         $point = new Point($coords[0], $coords[1], $proj);
                         $coords = $proj4->transform(new Proj('EPSG:4326', $proj4), $point)->toArray();
                     }
-                    $array['coordinates'] = [$array['coordinates']];
+                    $array['coordinates'] = $array['coordinates'];
                 }
             }
 
@@ -107,6 +107,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                 $array['coordinates'],
             ];
         }
+
         return json_encode($collection);
     }
 

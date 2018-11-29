@@ -7,6 +7,10 @@ use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBComposite;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\Forms\MapField;
+use proj4php\Proj4php;
+use proj4php\Proj;
+use proj4php\Point;
+use Exception;
 
 class DBGeography extends DBComposite
 {
@@ -81,7 +85,7 @@ class DBGeography extends DBComposite
         return DBField::setValue($value, $record, $markChanged);
     }
 
-    public static function fromArray($array, $srid = null)
+    public static function from_array($array, $srid = null)
     {
         $srid = $srid ?: Config::inst()->get(self::class, 'default_projection');
 
@@ -163,12 +167,77 @@ class DBGeography extends DBComposite
     {
         if (preg_match(self::EWKT_PATTERN, $ewkt, $matches)) {
             $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
+            if (strtolower($matches[3]) != 'point') {
+                $coords = "[$coords]";
+            }
             return [
                 'srid' => $matches[1],
                 'type' => ucfirst(strtolower($matches[3])),
                 'coordinates' => json_decode($coords, true)[0],
             ];
         }
+    }
+
+    /**
+     * @var proj4php instance
+     */
+    protected static $proj4;
+
+    /**
+     * reproject an array representation of a geometry to the given srid
+     */
+    public static function to_srid($array, $toSrid = 4326)
+    {
+        if (isset($array['srid'])) {
+            $fromSrid = $array['srid'];
+            $fromCoordinates = $array['coordinates'];
+            $type = $array['type'];
+        } else {
+            $fromSrid = Config::inst()->get(DBGeography::class, 'default_projection') ?: 4326;
+            $fromCoordinates = $array;
+            $type = is_array($array[0]) ? (is_array($array[0][0]) ? 'Polygon' : 'LineString') : 'Point';
+        }
+
+        if ($fromSrid != $toSrid) {
+            $fromProj = self::get_proj4($fromSrid);
+            $toProj = self::get_proj4($toSrid);
+            $toCoordinates = self::reproject($fromCoordinates, $fromProj, $toProj);
+        } else {
+            $toCoordinates = $fromCoordinates;
+        }
+
+        return [
+            'srid' => $toSrid,
+            'type' => $type,
+            'coordinates' => $toCoordinates,
+        ];
+    }
+
+    public static function get_proj4($srid)
+    {
+        self::$proj4 = self::$proj4 ?: new Proj4php();
+
+        if (!self::$proj4->hasDef('EPSG:' . $srid)) {
+            $projDefs = Config::inst()->get(DBGeography::class, 'projections');
+            if (!isset($projDefs[$srid])) {
+                throw new Exception("Cannot use unregistered SRID $srid. Register it's PROJ.4 definition in DBGeography::projections. Visit <a href=\"https://epsg.io/$srid\">epsg.io</a>");
+            }
+            self::$proj4->addDef('EPSG:' . $srid        , $projDefs[$srid]);
+        }
+
+        return new Proj('EPSG:' . $srid, self::$proj4);
+    }
+
+    public static function reproject($coordinates, $fromProj, $toProj)
+    {
+        if (is_array($coordinates[0])) {
+            foreach ($coordinates as &$coordinate) {
+                $coordinate = self::reproject($coordinate, $fromProj, $toProj);
+            }
+            return $coordinates;
+        }
+
+        return array_slice(self::$proj4->transform($toProj, new Point($coordinates[0], $coordinates[1], $fromProj))->toArray(), 0, 2);
     }
 
     public function scaffoldFormField($title = null, $params = null)

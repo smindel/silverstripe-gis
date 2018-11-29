@@ -34,6 +34,13 @@ class MySQLGISSchemaManger extends MySQLSchemaManager
         return [$fragment => DBGeography::split_ewkt($value)];
     }
 
+    public function translateFilterIntersects($field, $value, $inclusive)
+    {
+        $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
+        $fragment = sprintf('%sST_Intersects(ST_GeomFromText(?, ?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null);
+        return [$fragment => DBGeography::split_ewkt($value)];
+    }
+
     public function translateFilterDWithin($field, $value, $inclusive)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
