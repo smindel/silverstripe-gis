@@ -14,8 +14,6 @@ use Exception;
 
 class DBGeography extends DBComposite
 {
-    const POINT = 'POINT';
-
     private static $default_location = [10,53.5];
 
     private static $default_projection = 4326;
@@ -181,6 +179,7 @@ class DBGeography extends DBComposite
             if (strtolower($matches[3]) != 'point') {
                 $coords = "[$coords]";
             }
+
             return [
                 'srid' => $matches[1],
                 'type' => $types[strtolower($matches[3])],

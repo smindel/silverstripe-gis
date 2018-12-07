@@ -9,7 +9,14 @@ use Smindel\GIS\ORM\FieldType\DBGeography;
 
 class MapField extends FormField
 {
-    // protected $inputType = 'hidden';
+    protected $controls = [
+        'polyline' => false,
+        'polygon' => true,
+        'marker' => true,
+        'circle' => false,
+        'rectangle' => false,
+        'circlemarker' => false
+    ];
 
     public function Field($properties = array())
     {
@@ -36,6 +43,19 @@ class MapField extends FormField
 
         $this->value = $value;
         return $this;
+    }
+
+    public function setControl($control, $enable = true)
+    {
+        if (array_key_exists($control, $this->controls)) {
+            $this->controls[$control] = $enable;
+        }
+        return $this;
+    }
+
+    public function getControls()
+    {
+        return json_encode($this->controls);
     }
 
     public static function getDefaultSRID()

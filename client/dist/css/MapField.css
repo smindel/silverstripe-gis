@@ -1,8 +1,16 @@
-input.map {
+input.map, input.mapfield_readonly {
     border:0 none;
     padding:1em 0;
     background:transparent;
     width:100%;
+    opacity:0.15;
+    transition:1s opacity;
+}
+input.map:hover,
+input.map:focus,
+input.mapfield_readonly:hover,
+input.mapfield_readonly:focus {
+    opacity:1;
 }
 .map-field-widget {
     width:100%;

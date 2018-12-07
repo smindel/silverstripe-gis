@@ -67,21 +67,22 @@ class ImagickTileRenderer
         $this->tile->drawImage($point);
     }
 
-    protected function drawLine($dataObject)
+    protected function drawLineString($dataObject)
     {
-        $polygon = new ImagickDraw();
-        $polygon->setStrokeOpacity(1);
-        $polygon->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
-        $polygon->setStrokeWidth(2);
+        $linestring = new ImagickDraw();
+        $linestring->setStrokeOpacity(1);
+        $linestring->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
+        $linestring->setFillColor(new ImagickPixel('rgba(92,92,255,0)'));
+        $linestring->setStrokeWidth(2);
 
         $points = [];
         foreach ($dataObject->_tileCoordinates as $j => $coordinate) {
             $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
         }
 
-        $polygon->polyline($points);
+        $linestring->polyline($points);
 
-        $this->tile->drawImage($polygon);
+        $this->tile->drawImage($linestring);
     }
 
     protected function drawPolygon($dataObject)

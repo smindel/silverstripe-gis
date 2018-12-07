@@ -11,6 +11,6 @@ class TestAddress extends DataObject implements TestOnly
 
     private static $db = [
         'Name' => 'Varchar',
-        'GeoLocation' => 'Geography("POINT",4326)',
+        'GeoLocation' => 'Geography',
     ];
 }

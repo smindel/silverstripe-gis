@@ -25,11 +25,20 @@ class ORMTest extends SapphireTest
         return [TestAddress::class];
     }
 
-    public function testWktFromArray()
+    public function testPointWktFromArray()
     {
         $wkt = DBGeography::from_array([174.5,-41.3]);
         $this->assertEquals($wkt, 'SRID=4326;POINT(174.5 -41.3)');
+    }
 
+    public function testLineWktFromArray()
+    {
+        $wkt = DBGeography::from_array([[174.5,-41.3], [175.5,-42.3]]);
+        $this->assertEquals($wkt, 'SRID=4326;LINESTRING(174.5 -41.3,175.5 -42.3)');
+    }
+
+    public function testPolygonWktFromArray()
+    {
         $wkt = DBGeography::from_array([[
             [-10,40],
             [ -8,40],
@@ -40,11 +49,20 @@ class ORMTest extends SapphireTest
         $this->assertEquals($wkt, 'SRID=4326;POLYGON((-10 40,-8 40,-8 35,-10 35,-10 40))');
     }
 
-    public function testArrayFromWkt()
+    public function testPointArrayFromWkt()
     {
         $array = DBGeography::to_array('SRID=4326;POINT(174.5 -41.3)');
         $this->assertEquals($array['coordinates'], [174.5,-41.3]);
+    }
 
+    public function testLineArrayFromWkt()
+    {
+        $array = DBGeography::to_array('SRID=4326;LINESTRING(174.5 -41.3,175.5 -42.3)');
+        $this->assertEquals($array['coordinates'], [[174.5,-41.3], [175.5,-42.3]]);
+    }
+
+    public function testPolygonArrayFromWkt()
+    {
         $array = DBGeography::to_array('SRID=4326;POLYGON((-10 40,-8 40,-8 35,-10 35,-10 40))');
         $this->assertEquals($array['coordinates'], [[
             [-10,40],
