@@ -169,6 +169,8 @@ app/src/Model/City.php
 
 ### Forms
 
+#### MapField
+
 If you are using the module in combination with ModelAdmin, you will notice the new form field type MapField. It allows editing of Points, LineStings and unnested Polygons. If you want to limit the the geometry types you can remove them from the field:
 
 app/src/Model/City.php
@@ -185,50 +187,84 @@ app/src/Model/City.php
         public function getCMSFields()
         {
             $fields = parent::getCMSFields();
-            $fields->dataFieldByName('Location')->setControl('marker', false)->setControl('polyline', false);
+            $fields->dataFieldByName('Location')->setControl('polygon', false)->setControl('polyline', false);
             return $fields;
         }
     }
 
-### Transforming Geographies from PHP to WKT
+#### GridFieldMap
+
+If you want to add a map to your GridField to visualise a DataList on a map, you can use the GridFieldMap component that comes with the module. E.g. you can build a GIS aware ModelAdmin like this:
+
+app/src/Model/City.php
+
+    <?php
+    
+    class GISAdmin extends ModelAdmin
+    {
+        private static $url_segment = 'gis';
+        
+        private static $menu_title = 'GIS';
+        
+        private static $managed_models = [
+            City::class,
+        ];
+        
+        public function getEditForm($id = NULL, $fields = NULL)
+        {
+            $form = parent::getEditForm($id, $fields);
+        
+            if (
+                ($geography = DBGeography::of($this->modelClass))
+                && ($field = $form->Fields()->dataFieldByName($this->sanitiseClassName($this->modelClass)))
+            ) {
+                $field->getConfig()->addComponent(new GridFieldMap($geography));
+            }
+            
+            return $form;
+        }
+    }
+
+### Utility methods
+
+#### Transforming Geographies from PHP to WKT
 
 Internally Geographies are represented as extended Well Known Text (eWKT, https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects). You can use the helper DBGeography::from_array() to create eWKT from PHP arrays:
 
-- `DBGeography::from_array([10,30])` creates "SRID=0000;POINT (30 10)"
-- `DBGeography::from_array([[10,30],[30,10],[40,40]])` creates "SRID=0000;LINESTRING (30 10, 10 30, 40 40)"
-- `DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]])` creates "SRID=0000;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
+    // creates "SRID=0000;POINT (30 10)"
+    DBGeography::from_array([10,30])
+    
+    // creates "SRID=0000;LINESTRING (30 10, 10 30, 40 40)"
+    DBGeography::from_array([[10,30],[30,10],[40,40]])
+    
+    // creates "SRID=0000;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
+    DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]])
 
-### Spacial queries
+#### Spacial queries
 
-#### Query Within
+##### Within Query
 
 To find all DataObjects within a polygon:
 
-`$cities = City::get()->filter('Location:WithinGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));`
+    $cities = City::get()->filter('Location:WithinGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
 
-#### Query Overlap
+##### Intersects Query
 
 To find all DataObjects intersects with a polygon:
 
-`$cities = City::get()->filter('Location:IntersectsGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));`
+    $cities = City::get()->filter('Location:IntersectsGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
 
-#### Query Whithin Distance
+##### Whithin Distance Query
 
 To find all DataObjects within a 100000m of a point:
 
-`$cities = City::get()->filter('Location:DWithinGeo', [DBGeography::from_array([10,30]), 100000]);`
+    $cities = City::get()->filter('Location:DWithinGeo', [DBGeography::from_array([10,30]), 100000]);
 
 #### Compute Distance
 
 To compute the distance in meters between two points:
 
-`$distance = DBGeography::distance(DBGeography::from_array([10,30]), DBGeography::from_array([40,40]));`
-
-### Geographies and forms
-
-The module comes with a new form field type, the MapField. For a point it renders a point picker widget. For other Geography types the field is readonly.
-
-A GridField component for displaying and filtering Geographies is under construction.
+    $distance = DBGeography::distance(DBGeography::from_array([10,30]), DBGeography::from_array([40,40]));
 
 ### GeoJson import
 
@@ -236,14 +272,3 @@ A GridField component for displaying and filtering Geographies is under construc
         self::class,
         file_get_contents(__DIR__ . '/City.geojson')
     );
-
-### ToDo
-
-- gridfield: replace webservice with a filtered requirements::customScript(geojson)
-- enter coordinates into MapField
-- readonly mapfield
-- cluster GridFieldMap
-- Web service filter
-- Polygon editor editable
-- WFS
-- WMS
