@@ -57,7 +57,8 @@ If you get errors try:
 
 By default the module uses WGS 84 aka LatLon (EPSG:4326). You can register other [projections in proj4 format](https://epsg.io/) change the default:
 
-app/_config/config.yml
+app/_config/config.yml:
+
     Smindel\GIS\ORM\FieldType\DBGeography:
       default_projection: 2193
       projections:
@@ -65,11 +66,12 @@ app/_config/config.yml
 
 or
 
-app/_config.php
+app/_config.php:
+
     // defaults to 4326
-    DBGeography::config()->set('default_projection', 2193);
-    // New Zealand Transverse Mercator 
-    DBGeography::config()->set('projections', [
+    \Smindel\GIS\ORM\FieldType\DBGeography::config()->set('default_projection', 2193);
+    // register New Zealand Transverse Mercator projection
+    \Smindel\GIS\ORM\FieldType\DBGeography::config()->set('projections', [
         2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
     ]);
 
@@ -77,34 +79,116 @@ app/_config.php
 
 MapField and GridFieldMap will show the default_location if no data is available.
 
-app/_config/config.yml
+app/_config/config.yml:
+
     Smindel\GIS\ORM\FieldType\DBGeography:
       default_location: [5900755,1782733]
       
-app/_config.php
+or
+
+app/_config.php;
+
     // defaults to [10,53.5]
-    DBGeography::config()->get('default_location', [5900755,1782733]);
+    \Smindel\GIS\ORM\FieldType\DBGeography::config()->get('default_location', [5900755,1782733]);
 
 ### TileRender
 
-app/_config/config.yml
+You can choose from two renderers for the map tile service, the default one requires the php module Imagick to be installed. If that module is not available you can use the GD libaray through the GDTileRenderer
+
+app/_config/config.yml:
+
     SilverStripe\Core\Injector\Injector:
       TileRenderer:
         class: Smindel\GIS\Service\GDTileRenderer
+
+or
+
+app/_config.php;
+
+    // defaults to [10,53.5]
+    \Smindel\GIS\ORM\FieldType\DBGeography::config()->get('TileRenderer', \Smindel\GIS\Service\GDTileRenderer::class);
+
+### Tile buffer
+
+In order to complete rendering of features that actually fall within a neighboring tile. Sometimes fetures have to be rendered in more than one tile, e.g. a Point marker of a certain size for a point that is exactly on the border of a tile extends into the neighboring tile. In order to guarantee the rendering of a circle with a radius of 5 pixel as a marker you can set a tile buffer of 5 pixel. The size of the buffer has a negative impact on the performance of the renderer as it has to load and render more features.
+
+app/_config/config.yml:
+
+    Smindel\GIS\Service\WebService:
+      tile_buffer: 10
+      
+or
+
+app/_config.php;
+
+    // defaults to 5
+    \Smindel\GIS\Service\WebService::config()->get('tile_buffer', 10);
+
+## Model setup
 
 ### Adding Geography attributes to DataObjects
 
 Add Geography attributes like any other attribute using the new type Geography:
 
-`
-class City extends DataObject
-{
-    private static $db = [
-        'Name' => 'Varchar',
-        'Location' => 'Geography',
-    ];
-}
-`
+app/src/Model/City.php
+
+    <?php
+    
+    class City extends DataObject
+    {
+        private static $db = [
+            'Name' => 'Varchar',
+            'Location' => 'Geography',
+        ];
+    }
+
+### Activating the web services
+
+The GeoJson and map tile service are deactivated by default. You can activate them using the config:
+
+app/_config/config.yml:
+
+    City:
+      web_service: true
+
+or
+
+app/src/Model/City.php
+
+    <?php
+    
+    class City extends DataObject
+    {
+        private static $db = [
+            'Name' => 'Varchar',
+            'Location' => 'Geography',
+        ];
+
+        private static $web_service = true;
+    }
+
+### Forms
+
+If you are using the module in combination with ModelAdmin, you will notice the new form field type MapField. It allows editing of Points, LineStings and unnested Polygons. If you want to limit the the geometry types you can remove them from the field:
+
+app/src/Model/City.php
+
+    <?php
+    
+    class City extends DataObject
+    {
+        private static $db = [
+            'Name' => 'Varchar',
+            'Location' => 'Geography',
+        ];
+        
+        public function getCMSFields()
+        {
+            $fields = parent::getCMSFields();
+            $fields->dataFieldByName('Location')->setControl('marker', false)->setControl('polyline', false);
+            return $fields;
+        }
+    }
 
 ### Transforming Geographies from PHP to WKT
 
@@ -145,6 +229,13 @@ To compute the distance in meters between two points:
 The module comes with a new form field type, the MapField. For a point it renders a point picker widget. For other Geography types the field is readonly.
 
 A GridField component for displaying and filtering Geographies is under construction.
+
+### GeoJson import
+
+    GeoJsonImporter::import(
+        self::class,
+        file_get_contents(__DIR__ . '/City.geojson')
+    );
 
 ### ToDo
 
