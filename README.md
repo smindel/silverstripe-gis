@@ -200,6 +200,11 @@ app/src/Model/City.php
 
     <?php
     
+    use SilverStripe\Admin\ModelAdmin;
+    use Smindel\GISDemo\Model\City;
+    use Smindel\GIS\Forms\GridFieldMap;
+    use Smindel\GIS\ORM\FieldType\DBGeography;
+
     class GISAdmin extends ModelAdmin
     {
         private static $url_segment = 'gis';
