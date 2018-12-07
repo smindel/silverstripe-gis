@@ -234,16 +234,23 @@ app/src/Model/City.php
 
 #### Transforming Geographies from PHP to WKT
 
-Internally Geographies are represented as extended Well Known Text (eWKT, https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects). You can use the helper DBGeography::from_array() to create eWKT from PHP arrays:
+Because PHP doesn't have native spacial types the module uses the extended Well Known Text format (eWKT, https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects) as well as arrays.
+
+You can use the helper DBGeography::from_array() to create eWKT from PHP arrays:
 
     // creates "SRID=0000;POINT (30 10)"
-    DBGeography::from_array([10,30])
+    $ewkt = DBGeography::from_array([10,30])
     
     // creates "SRID=0000;LINESTRING (30 10, 10 30, 40 40)"
-    DBGeography::from_array([[10,30],[30,10],[40,40]])
+    $ewkt = DBGeography::from_array([[10,30],[30,10],[40,40]])
     
     // creates "SRID=0000;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
-    DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]])
+    $ewkt = DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]])
+
+Or you can retrieve arrays from eWKT like this:
+
+    // returns array([10,30])
+    $array = DBGeography::to_array("SRID=0000;POINT (30 10)")['coordinates']
 
 #### Spacial queries
 
@@ -273,7 +280,15 @@ To compute the distance in meters between two points:
 
 ### GeoJson import
 
-    GeoJsonImporter::import(
+You can invoke the importer in the simplest form like this:
+
+    Smindel\GIS\Service\GeoJsonImporter::import(
         self::class,
         file_get_contents(__DIR__ . '/City.geojson')
     );
+
+Additional optional agruments are:
+
+- an associative array mapping DataObject properties to the GeoJson properties
+- the name of the geometry property of the DataObject, if omitted the first Geography is used
+- a callable called with every feature of the GeoJson feature set
