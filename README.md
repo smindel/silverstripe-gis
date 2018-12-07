@@ -9,17 +9,16 @@ Adds support for geographic types.
 - adds new data type Geography to DataObjects
 - POINT, LINESTRING, POLYGON and MULTIPOLYGON types
 - built in support for WGS 84 / EPSG:4326
-- supports alternative projection
-- MapField to edit a DataObject's geography (currently only supports Point, LineString and Polygon) in a form
+- supports alternative projections
+- MapField to edit a DataObject's geography in a form (currently only supports Point, LineString and Polygon)
 - GridFieldMap component to search for DataObjects on a map
-- map widgets for MapField and GridFieldMap are powered by Leaflet
+- Map tile service
+- GeoJson web service
+- GeoJson importer
 - DataList filters
     - Within(Geography)
     - DWithin(Geography,distance), not supported by MariaDB
     - Intersects(Geograpy)
-- Map tile service
-- GeoJson web service
-- GeoJson importer
 
 ## Requirements
 
