@@ -7,47 +7,90 @@ Adds support for geographic types.
 ## Features
 
 - adds new data type Geography to DataObjects
-- POINT, LINESTRING or POLYGON types
+- POINT, LINESTRING, POLYGON and MULTIPOLYGON types
 - built in support for WGS 84 / EPSG:4326
-- supports alternative projection through proj4
-- MapField to edit a DataObject's geography (picker for POINT and viewer for POLYGON) in a form
+- supports alternative projection
+- MapField to edit a DataObject's geography (currently only supports Point, LineString and Polygon) in a form
 - GridFieldMap component to search for DataObjects on a map
 - map widgets for MapField and GridFieldMap are powered by Leaflet
-- DataList filters ST_Within(Geography) and ST_DWithin(Geography,distance)
+- DataList filters
+    - Within(Geography)
+    - DWithin(Geography,distance), not supported by MariaDB
+    - Intersects(Geograpy)
+- Map tile service
 - GeoJson web service
+- GeoJson importer
 
 ## Requirements
 
 - MySQL 5.7+ or Postgres with PostGIS extension
+- SilverStripe framework 4
 
 ## Installation
 
-MySQL natively supports geodetic coordinate systems for geometries since version 5.7.6. When using Postgres you have to install PostGIS:
+    $ composer require smindel/silverstripe-gis dev-master`
+    $ vendor/bin/sake dev/build flush=all
 
-- `sudo apt-get install postgis`
-- `sudo -u postgres psql SS_gis -c "create extension postgis;"`
+### MySQL
+
+MySQL natively supports geodetic coordinate systems for geometries since version 5.7.6.
+
+### MariaDB
+
+MariaDB does not currently support ST_Distance_Sphere(), so that you cannot calculate distances.
+
+### Postgres
+
+When using Postgres you have to install PostGIS:
+
+    sudo apt-get install postgis
+    sudo -u postgres psql SS_gis -c "create extension postgis;"
 
 If you get errors try:
 
-- `sudo apt-get install postgresql-9.5-postgis-scripts`
-- `sudo apt-get install postgresql-9.5-postgis-2.2`
+    sudo apt-get install postgresql-9.5-postgis-scripts
+    sudo apt-get install postgresql-9.5-postgis-2.2
 
-After installing PostGIS or if you are using MySQL5.7+ you can install the module like this:
+## Configuration
 
-1. `composer require smindel/silverstripe-gis dev-master`
-2. http://mysite/dev/build?flush=all
+### Alternative projections
 
-## Using the module
+By default the module uses WGS 84 aka LatLon (EPSG:4326). You can register other [projections in proj4 format](https://epsg.io/) change the default:
 
-### Configuration
+app/_config/config.yml
+    Smindel\GIS\ORM\FieldType\DBGeography:
+      default_projection: 2193
+      projections:
+         2193: "+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
 
-The module supports WGS 84 aka LatLon (EPSG:4326) and optionally one other configurable projection.
+or
 
-Config::inst()->set(DBGeography::class, 'default_location', [5900755,1782733]); // defaults to [10,53.5]
-Config::inst()->set(DBGeography::class, 'default_projection', 2193);            // defaults to 4326
-Config::inst()->set(DBGeography::class, 'projections', [
-    2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-]);                                                                             // New Zealand Transverse Mercator https://epsg.io/2193
+app/_config.php
+    // defaults to 4326
+    DBGeography::config()->set('default_projection', 2193);
+    // New Zealand Transverse Mercator 
+    DBGeography::config()->set('projections', [
+        2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+    ]);
+
+### Default map center
+
+MapField and GridFieldMap will show the default_location if no data is available.
+
+app/_config/config.yml
+    Smindel\GIS\ORM\FieldType\DBGeography:
+      default_location: [5900755,1782733]
+      
+app/_config.php
+    // defaults to [10,53.5]
+    DBGeography::config()->get('default_location', [5900755,1782733]);
+
+### TileRender
+
+app/_config/config.yml
+    SilverStripe\Core\Injector\Injector:
+      TileRenderer:
+        class: Smindel\GIS\Service\GDTileRenderer
 
 ### Adding Geography attributes to DataObjects
 
