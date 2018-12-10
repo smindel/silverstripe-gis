@@ -38,6 +38,7 @@ before_script:
   - phpenv rehash
   - export PATH=~/.composer/vendor/bin:$PATH
   - composer validate
+  - composer require silverstripe/recipe-testing:^1 silverstripe/installer:4.4.x-dev --no-update
   - if [[ $DB == PGSQL ]]; then composer require silverstripe/postgresql; fi
   - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
   - vendor/bin/sake dev/build flush=all
