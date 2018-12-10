@@ -45,7 +45,6 @@ before_script:
   - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
   - vendor/bin/sake dev/build flush=all
   - if [[ $DB == PGSQL ]]; then sudo -u postgres psql -c "\l"; fi
-  - if [[ $DB == PGSQL ]]; then psql -U postgres -d SS_ss -c "create extension postgis"; fi
 
 script:
   - vendor/bin/phpunit tests/php
