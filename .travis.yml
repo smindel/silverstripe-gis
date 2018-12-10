@@ -30,8 +30,11 @@ matrix:
 addons:
   postgresql: 9.6
   apt:
+    sources:
+      - mysql-5.7-trusty
     packages:
       - postgresql-9.6-postgis-2.3
+      - mysql-server
 
 before_script:
   - composer self-update || true
