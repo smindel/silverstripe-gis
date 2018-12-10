@@ -38,6 +38,7 @@ before_script:
   - phpenv rehash
   - export PATH=~/.composer/vendor/bin:$PATH
   - composer validate
+  - if [[ $DB == PGSQL ]]; then composer require silverstripe/postgresql; fi
   - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
   - vendor/bin/sake dev/build flush=all
   - if [[ $DB == PGSQL ]]; then psql -U postgres -d SS_ss -c "create extension postgis"; fi
