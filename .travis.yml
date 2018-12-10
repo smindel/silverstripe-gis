@@ -43,4 +43,4 @@ before_script:
   - if [[ $DB == PGSQL ]]; then psql -U postgres -d SS_ss -c "create extension postgis"; fi
 
 script:
-  - vendor/bin/phpunit --testsuite gis
+  - vendor/bin/phpunit tests/php
