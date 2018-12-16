@@ -20,6 +20,13 @@ class DBGeography extends DBComposite
 
     CONST EWKT_PATTERN = '/^SRID=(\d+);(([A-Z]+)\s*(\(.+\)))$/i';
 
+    const TYPES = [
+        'point' => 'Point',
+        'linestring' => 'LineString',
+        'polygon' => 'Polygon',
+        'multipolygon' => 'MultiPolygon',
+    ];
+
     protected $geographyType;
     protected $srid;
 
@@ -168,12 +175,6 @@ class DBGeography extends DBComposite
 
     public static function to_array($ewkt)
     {
-        $types = [
-            'point' => 'Point',
-            'linestring' => 'LineString',
-            'polygon' => 'Polygon',
-            'multipolygon' => 'MultiPolygon',
-        ];
         if (preg_match(self::EWKT_PATTERN, $ewkt, $matches)) {
             $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
             if (strtolower($matches[3]) != 'point') {
@@ -182,7 +183,7 @@ class DBGeography extends DBComposite
 
             return [
                 'srid' => $matches[1],
-                'type' => $types[strtolower($matches[3])],
+                'type' => self::TYPES[strtolower($matches[3])],
                 'coordinates' => json_decode($coords, true)[0],
             ];
         }
@@ -236,6 +237,22 @@ class DBGeography extends DBComposite
         }
 
         return new Proj('EPSG:' . $srid, self::$proj4);
+    }
+
+    public static function get_type($geography)
+    {
+        if (is_array($geography) && isset($geography['type'])) {
+            return self::TYPES[strtolower($geography['type'])];
+        } else if (is_array($geography)) {
+            $geography = self::from_array($geography);
+        }
+        if (preg_match(
+            '/;(' . implode('|', array_keys(self::TYPES)) . ')\(/i',
+            strtolower(substr($geography, 8, 30)),
+            $matches
+        )) {
+            return self::TYPES[$matches[1]];
+        }
     }
 
     public static function reproject_old($coordinates, $fromProj, $toProj)

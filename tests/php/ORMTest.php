@@ -131,6 +131,20 @@ class ORMTest extends SapphireTest
         $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:WithinGeo', $box)->count());
     }
 
+    public function testTypeFilter()
+    {
+        $address = TestAddress::create();
+        $address->GeoLocation = DBGeography::from_array([10,53.5]);
+        $address->write();
+
+        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:TypeGeo', 'Point')->count());
+        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:TypeGeo:not', 'Point')->count());
+        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:TypeGeo', ['Point', 'LineString'])->count());
+        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:TypeGeo:not', ['Point', 'LineString'])->count());
+        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:TypeGeo', ['Polygon', 'LineString'])->count());
+        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:TypeGeo:not', ['Polygon', 'LineString'])->count());
+    }
+
     public function testDWithinFilter()
     {
         if (preg_match('/MariaDB/', DB::get_conn()->getVersion(), $matches)) {

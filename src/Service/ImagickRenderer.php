@@ -10,11 +10,13 @@ use Imagick;
 use ImagickDraw;
 use ImagickPixel;
 
-class ImagickTileRenderer
+class ImagickRenderer extends Imagick
 {
     use Injectable;
 
     use Configurable;
+
+    const LIB_NAME = 'Imagick';
 
     protected $tileWidth;
 
@@ -22,38 +24,22 @@ class ImagickTileRenderer
 
     protected $list;
 
-    protected $tile;
-
     public function __construct($tileWidth = 256, $tileHeight = 256)
     {
+        parent::__construct();
         $this->tileWidth = $tileWidth;
         $this->tileHeight = $tileHeight;
+
+        $this->newImage($this->tileWidth, $this->tileHeight, new ImagickPixel('rgba(0,0,0,0)'));
+        $this->setImageFormat('png');
     }
 
-    public function getContentType()
+    public function getTileContentType()
     {
         return 'image/png';
     }
 
-    public function render($list)
-    {
-        $tile = $this->initialiseImage();
-
-        foreach (($list)($this->tileWidth, $this->tileHeight) as $dataObject) {
-            $this->{'draw' . $dataObject->_type}($dataObject);
-        }
-
-        return $this->toString();
-    }
-
-    protected function initialiseImage()
-    {
-        $this->tile = new Imagick();
-        $this->tile->newImage($this->tileWidth, $this->tileHeight, new ImagickPixel('rgba(0,0,0,0)'));
-        $this->tile->setImageFormat('png');
-    }
-
-    protected function drawPoint($dataObject)
+    public function drawPointToTile($tileCoordinates)
     {
         $point = new ImagickDraw();
         $point->setStrokeOpacity(1);
@@ -61,13 +47,13 @@ class ImagickTileRenderer
         $point->setFillColor(new ImagickPixel('rgb(60,60,210)'));
         $point->setStrokeWidth(2);
 
-        list($x, $y) = $dataObject->_tileCoordinates;
+        list($x, $y) = $tileCoordinates;
         $point->circle($x, $y, $x + 5, $y + 5);
 
-        $this->tile->drawImage($point);
+        $this->drawImage($point);
     }
 
-    protected function drawLineString($dataObject)
+    public function drawLineStringToTile($tileCoordinates)
     {
         $linestring = new ImagickDraw();
         $linestring->setStrokeOpacity(1);
@@ -76,16 +62,16 @@ class ImagickTileRenderer
         $linestring->setStrokeWidth(2);
 
         $points = [];
-        foreach ($dataObject->_tileCoordinates as $j => $coordinate) {
+        foreach ($tileCoordinates as $j => $coordinate) {
             $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
         }
 
         $linestring->polyline($points);
 
-        $this->tile->drawImage($linestring);
+        $this->drawImage($linestring);
     }
 
-    protected function drawPolygon($dataObject)
+    public function drawPolygonToTile($tileCoordinates)
     {
         $polygon = new ImagickDraw();
         $polygon->setStrokeOpacity(1);
@@ -93,17 +79,17 @@ class ImagickTileRenderer
         $polygon->setFillColor(new ImagickPixel('rgba(92,92,255,.25)'));
         $polygon->setStrokeWidth(2);
 
-        foreach ($dataObject->_tileCoordinates as $tileCoordinates) {
+        foreach ($tileCoordinates as $tilePolyCoordinates) {
             $points = [];
-            foreach ($tileCoordinates as $j => $coordinate) {
+            foreach ($tilePolyCoordinates as $j => $coordinate) {
                 $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
             }
             $polygon->polygon($points);
-            $this->tile->drawImage($polygon);
+            $this->drawImage($polygon);
         }
     }
 
-    protected function drawMultipolygon($dataObject)
+    public function drawMultipolygonToTile($tileCoordinates)
     {
         $polygon = new ImagickDraw();
         $polygon->setStrokeOpacity(1);
@@ -111,20 +97,15 @@ class ImagickTileRenderer
         $polygon->setFillColor(new ImagickPixel('rgba(92,92,255,.25)'));
         $polygon->setStrokeWidth(2);
 
-        foreach ($dataObject->_tileCoordinates as $polygonTileCoordinates) {
+        foreach ($tileCoordinates as $polygonTileCoordinates) {
             foreach ($polygonTileCoordinates as $tileCoordinates) {
                 $points = [];
                 foreach ($tileCoordinates as $j => $coordinate) {
                     $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
                 }
                 $polygon->polygon($points);
-                $this->tile->drawImage($polygon);
+                $this->drawImage($polygon);
             }
         }
-    }
-
-    protected function toString()
-    {
-        return $this->tile->getImageBlob();
     }
 }

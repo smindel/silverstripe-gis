@@ -10,7 +10,7 @@ use Smindel\GIS\ORM\FieldType\DBGeography;
 class MapField extends FormField
 {
     protected $controls = [
-        'polyline' => false,
+        'polyline' => true,
         'polygon' => true,
         'marker' => true,
         'circle' => false,

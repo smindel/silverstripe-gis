@@ -3,4 +3,5 @@ Name: gisroutes
 ---
 SilverStripe\Control\Director:
   rules:
-    'giswebservice': 'Smindel\GIS\Control\WebService'
+    'geojsonservice': 'Smindel\GIS\Control\GeoJsonService'
+    'webmaptileservice': 'Smindel\GIS\Control\WebMapTileService'

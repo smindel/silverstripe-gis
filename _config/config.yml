@@ -3,4 +3,4 @@ Name: gisconfig
 ---
 SilverStripe\Core\Injector\Injector:
   TileRenderer:
-    class: Smindel\GIS\Service\GDTileRenderer
+    class: Smindel\GIS\Service\GDRenderer
