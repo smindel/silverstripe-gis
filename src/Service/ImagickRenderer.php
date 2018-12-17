@@ -18,28 +18,28 @@ class ImagickRenderer extends Imagick
 
     const LIB_NAME = 'Imagick';
 
-    protected $tileWidth;
+    protected $width;
 
-    protected $tileHeight;
+    protected $height;
 
     protected $list;
 
-    public function __construct($tileWidth = 256, $tileHeight = 256)
+    public function __construct($width, $height)
     {
         parent::__construct();
-        $this->tileWidth = $tileWidth;
-        $this->tileHeight = $tileHeight;
+        $this->width = $width;
+        $this->height = $height;
 
-        $this->newImage($this->tileWidth, $this->tileHeight, new ImagickPixel('rgba(0,0,0,0)'));
+        $this->newImage($this->width, $this->height, new ImagickPixel('rgba(0,0,0,0)'));
         $this->setImageFormat('png');
     }
 
-    public function getTileContentType()
+    public function getContentType()
     {
         return 'image/png';
     }
 
-    public function drawPointToTile($tileCoordinates)
+    public function drawPoint($coordinates)
     {
         $point = new ImagickDraw();
         $point->setStrokeOpacity(1);
@@ -47,13 +47,13 @@ class ImagickRenderer extends Imagick
         $point->setFillColor(new ImagickPixel('rgb(60,60,210)'));
         $point->setStrokeWidth(2);
 
-        list($x, $y) = $tileCoordinates;
+        list($x, $y) = $coordinates;
         $point->circle($x, $y, $x + 5, $y + 5);
 
         $this->drawImage($point);
     }
 
-    public function drawLineStringToTile($tileCoordinates)
+    public function drawLineString($coordinates)
     {
         $linestring = new ImagickDraw();
         $linestring->setStrokeOpacity(1);
@@ -62,7 +62,7 @@ class ImagickRenderer extends Imagick
         $linestring->setStrokeWidth(2);
 
         $points = [];
-        foreach ($tileCoordinates as $j => $coordinate) {
+        foreach ($coordinates as $j => $coordinate) {
             $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
         }
 
@@ -71,7 +71,7 @@ class ImagickRenderer extends Imagick
         $this->drawImage($linestring);
     }
 
-    public function drawPolygonToTile($tileCoordinates)
+    public function drawPolygon($coordinates)
     {
         $polygon = new ImagickDraw();
         $polygon->setStrokeOpacity(1);
@@ -79,9 +79,9 @@ class ImagickRenderer extends Imagick
         $polygon->setFillColor(new ImagickPixel('rgba(92,92,255,.25)'));
         $polygon->setStrokeWidth(2);
 
-        foreach ($tileCoordinates as $tilePolyCoordinates) {
+        foreach ($coordinates as $polyCoordinates) {
             $points = [];
-            foreach ($tilePolyCoordinates as $j => $coordinate) {
+            foreach ($polyCoordinates as $j => $coordinate) {
                 $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
             }
             $polygon->polygon($points);
@@ -89,7 +89,7 @@ class ImagickRenderer extends Imagick
         }
     }
 
-    public function drawMultipolygonToTile($tileCoordinates)
+    public function drawMultipolygon($coordinates)
     {
         $polygon = new ImagickDraw();
         $polygon->setStrokeOpacity(1);
@@ -97,10 +97,10 @@ class ImagickRenderer extends Imagick
         $polygon->setFillColor(new ImagickPixel('rgba(92,92,255,.25)'));
         $polygon->setStrokeWidth(2);
 
-        foreach ($tileCoordinates as $polygonTileCoordinates) {
-            foreach ($polygonTileCoordinates as $tileCoordinates) {
+        foreach ($coordinates as $polygonCoordinates) {
+            foreach ($polygonCoordinates as $coords) {
                 $points = [];
-                foreach ($tileCoordinates as $j => $coordinate) {
+                foreach ($coords as $j => $coordinate) {
                     $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
                 }
                 $polygon->polygon($points);

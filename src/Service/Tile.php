@@ -12,6 +12,8 @@ class Tile
     use Configurable;
     use Injectable;
 
+    private static $tile_size = 256;
+
     /**
      * Zoom
      *
@@ -38,14 +40,7 @@ class Tile
      *
      * @var int
      */
-    protected $tileWidth = 256;
-
-    /**
-     * Default tile height in pixel
-     *
-     * @var int
-     */
-    protected $tileHeight = 256;
+    protected $size;
 
     /**
      * Top left corner of the tile
@@ -54,23 +49,31 @@ class Tile
      */
     protected $topLeft;
 
+    protected $longSpan;
+
     protected $resource;
 
-    public function __construct($z, $x, $y)
+    public function __construct($z, $x, $y, $size = null)
     {
-        // @todo: parameterise tile size, search for 256 accross the module
         $this->z = $z;
         $this->x = $x;
         $this->y = $y;
+        $this->size = $size ?: self::config()->get('tile_size');
 
         list($lon, $lat) = Tile::zxy2lonlat($z, $x, $y);
+        $this->longSpan = [$lon, Tile::zxy2lonlat($z, $x + 1, $y)[0]];
 
         $this->topLeft = [
-            (($lon + 180) / 360) * 256 * pow(2, $z),
-            (0.5 - log((1 + sin($lat * pi()/180)) / (1 - sin($lat * pi()/180))) / (4 * pi())) * 256 * pow(2, $z),
+            (($lon + 180) / 360) * $this->size * pow(2, $this->z),
+            (0.5 - log((1 + sin($lat * pi()/180)) / (1 - sin($lat * pi()/180))) / (4 * pi())) * $this->size * pow(2, $this->z),
         ];
 
-        $this->resource = Injector::inst()->get('TileRenderer');
+        $this->resource = Injector::inst()->get('TileRenderer', false, [$this->size, $this->size]);
+    }
+
+    public function debug($text = null)
+    {
+        $this->resource->debug($text ?: "$z, $x, $y");
     }
 
     public function getZXY()
@@ -93,18 +96,43 @@ class Tile
         return $this->resource;
     }
 
-    public function getCoordinates($wkt)
+    public function getRelativePixelCoordinates($wkt, &$reflection = null)
     {
         $array = DBGeography::to_srid(DBGeography::to_array($wkt), 4326);
-        return DBGeography::each(
-            $array,
-            function ($lonlat) {
-                return [
-                    (($lonlat[0] + 180) / 360) * $this->tileWidth * pow(2, $this->z) - $this->topLeft[0],
-                    (0.5 - log((1 + sin($lonlat[1] * pi()/180)) / (1 - sin($lonlat[1] * pi()/180))) / (4 * pi())) * $this->tileHeight * pow(2, $this->z) - $this->topLeft[1],
-                ];
+
+        { // determin rendering offset
+            $min = $max = null;
+            DBGeography::each(
+                $array,
+                function ($lonlat) use (&$min, &$max) {
+                    $min = is_null($min) ? $lonlat[0] : min($min, $lonlat[0]);
+                    $max = is_null($max) ? $lonlat[0] : max($max, $lonlat[0]);
+                }
+            );
+            $distance = [-360 => null, 0 => null, 360 => null];
+            foreach ($distance as $offset => &$dist) {
+                $dist = min($max, $this->longSpan[1] + $offset) - max($min, $this->longSpan[0] + $offset);
             }
-        );
+        }
+
+        foreach ($distance as $offset => &$dist) {
+            $dist = !$offset && $dist < 0 ? null :
+                DBGeography::each(
+                    $array,
+                    function ($lonlat) use ($offset) {
+                        return [
+                            (($lonlat[0] + 180 - $offset) / 360) * $this->size * pow(2, $this->z) - $this->topLeft[0],
+                            (0.5 - log((1 + sin($lonlat[1] * pi()/180)) / (1 - sin($lonlat[1] * pi()/180))) / (4 * pi())) * $this->size * pow(2, $this->z) - $this->topLeft[1],
+                        ];
+                    }
+                );
+        }
+
+        $largest = &$distance[0];
+
+        $reflection = array_filter($distance);
+
+        return $largest;
     }
 
     public function render($list)
@@ -114,10 +142,13 @@ class Tile
                 $item->renderOnWebMapTile($this);
             } else {
                 $property = DBGeography::of(get_class($item));
-                $this->resource->{'draw' . DBGeography::get_type($item->$property) . 'ToTile'}($this->getCoordinates($item->$property));
+                $primary = $this->getRelativePixelCoordinates($item->$property, $reflections);
+                // var_dump($primary, $reflections);
+                foreach ([$primary] as $reflection) {
+                    $this->resource->{'draw' . DBGeography::get_type($item->$property)}($reflection);
+                }
             }
         }
-        // var_dump(0);die;
         return $this->resource->getImageBlob();
     }
 

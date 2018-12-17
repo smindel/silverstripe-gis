@@ -1,6 +1,6 @@
 <?php
 
-namespace Smindel\Tests;
+namespace Smindel\GIS\Tests;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
@@ -22,7 +22,7 @@ class ORMTest extends SapphireTest
 
     public static function getExtraDataObjects()
     {
-        return [TestAddress::class];
+        return [TestGeography::class];
     }
 
     public function testPointWktFromArray()
@@ -85,26 +85,26 @@ class ORMTest extends SapphireTest
     public function testDbRoundTrip()
     {
         $wkt = DBGeography::from_array([10,53.5]);
-        $address = TestAddress::create();
+        $address = TestGeography::create();
         $address->GeoLocation = $wkt;
         $id = $address->write();
 
-        $address1 = TestAddress::get()->byID($id);
+        $address1 = TestGeography::get()->byID($id);
         $this->assertEquals($wkt, $address1->GeoLocation);
 
         $wkt = DBGeography::from_array([174.5,-41.3]);
         $address->GeoLocation = $wkt;
         $address->write();
-        $this->assertEquals($wkt, TestAddress::get()->byID($id)->GeoLocation);
+        $this->assertEquals($wkt, TestGeography::get()->byID($id)->GeoLocation);
 
         $address1->GeoLocation = $wkt;
         $address1->write();
-        $this->assertEquals($wkt, TestAddress::get()->byID($id)->GeoLocation);
+        $this->assertEquals($wkt, TestGeography::get()->byID($id)->GeoLocation);
     }
 
     public function testWithinFilter()
     {
-        $address = TestAddress::create(['Name' => 'Lisbon']);
+        $address = TestGeography::create(['Name' => 'Lisbon']);
         $address->GeoLocation = DBGeography::from_array([-9.1,38.7]);
         $address->write();
 
@@ -115,9 +115,9 @@ class ORMTest extends SapphireTest
             [-10,35],
             [-10,40],
         ]]);
-        $lisbon = TestAddress::get()->filter('GeoLocation:WithinGeo', $box)->first();
+        $lisbon = TestGeography::get()->filter('GeoLocation:WithinGeo', $box)->first();
         $this->assertEquals('Lisbon', $lisbon->Name);
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:WithinGeo:not', $box)->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:WithinGeo:not', $box)->count());
 
         $box = DBGeography::from_array([[
             [10,40],
@@ -126,23 +126,23 @@ class ORMTest extends SapphireTest
             [10,35],
             [10,40],
         ]]);
-        $lisbon = TestAddress::get()->filter('GeoLocation:WithinGeo:not', $box)->first();
+        $lisbon = TestGeography::get()->filter('GeoLocation:WithinGeo:not', $box)->first();
         $this->assertEquals('Lisbon', $lisbon->Name);
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:WithinGeo', $box)->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:WithinGeo', $box)->count());
     }
 
     public function testTypeFilter()
     {
-        $address = TestAddress::create();
+        $address = TestGeography::create();
         $address->GeoLocation = DBGeography::from_array([10,53.5]);
         $address->write();
 
-        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:TypeGeo', 'Point')->count());
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:TypeGeo:not', 'Point')->count());
-        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:TypeGeo', ['Point', 'LineString'])->count());
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:TypeGeo:not', ['Point', 'LineString'])->count());
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:TypeGeo', ['Polygon', 'LineString'])->count());
-        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:TypeGeo:not', ['Polygon', 'LineString'])->count());
+        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:TypeGeo', 'Point')->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:TypeGeo:not', 'Point')->count());
+        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:TypeGeo', ['Point', 'LineString'])->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:TypeGeo:not', ['Point', 'LineString'])->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:TypeGeo', ['Polygon', 'LineString'])->count());
+        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:TypeGeo:not', ['Polygon', 'LineString'])->count());
     }
 
     public function testDWithinFilter()
@@ -151,14 +151,14 @@ class ORMTest extends SapphireTest
             $this->markTestSkipped('ST_Distance_Sphere currently not implemented in MariaDB.');
         }
 
-        $address = TestAddress::create();
+        $address = TestGeography::create();
         $address->GeoLocation = DBGeography::from_array([10,53.5]);
         $address->write();
 
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:DWithinGeo', [DBGeography::from_array([-9.1,38.7]), 2190000])->count());
-        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:DWithinGeo', [DBGeography::from_array([-9.1,38.7]), 2200000])->count());
-        $this->assertEquals(1, TestAddress::get()->filter('GeoLocation:DWithinGeo:not', [DBGeography::from_array([-9.1,38.7]), 2190000])->count());
-        $this->assertEquals(0, TestAddress::get()->filter('GeoLocation:DWithinGeo:not', [DBGeography::from_array([-9.1,38.7]), 2200000])->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:DWithinGeo', [DBGeography::from_array([-9.1,38.7]), 2190000])->count());
+        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:DWithinGeo', [DBGeography::from_array([-9.1,38.7]), 2200000])->count());
+        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:DWithinGeo:not', [DBGeography::from_array([-9.1,38.7]), 2190000])->count());
+        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:DWithinGeo:not', [DBGeography::from_array([-9.1,38.7]), 2200000])->count());
     }
 
     public function testDistance()

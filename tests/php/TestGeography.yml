@@ -1,0 +1,10 @@
+Smindel\GIS\Tests\TestGeography:
+  wellington:
+    Name: Wellington
+    GeoLocation: "SRID=4326;POINT(174.5 -41.3)"
+  hamburg:
+    Name: Hamburg
+    GeoLocation: "SRID=4326;POINT(10 53.5)"
+  lisbon:
+    Name: Lisbon
+    GeoLocation: "SRID=4326;POINT(-9.1 38.7)"
