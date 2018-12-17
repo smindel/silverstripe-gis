@@ -25,7 +25,7 @@
     "autoload": {
         "psr-4": {
             "Smindel\\GIS\\": "src/",
-            "Smindel\\GIS\\tests": "tests/php/"
+            "Smindel\\GIS\\tests\\": "tests/php/"
         }
     }
 }
