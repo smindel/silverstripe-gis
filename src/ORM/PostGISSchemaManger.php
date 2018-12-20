@@ -71,11 +71,11 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
 
     public function schemaUpdate($callback)
     {
-        parent::schemaUpdate($callback);
         // @todo: terrible hack to make the postgis extension manually installed in the "public" schema
         // abailable in the unit test db
         if (Director::is_cli() && !Director::isLive()) {
-            \SilverStripe\ORM\DB::get_conn()->setSchemaSearchPath(\SilverStripe\ORM\DB::get_conn()->currentSchema(), 'public');
+            DB::get_conn()->setSchemaSearchPath(DB::get_conn()->currentSchema(), 'public');
         }
+        parent::schemaUpdate($callback);
     }
 }

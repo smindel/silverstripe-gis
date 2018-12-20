@@ -6,6 +6,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DB;
 use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\Service\Tile;
 
 class TileTest extends SapphireTest
 {
@@ -25,10 +26,99 @@ class TileTest extends SapphireTest
         return [TestGeography::class];
     }
 
-    public function testFunction()
+    public function testWrapAtDateline()
     {
-        $point = $this->objFromFixture(TestGeography::class, 'hamburg');
-        var_dump($point);
-        $this->assertEquals(1,2);
+        $z = 6;
+        $x = 63;
+        $y = 31;
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertRenders($list, $tile, 255, 255);
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertRenders($list, $tile, 255, 255);
+
+        $x = 64;
+        $y = 32;
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertRenders($list, $tile, 0, 0);
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertRenders($list, $tile, 0, 0);
+
+        $x = 0;
+        $y = 32;
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertRenders($list, $tile, 0, 0);
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertRenders($list, $tile, 0, 0);
+
+        $x = -1;
+        $y = 31;
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertRenders($list, $tile, 255, 255);
+        $tile = Tile::create($z, $x, $y, true);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertRenders($list, $tile, 255, 255);
+    }
+
+    public function testDontWrapAtDateline()
+    {
+        $z = 6;
+        $x = -1;
+        $y = 31;
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertNotRenders($list, $tile, 255, 255);
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertRenders($list, $tile, 255, 255);
+
+        $x = 0;
+        $y = 32;
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertNotRenders($list, $tile, 0, 0);
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertRenders($list, $tile, 0, 0);
+
+        $x = 63;
+        $y = 31;
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertRenders($list, $tile, 255, 255);
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertNotRenders($list, $tile, 255, 255);
+
+        $x = 64;
+        $y = 32;
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Eastern Dateline');
+        $this->assertRenders($list, $tile, 0, 0);
+        $tile = Tile::create($z, $x, $y, false);
+        $list = TestGeography::get()->filter('Name', 'Western Dateline');
+        $this->assertNotRenders($list, $tile, 0, 0);
+    }
+
+    public function assertRenders($list, $tile, $x, $y, $msg = null)
+    {
+        $image = imagecreatefromstring($tile->render($list));
+        $tile->debug();
+        file_put_contents('public/assets/tile.png', $tile->render($list));
+        $this->assertNotEquals(0, imagecolorat($image, $x, $y), $msg);
+    }
+
+    public function assertNotRenders($list, $tile, $x, $y, $msg = null)
+    {
+        $image = imagecreatefromstring($tile->render($list));
+        $tile->debug();
+        file_put_contents('public/assets/tile.png', $tile->render($list));
+        $this->assertEquals(0, imagecolorat($image, $x, $y), $msg);
     }
 }

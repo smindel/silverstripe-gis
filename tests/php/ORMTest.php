@@ -139,10 +139,6 @@ class ORMTest extends SapphireTest
 
         $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:TypeGeo', 'Point')->count());
         $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:TypeGeo:not', 'Point')->count());
-        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:TypeGeo', ['Point', 'LineString'])->count());
-        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:TypeGeo:not', ['Point', 'LineString'])->count());
-        $this->assertEquals(0, TestGeography::get()->filter('GeoLocation:TypeGeo', ['Polygon', 'LineString'])->count());
-        $this->assertEquals(1, TestGeography::get()->filter('GeoLocation:TypeGeo:not', ['Polygon', 'LineString'])->count());
     }
 
     public function testDWithinFilter()

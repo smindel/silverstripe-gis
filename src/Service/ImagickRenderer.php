@@ -34,6 +34,33 @@ class ImagickRenderer extends Imagick
         $this->setImageFormat('png');
     }
 
+    public function debug($text)
+    {
+        $draw = new ImagickDraw();
+        $draw->setStrokeOpacity(1);
+        $draw->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
+        $draw->setFillColor(new ImagickPixel('rgba(92,92,255,0)'));
+        $draw->setStrokeDashArray([5,5]);
+        $draw->setStrokeWidth(1);
+
+        $draw->polyline([
+            ['x' => 0, 'y' => 255],
+            ['x' => 0, 'y' => 0],
+            ['x' => 255, 'y' => 0],
+        ]);
+
+        $draw->setStrokeDashArray([0]);
+        $draw->setFont('DejaVu-Sans');
+        $draw->setFontSize(15);
+        $draw->setFontWeight(700);
+        $draw->setStrokeAntialias(true);
+        $draw->setTextAntialias(true);
+
+        $draw->annotation(5, 15, $text);
+
+        $this->drawImage($draw);
+    }
+
     public function getContentType()
     {
         return 'image/png';

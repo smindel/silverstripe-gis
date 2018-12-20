@@ -8,3 +8,9 @@ Smindel\GIS\Tests\TestGeography:
   lisbon:
     Name: Lisbon
     GeoLocation: "SRID=4326;POINT(-9.1 38.7)"
+  eastern-dateline:
+    Name: Eastern Dateline
+    GeoLocation: "SRID=4326;POLYGON((175 5,185 5,185 -5,175 -5,175 5))"
+  western-dateline:
+    Name: Western Dateline
+    GeoLocation: "SRID=4326;POLYGON((-182.5 2.5,-177.5 2.5,-177.5 -2.5,-182.5 -2.5,-182.5 2.5))"

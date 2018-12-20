@@ -13,6 +13,7 @@ class Tile
     use Injectable;
 
     private static $tile_size = 256;
+    private static $wrap_date = true;
 
     /**
      * Zoom
@@ -43,6 +44,13 @@ class Tile
     protected $size;
 
     /**
+     * Wrap around dateline
+     *
+     * @var int
+     */
+    protected $wrap;
+
+    /**
      * Top left corner of the tile
      *
      * @var array
@@ -53,11 +61,12 @@ class Tile
 
     protected $resource;
 
-    public function __construct($z, $x, $y, $size = null)
+    public function __construct($z, $x, $y, $wrap = null, $size = null)
     {
         $this->z = $z;
         $this->x = $x;
         $this->y = $y;
+        $this->wrap = $wrap !== null ? $wrap : self::config()->get('wrap_date');
         $this->size = $size ?: self::config()->get('tile_size');
 
         list($lon, $lat) = Tile::zxy2lonlat($z, $x, $y);
@@ -73,7 +82,7 @@ class Tile
 
     public function debug($text = null)
     {
-        $this->resource->debug($text ?: "$z, $x, $y");
+        $this->resource->debug($text ?: "$this->z, $this->x, $this->y");
     }
 
     public function getZXY()
@@ -116,8 +125,7 @@ class Tile
         }
 
         foreach ($distance as $offset => &$dist) {
-            $dist = !$offset && $dist < 0 ? null :
-                DBGeography::each(
+            $dist = DBGeography::each(
                     $array,
                     function ($lonlat) use ($offset) {
                         return [
@@ -143,9 +151,13 @@ class Tile
             } else {
                 $property = DBGeography::of(get_class($item));
                 $primary = $this->getRelativePixelCoordinates($item->$property, $reflections);
-                // var_dump($primary, $reflections);
-                foreach ([$primary] as $reflection) {
-                    $this->resource->{'draw' . DBGeography::get_type($item->$property)}($reflection);
+
+                if ($this->wrap) {
+                    foreach ($reflections as $reflection) {
+                        $this->resource->{'draw' . DBGeography::get_type($item->$property)}($reflection);
+                    }
+                } else {
+                    $this->resource->{'draw' . DBGeography::get_type($item->$property)}($primary);
                 }
             }
         }

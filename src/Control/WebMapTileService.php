@@ -37,7 +37,8 @@ class WebMapTileService extends Controller
         $y = $request->param('y');
 
         $tileSize = $model::config()->get('webmaptile_service')['tile_size'] ?? Tile::config()->get('tile_size');
-        $tile = Tile::create($z, $x, $y, $tileSize);
+        $wrapDate = $model::config()->get('webmaptile_service')['wrap_date'] ?? Tile::config()->get('wrap_date');
+        $tile = Tile::create($z, $x, $y, $wrapDate, $tileSize);
 
         list($lon1, $lat1) = Tile::zxy2lonlat($z, $x, $y);
         list($lon2, $lat2) = Tile::zxy2lonlat($z, $x + 1, $y + 1);
@@ -80,6 +81,8 @@ class WebMapTileService extends Controller
             )['coordinates'])
         );
         $tile->debug("$z, $x, $y, " . $list->count());
+
+        var_dump($boxes, $buffer, $list->count());die;
 
         $response = $this->getResponse();
         $response->addHeader('Content-Type', $tile->getContentType());

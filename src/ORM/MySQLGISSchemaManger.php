@@ -43,7 +43,7 @@ class MySQLGISSchemaManger extends MySQLSchemaManager
             $field,
             $null
         );
-        return [$fragment => 'st_' . strtolower($value)];
+        return [$fragment => strtolower($value)];
     }
 
     public function translateFilterIntersects($field, $value, $inclusive)

@@ -107,7 +107,6 @@ class GDRenderer
         ob_start();
         imagepng($this->image);
         $blob = ob_get_clean();
-        imagedestroy($this->image);
 
         return $blob;
     }
