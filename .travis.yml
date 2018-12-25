@@ -46,7 +46,6 @@ before_script:
   - if [[ $DB == PGSQL ]]; then psql -U postgres -c 'create database "SS_silverstripe-gis"'; fi
   - if [[ $DB == PGSQL ]]; then psql -U postgres -d SS_silverstripe-gis -c "create extension postgis"; fi
   - composer install --prefer-dist --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
-  - vendor/bin/sake dev/build flush=all
 
 script:
   - vendor/bin/phpunit tests/php
