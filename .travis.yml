@@ -37,6 +37,7 @@ addons:
       - mysql-server
 
 before_script:
+  - printf "\n" | pecl install imagick
   - composer self-update || true
   - phpenv rehash
   - export PATH=~/.composer/vendor/bin:$PATH
