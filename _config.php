@@ -7,5 +7,5 @@ use Smindel\GIS\Service\GDRenderer;
 use Smindel\GIS\Service\ImagickRenderer;
 
 if (class_exists('Imagick')) {
-    // Config::modify()->set(Injector::class, 'TileRenderer', ['class' => ImagickRenderer::class]);
+    Config::modify()->set(Injector::class, 'TileRenderer', ['class' => ImagickRenderer::class]);
 }

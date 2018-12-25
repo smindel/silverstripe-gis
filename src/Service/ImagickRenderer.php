@@ -10,7 +10,9 @@ use Imagick;
 use ImagickDraw;
 use ImagickPixel;
 
-class ImagickRenderer extends Imagick
+// @todo: extending imagick makes it a hard dependency, so don't
+
+class ImagickRenderer
 {
     use Injectable;
 
@@ -24,14 +26,17 @@ class ImagickRenderer extends Imagick
 
     protected $list;
 
+    protected $image;
+
     public function __construct($width, $height)
     {
-        parent::__construct();
         $this->width = $width;
         $this->height = $height;
 
-        $this->newImage($this->width, $this->height, new ImagickPixel('rgba(0,0,0,0)'));
-        $this->setImageFormat('png');
+        $this->image = new Imagick();
+
+        $this->image->newImage($this->width, $this->height, new ImagickPixel('rgba(0,0,0,0)'));
+        $this->image->setImageFormat('png');
     }
 
     public function debug($text)
@@ -58,7 +63,7 @@ class ImagickRenderer extends Imagick
 
         $draw->annotation(5, 15, $text);
 
-        $this->drawImage($draw);
+        $this->image->drawImage($draw);
     }
 
     public function getContentType()
@@ -77,7 +82,7 @@ class ImagickRenderer extends Imagick
         list($x, $y) = $coordinates;
         $point->circle($x, $y, $x + 5, $y + 5);
 
-        $this->drawImage($point);
+        $this->image->drawImage($point);
     }
 
     public function drawLineString($coordinates)
@@ -95,7 +100,7 @@ class ImagickRenderer extends Imagick
 
         $linestring->polyline($points);
 
-        $this->drawImage($linestring);
+        $this->image->drawImage($linestring);
     }
 
     public function drawPolygon($coordinates)
@@ -112,7 +117,7 @@ class ImagickRenderer extends Imagick
                 $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
             }
             $polygon->polygon($points);
-            $this->drawImage($polygon);
+            $this->image->drawImage($polygon);
         }
     }
 
@@ -131,8 +136,13 @@ class ImagickRenderer extends Imagick
                     $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
                 }
                 $polygon->polygon($points);
-                $this->drawImage($polygon);
+                $this->image->drawImage($polygon);
             }
         }
+    }
+
+    public function getImageBlob()
+    {
+        return $this->image->getImageBlob();
     }
 }

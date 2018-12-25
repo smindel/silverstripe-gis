@@ -109,16 +109,16 @@ class TileTest extends SapphireTest
     public function assertRenders($list, $tile, $x, $y, $msg = null)
     {
         $image = imagecreatefromstring($tile->render($list));
-        $tile->debug();
-        file_put_contents('public/assets/tile.png', $tile->render($list));
+        // $tile->debug();
+        // file_put_contents('public/assets/tile.png', $tile->render($list));
         $this->assertNotEquals(0, imagecolorat($image, $x, $y), $msg);
     }
 
     public function assertNotRenders($list, $tile, $x, $y, $msg = null)
     {
         $image = imagecreatefromstring($tile->render($list));
-        $tile->debug();
-        file_put_contents('public/assets/tile.png', $tile->render($list));
+        // $tile->debug();
+        // file_put_contents('public/assets/tile.png', $tile->render($list));
         $this->assertEquals(0, imagecolorat($image, $x, $y), $msg);
     }
 }

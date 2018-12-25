@@ -80,9 +80,7 @@ class WebMapTileService extends Controller
                 Config::inst()->get(DBGeography::class, 'default_projection')
             )['coordinates'])
         );
-        $tile->debug("$z, $x, $y, " . $list->count());
-
-        var_dump($boxes, $buffer, $list->count());die;
+        // $tile->debug("$z, $x, $y, " . $list->count());
 
         $response = $this->getResponse();
         $response->addHeader('Content-Type', $tile->getContentType());
