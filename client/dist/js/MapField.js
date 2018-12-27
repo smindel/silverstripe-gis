@@ -117,6 +117,7 @@ jQuery(function($) {
                     case 'POINT': return L.marker(coordinates[0]);
                     case 'LINESTRING': return L.polyline(coordinates);
                     case 'POLYGON': return L.polygon(coordinates[0]);
+                    case 'MULTIPOLYGON': return L.polygon(coordinates);
                 }
             },
             setFormFieldValueFromFeature: function(feature) {

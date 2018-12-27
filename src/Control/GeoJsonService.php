@@ -7,40 +7,33 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\ORM\FieldType\DBGeography;
 
-class GeoJsonService extends Controller
+class GeoJsonService extends AbstractGISWebServiceController
 {
     private static $url_handlers = array(
         '$Model' => 'handleAction',
     );
 
+    public function getConfig($model)
+    {
+        $modelConfig = parent::getConfig($model);
+        if (!$modelConfig) return false;
+        $defaults = [
+            'property_map' => singleton($model)->summaryFields(),
+        ];
+        return is_array($modelConfig) ? array_merge($defaults, $modelConfig) : $defaults;
+    }
+
     public function index($request)
     {
-        $model = str_replace('-', '\\', $request->param('Model'));
-        $config = Config::inst()->get($model, 'webmaptile_service');
-
-        if (!$config) {
-            return $this->httpError(404);
-        }
-
-        if (isset($config['code']) && !Permission::check($config['code'])) {
-            return Security::permissionFailure($this);
-        }
-
-        $skip_filter = false;
-        $list = is_callable([$model, 'get_webmaptile_webservice_list'])
-            ? $model::get_geojson_webservice_list($request, $skip_filter)
-            : $model::get();
-
-        if (!$skip_filter) {
-            // @todo: implement filter
-        }
+        $model = $this->getModel($request);
+        $config = $this->getConfig($model);
+        $list = $this->getRecords($request);
 
         $collection = [];
 
-        $geometryField = array_search('Geography', Config::inst()->get($model, 'db'));
+        $geometryField = $config['geography_field'];
 
-        $propertyMap = Config::inst()->get($model, 'geojson_service');
-        if ($propertyMap === true) $propertyMap = singleton($model)->summaryFields();
+        $propertyMap = $config['property_map'];
 
         foreach ($list as $item) {
 
@@ -48,22 +41,14 @@ class GeoJsonService extends Controller
                 continue;
             }
 
-            if ($item->hasMethod('getWebServiseGeometry')) {
-                $geometry = $item->getWebServiseGeometry();
-            } else {
-                $geometry = $item->$geometryField;
+            $geography = $item->{$config['geography_field']};
+
+            $properties = [];
+            foreach ($propertyMap as $fieldName => $propertyName) {
+                $properties[$propertyName] = $item->$fieldName;
             }
 
-            if ($item->hasMethod('getWebServiseProperties')) {
-                $properties = $item->getWebServiseProperties();
-            } else {
-                $properties = [];
-                foreach ($propertyMap as $fieldName => $propertyName) {
-                    $properties[$propertyName] = $item->$fieldName;
-                }
-            }
-
-            $array = DBGeography::to_srid(DBGeography::to_array($geometry), 4326);
+            $array = DBGeography::to_srid(DBGeography::to_array($geography), 4326);
 
             $collection[] = [
                 'type' => 'Feature',

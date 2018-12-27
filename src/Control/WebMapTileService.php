@@ -9,7 +9,7 @@ use SilverStripe\Security\Permission;
 use Smindel\GIS\ORM\FieldType\DBGeography;
 use Smindel\GIS\Service\Tile;
 
-class WebMapTileService extends Controller
+class WebMapTileService extends AbstractGISWebServiceController
 {
     private static $url_handlers = array(
         '$Model//$z/$x/$y' => 'handleAction',
@@ -27,25 +27,29 @@ class WebMapTileService extends Controller
      */
     private static $tile_buffer = 5;
 
+    private static $tile_size = 256;
+
+    private static $wrap_date = true;
+
     public function index($request)
     {
-        $model = str_replace('-', '\\', $request->param('Model'));
-        $list = $model::get();
+        $model = $this->getModel($request);
+        $config = $this->getConfig($model);
+        $list = $this->getRecords($request);
 
         $z = $request->param('z');
         $x = $request->param('x');
         $y = $request->param('y');
 
-        $tileSize = $model::config()->get('webmaptile_service')['tile_size'] ?? Tile::config()->get('tile_size');
-        $wrapDate = $model::config()->get('webmaptile_service')['wrap_date'] ?? Tile::config()->get('wrap_date');
-        $tile = Tile::create($z, $x, $y, $wrapDate, $tileSize);
+        $tileSize = $config['tile_size'];
+        $tile = Tile::create($z, $x, $y, $config['wrap_date'], $tileSize);
 
         list($lon1, $lat1) = Tile::zxy2lonlat($z, $x, $y);
         list($lon2, $lat2) = Tile::zxy2lonlat($z, $x + 1, $y + 1);
 
-        $geographyField = DBGeography::of($list->dataClass());
+        $geographyField = $config['geography_field'];
 
-        $bufferSize = $model::config()->get('webmaptile_service')['tile_buffer'] ?? self::config()->get('tile_buffer');
+        $bufferSize = $config['tile_buffer'];
         if (!is_array($bufferSize)) {
             $bufferSize = array_fill(0, 4, $bufferSize);
         } else if (count($bufferSize) == 2) {
@@ -80,7 +84,10 @@ class WebMapTileService extends Controller
                 Config::inst()->get(DBGeography::class, 'default_projection')
             )['coordinates'])
         );
-        // $tile->debug("$z, $x, $y, " . $list->count());
+
+        if ($request->requestVar('debug')) {
+            $tile->debug("$z, $x, $y, " . $list->count());
+        }
 
         $response = $this->getResponse();
         $response->addHeader('Content-Type', $tile->getContentType());

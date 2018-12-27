@@ -6,14 +6,12 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\Control\WebMapTileService;
 
 class Tile
 {
     use Configurable;
     use Injectable;
-
-    private static $tile_size = 256;
-    private static $wrap_date = true;
 
     /**
      * Zoom
@@ -67,7 +65,7 @@ class Tile
         $this->x = $x;
         $this->y = $y;
         $this->wrap = $wrap !== null ? $wrap : self::config()->get('wrap_date');
-        $this->size = $size ?: self::config()->get('tile_size');
+        $this->size = $size ?: WebMapTileService::config()->get('tile_size');
 
         list($lon, $lat) = Tile::zxy2lonlat($z, $x, $y);
         $this->longSpan = [$lon, Tile::zxy2lonlat($z, $x + 1, $y)[0]];

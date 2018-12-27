@@ -24,7 +24,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
 
     protected $attribute;
 
-    public function __construct($attribute)
+    public function __construct($attribute = null)
     {
         $this->attribute = $attribute;
     }
@@ -54,16 +54,16 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
             'header' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s"></div>',
                 DBGeography::from_array(Config::inst()->get(DBGeography::class, 'default_location')),
-                htmlentities(self::get_geojson_from_list($gridField->getList()), ENT_QUOTES, 'UTF-8')
+                htmlentities(self::get_geojson_from_list($gridField->getList(), $this->attribute), ENT_QUOTES, 'UTF-8')
             ),
         );
     }
 
-    public static function get_geojson_from_list($list)
+    public static function get_geojson_from_list($list, $geometryField = null)
     {
         $modelClass = $list->dataClass();
 
-        $geometryField = array_search('Geography', Config::inst()->get($modelClass, 'db'));
+        $geometryField = $geometryField ?: DBGeography::of($modelClass);
 
         if (($epsg = Config::inst()->get(DBGeography::class, 'default_projection')) != 4326) {
             $projDef = Config::inst()->get(DBGeography::class, 'projections')[$epsg];
@@ -80,13 +80,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                 continue;
             }
 
-            if ($item->hasMethod('getWebServiseGeometry')) {
-                $geometry = $item->getWebServiseGeometry();
-            } else {
-                $geometry = $item->$geometryField;
-            }
-
-            $array = DBGeography::to_array($geometry);
+            $array = DBGeography::to_array($item->$geometryField);
 
             if ($epsg != 4326) {
                 if (strtolower($array['type']) == 'point') {

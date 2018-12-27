@@ -255,18 +255,6 @@ class DBGeography extends DBComposite
         }
     }
 
-    public static function reproject_old($coordinates, $fromProj, $toProj)
-    {
-        if (is_array($coordinates[0])) {
-            foreach ($coordinates as &$coordinate) {
-                $coordinate = self::reproject($coordinate, $fromProj, $toProj);
-            }
-            return $coordinates;
-        }
-
-        return array_slice(self::$proj4->transform($toProj, new Point($coordinates[0], $coordinates[1], $fromProj))->toArray(), 0, 2);
-    }
-
     public static function reproject($coordinates, $fromProj, $toProj)
     {
         return self::each($coordinates, function($coordinate) use ($fromProj, $toProj) {
