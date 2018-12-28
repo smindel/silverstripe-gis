@@ -9,7 +9,7 @@ use SilverStripe\Forms\GridField\GridField_DataManipulator;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\SS_List;
-use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\GIS;
 use proj4php\Proj4php;
 use proj4php\Proj;
 use proj4php\Point;
@@ -36,14 +36,14 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
      */
     public function getHTMLFragments($gridField)
     {
-        $epsg = Config::inst()->get(DBGeography::class, 'default_projection');
-        $proj = Config::inst()->get(DBGeography::class, 'projections')[$epsg];
+        $srid = Config::inst()->get(GIS::class, 'default_srid');
+        $proj = Config::inst()->get(GIS::class, 'projections')[$srid];
 
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.js');
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.markercluster.js');
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet-search.js');
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/proj4.js');
-        Requirements::customScript(sprintf('proj4.defs("EPSG:%s", "%s");', $epsg, $proj), 'EPSG:' . $epsg);
+        Requirements::customScript(sprintf('proj4.defs("EPSG:%s", "%s");', $srid, $proj), 'EPSG:' . $srid);
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/GridFieldMap.js');
         Requirements::css('smindel/silverstripe-gis: client/dist/css/leaflet.css');
         Requirements::css('smindel/silverstripe-gis: client/dist/css/MarkerCluster.css');
@@ -53,7 +53,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         return array(
             'header' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s"></div>',
-                DBGeography::from_array(Config::inst()->get(DBGeography::class, 'default_location')),
+                GIS::array_to_ewkt(Config::inst()->get(GIS::class, 'default_location')),
                 htmlentities(self::get_geojson_from_list($gridField->getList(), $this->attribute), ENT_QUOTES, 'UTF-8')
             ),
         );
@@ -63,13 +63,13 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
     {
         $modelClass = $list->dataClass();
 
-        $geometryField = $geometryField ?: DBGeography::of($modelClass);
+        $geometryField = $geometryField ?: GIS::of($modelClass);
 
-        if (($epsg = Config::inst()->get(DBGeography::class, 'default_projection')) != 4326) {
-            $projDef = Config::inst()->get(DBGeography::class, 'projections')[$epsg];
+        if (($srid = Config::inst()->get(GIS::class, 'default_srid')) != 4326) {
+            $projDef = Config::inst()->get(GIS::class, 'projections')[$srid];
             $proj4 = new Proj4php();
-            $proj4->addDef('EPSG:' . $epsg, $projDef);
-            $proj = new Proj('EPSG:' . $epsg, $proj4);
+            $proj4->addDef('EPSG:' . $srid, $projDef);
+            $proj = new Proj('EPSG:' . $srid, $proj4);
         }
 
         $collection = [];
@@ -80,9 +80,9 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                 continue;
             }
 
-            $array = DBGeography::to_array($item->$geometryField);
+            $array = GIS::ewkt_to_array($item->$geometryField);
 
-            if ($epsg != 4326) {
+            if ($srid != 4326) {
                 if (strtolower($array['type']) == 'point') {
                     $point = new Point($array['coordinates'][0], $array['coordinates'][1], $proj);
                     $array['coordinates'] = $proj4->transform(new Proj('EPSG:4326', $proj4), $point)->toArray();

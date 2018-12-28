@@ -1,4 +1,4 @@
-Smindel\GIS\Tests\TestGeography:
+Smindel\GIS\Tests\TestGeometry:
   wellington:
     Name: Wellington
     GeoLocation: "SRID=4326;POINT(174.5 -41.3)"

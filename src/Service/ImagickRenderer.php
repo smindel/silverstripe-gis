@@ -4,7 +4,6 @@ namespace Smindel\GIS\Service;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Config\Configurable;
-use Smindel\GIS\ORM\FieldType\DBGeography;
 use Imagick;
 use ImagickDraw;
 use ImagickPixel;

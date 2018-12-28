@@ -6,6 +6,7 @@ jQuery(function($) {
         $('.map-field-widget').entwine({
             Map: null,
             Feature: null,
+            Queue: null,
             onmatch: function() {
 
                 this.getFormField().attr('readonly', 'readonly');
@@ -183,21 +184,29 @@ jQuery(function($) {
                 this.getMap().flyTo(latlng);
             },
             onmouseover: function() {
-                var map = this.getMap(), timer = setInterval(function() {
-                    map.invalidateSize();
-                }, 5);
+                var queue = this.getQueue(),
+                    map = this.getMap(),
+                    timer = setInterval(function() {
+                        map.invalidateSize();
+                    }, 5);
                 setTimeout(function() {
                     clearInterval(timer)
                 }, 1000);
+                if (queue) clearTimeout(queue);
             },
             onmouseout: function() {
-                var me = this, map = this.getMap(), timer = setInterval(function() {
-                    map.invalidateSize()
-                }, 5);
-                setTimeout(function() {
-                    clearInterval(timer)
-                    me.center();
-                }, 1000);
+                var me = this,
+                    map = this.getMap(),
+                    queue = setTimeout(function () {
+                        var timer = setInterval(function() {
+                                map.invalidateSize()
+                            }, 5);
+                        setTimeout(function() {
+                            clearInterval(timer)
+                            me.center();
+                        }, 1000);
+                    }, 100);
+                this.setQueue(queue);
             }
         });
 

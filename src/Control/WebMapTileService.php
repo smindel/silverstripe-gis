@@ -6,7 +6,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Security\Security;
 use SilverStripe\Security\Permission;
-use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\GIS;
 use Smindel\GIS\Service\Tile;
 
 class WebMapTileService extends AbstractGISWebServiceController
@@ -47,7 +47,7 @@ class WebMapTileService extends AbstractGISWebServiceController
         list($lon1, $lat1) = Tile::zxy2lonlat($z, $x, $y);
         list($lon2, $lat2) = Tile::zxy2lonlat($z, $x + 1, $y + 1);
 
-        $geographyField = $config['geography_field'];
+        $geometryField = $config['geometry_field'];
 
         $bufferSize = $config['tile_buffer'];
         if (!is_array($bufferSize)) {
@@ -78,10 +78,10 @@ class WebMapTileService extends AbstractGISWebServiceController
         ];
 
         $list = $list->filter(
-            $geographyField . ':IntersectsGeo',
-            DBGeography::from_array(DBGeography::to_srid(
+            $geometryField . ':IntersectsGeo',
+            GIS::array_to_ewkt(GIS::reproject_array(
                 $bounds,
-                Config::inst()->get(DBGeography::class, 'default_projection')
+                Config::inst()->get(GIS::class, 'default_srid')
             )['coordinates'])
         );
 

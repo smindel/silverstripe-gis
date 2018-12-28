@@ -5,6 +5,7 @@ namespace Smindel\GIS\ORM;
 use SilverStripe\PostgreSQL\PostgreSQLSchemaManager;
 use SilverStripe\ORM\DB;
 use SilverStripe\Control\Director;
+use Smindel\GIS\GIS;
 
 /*
 http://postgis.net/docs/PostGIS_Special_Functions_Index.html#PostGIS_3D_Functions
@@ -18,12 +19,17 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
 {
     public function geography($values)
     {
+        return 'geography';
+    }
+
+    public function geometry($values)
+    {
         return 'geometry';
     }
 
     public function translateToWrite($field)
     {
-        return ["ST_GeomFromText(?)" => [$field->getValue()]];
+        return ["ST_GeomFromText(?, ?)" => GIS::split_ewkt($field->getValue(), (int)$field->srid)];
     }
 
     public function translateToRead($field)
@@ -37,7 +43,8 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
     public function translateFilterWithin($field, $value, $inclusive)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
-        return [sprintf('%sST_Covers(ST_GeographyFromText(?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null) => $value];
+        $fragment = sprintf('%sST_Covers(ST_GeomFromText(?, ?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null);
+        return [$fragment => GIS::split_ewkt($value)];
     }
 
     public function translateFilterGeoType($field, $value, $inclusive)
@@ -55,18 +62,24 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
     public function translateFilterIntersects($field, $value, $inclusive)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
-        return [sprintf('%sST_Intersects(ST_GeographyFromText(?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null) => $value];
+        $fragment = sprintf('%sST_Intersects(ST_GeomFromText(?, ?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null);
+        return [$fragment => GIS::split_ewkt($value)];
     }
 
     public function translateFilterDWithin($field, $value, $inclusive)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
-        return [sprintf('ST_Distance(ST_GeographyFromText(?),%s,true) %s ?%s', $field, $inclusive ? '<=' : '> ', $null) => $value];
+        $fragment = sprintf('ST_Distance(ST_GeomFromText(?, ?),%s,true) %s ?%s', $field, $inclusive ? '<=' : '> ', $null);
+        list($wkt, $srid) = GIS::split_ewkt($value[0]);
+        $distance = $value[1];
+        return [$fragment => [$wkt, $srid, $distance]];
     }
 
     public function translateDistanceQuery($geo1,$geo2)
     {
-        return sprintf("ST_Distance(ST_GeographyFromText('%s'),ST_GeographyFromText('%s'),true)", $geo1, $geo2);
+        list($wkt1, $srid1) = GIS::split_ewkt($geo1);
+        list($wkt2, $srid2) = GIS::split_ewkt($geo2);
+        return sprintf("ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d),true)", $wkt1, $srid1, $wkt2, $srid2);
     }
 
     public function schemaUpdate($callback)

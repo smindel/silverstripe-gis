@@ -5,7 +5,7 @@ namespace Smindel\GIS\Service;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
-use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\GIS;
 use Smindel\GIS\Control\WebMapTileService;
 
 class Tile
@@ -105,11 +105,11 @@ class Tile
 
     public function getRelativePixelCoordinates($wkt, &$reflection = null)
     {
-        $array = DBGeography::to_srid(DBGeography::to_array($wkt), 4326);
+        $array = GIS::reproject_array(GIS::ewkt_to_array($wkt), 4326);
 
         { // determin rendering offset
             $min = $max = null;
-            DBGeography::each(
+            GIS::each(
                 $array,
                 function ($lonlat) use (&$min, &$max) {
                     $min = is_null($min) ? $lonlat[0] : min($min, $lonlat[0]);
@@ -123,7 +123,7 @@ class Tile
         }
 
         foreach ($distance as $offset => &$dist) {
-            $dist = DBGeography::each(
+            $dist = GIS::each(
                     $array,
                     function ($lonlat) use ($offset) {
                         return [
@@ -147,15 +147,15 @@ class Tile
             if ($item->hasMethod('renderOnWebMapTile')) {
                 $item->renderOnWebMapTile($this);
             } else {
-                $property = DBGeography::of(get_class($item));
+                $property = GIS::of(get_class($item));
                 $primary = $this->getRelativePixelCoordinates($item->$property, $reflections);
 
                 if ($this->wrap) {
                     foreach ($reflections as $reflection) {
-                        $this->resource->{'draw' . DBGeography::get_type($item->$property)}($reflection);
+                        $this->resource->{'draw' . GIS::get_type($item->$property)}($reflection);
                     }
                 } else {
-                    $this->resource->{'draw' . DBGeography::get_type($item->$property)}($primary);
+                    $this->resource->{'draw' . GIS::get_type($item->$property)}($primary);
                 }
             }
         }

@@ -5,7 +5,7 @@ namespace Smindel\GIS\Control;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
-use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\GIS;
 
 class GeoJsonService extends AbstractGISWebServiceController
 {
@@ -31,7 +31,7 @@ class GeoJsonService extends AbstractGISWebServiceController
 
         $collection = [];
 
-        $geometryField = $config['geography_field'];
+        $geometryField = $config['geometry_field'];
 
         $propertyMap = $config['property_map'];
 
@@ -41,14 +41,14 @@ class GeoJsonService extends AbstractGISWebServiceController
                 continue;
             }
 
-            $geography = $item->{$config['geography_field']};
+            $geometry = $item->{$config['geometry_field']};
 
             $properties = [];
             foreach ($propertyMap as $fieldName => $propertyName) {
                 $properties[$propertyName] = $item->$fieldName;
             }
 
-            $array = DBGeography::to_srid(DBGeography::to_array($geography), 4326);
+            $array = GIS::reproject_array(GIS::ewkt_to_array($geometry), 4326);
 
             $collection[] = [
                 'type' => 'Feature',

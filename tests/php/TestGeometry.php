@@ -5,12 +5,12 @@ namespace Smindel\GIS\Tests;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\TestOnly;
 
-class TestGeography extends DataObject implements TestOnly
+class TestGeometry extends DataObject implements TestOnly
 {
-    private static $table_name = 'TestGeography';
+    private static $table_name = 'TestGeometry';
 
     private static $db = [
         'Name' => 'Varchar',
-        'GeoLocation' => 'Geography',
+        'GeoLocation' => 'Geometry',
     ];
 }

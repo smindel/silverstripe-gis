@@ -2,13 +2,13 @@
 
 namespace Smindel\GIS\Service;
 
-use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\GIS;
 
 class GeoJsonImporter
 {
     public static function import($class, $geoJson, $propertyMap = null, $geometryProperty = null, $featureCallback = null)
     {
-        $geometryProperty = $geometryProperty ?: DBGeography::of($class);
+        $geometryProperty = $geometryProperty ?: GIS::of($class);
         $features = (is_array($geoJson) ? $geoJson : json_decode($geoJson, true))['features'];
         foreach ($features as $feature) {
 
@@ -22,7 +22,7 @@ class GeoJsonImporter
             }
 
             $obj = $class::create();
-            $obj->$geometryProperty = DBGeography::from_array($feature['geometry']['coordinates']);
+            $obj->$geometryProperty = GIS::array_to_ewkt($feature['geometry']['coordinates']);
             foreach ($propertyMap as $doProperty => $jsonProperty) {
                 $obj->$doProperty = $feature['properties'][$jsonProperty];
             }
