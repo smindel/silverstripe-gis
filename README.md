@@ -4,292 +4,264 @@
 [![Version](http://img.shields.io/packagist/v/smindel/silverstripe-gis.svg?style=flat)](https://packagist.org/packages/smindel/silverstripe-gis)
 [![License](http://img.shields.io/packagist/l/smindel/silverstripe-gis.svg?style=flat)](LICENSE.md)
 
-Adds support for geographic types.
+GIS developer toolkit for SilverStripe
+
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#Installation)
+- [Configuration](#configuration)
+- [GIS Class](#gis-class)
+- [DataObject setup](#dataobject-setup)
+- [MapField](#mapfield)
+- [GridFieldMap](#gridfieldmap)
+- [ORM filters](#orm-filters)
+- [GeoJSONImporter](#geojsonimporter)
+- [GeoJSON API](#geojson-api)
+- [WebMapTileService](#webmaptileservice)
+
 
 ## Features
 
-- adds new data type Geography to DataObjects
-- POINT, LINESTRING, POLYGON and MULTIPOLYGON types
-- built in support for WGS 84 / EPSG:4326
-- supports alternative projections
-- MapField to edit a DataObject's geography in a form (currently only supports Point, LineString and Polygon)
-- GridFieldMap component to search for DataObjects on a map
-- Map tile service
-- GeoJson web service
-- GeoJson importer
-- DataList filters
-    - Within(Geography)
-    - DWithin(Geography,distance), not supported by MariaDB
-    - Intersects(Geograpy)
+- __New field types:__ add geometries to DataObjects
+- __New form fields:__ edit the new geo types using the MapField or add maps to GridFields in ModelAdmin
+- __Configurable projections:__ support for alternative projections through proj4
+- __Developer tools:__ heaps of useful helpers, e.g. for re-projecting, distance measuring, ewkt
+- __MySQL and Postgres:__ supports Postgres with PostGIS, MySQL 5.7+, partial support for MariaDB
+- __ORM integration__: DataList filters, e.g. to find intersecting DataObjects or within distance
+- __GeoJSON imorter:__ import a GeoJSON source as DataObjects
+- __GeoJSON web service:__ GeoJSON API for DataObjects
+- __WMTS:__ render DataObjects to ZXY tiles e.g. for a leaflet frontend
+
 
 ## Requirements
 
 - MySQL 5.7+ or Postgres with PostGIS extension
 - SilverStripe framework 4
 
+
 ## Installation
 
-    $ composer require smindel/silverstripe-gis dev-master`
+It's recommended to use composer to install the module
+
+    $ composer require smindel/silverstripe-gis
     $ vendor/bin/sake dev/build flush=all
 
-### MySQL
+__MySQL__ natively supports geodetic coordinate systems for geometries since version 5.7.6.
 
-MySQL natively supports geodetic coordinate systems for geometries since version 5.7.6.
+__MariaDB__ does not currently support ST\_Distance\_Sphere(), so that you cannot calculate distances.
 
-### MariaDB
+When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run the folloing commands:
 
-MariaDB does not currently support ST_Distance_Sphere(), so that you cannot calculate distances.
+    $ sudo apt-get install postgis
+    $ sudo apt-get install postgresql-9.5-postgis-scripts
+    $ sudo apt-get install postgresql-9.5-postgis-2.2
+    $ sudo -u postgres psql SS_gis -c "create extension postgis;"
 
-### Postgres
-
-When using Postgres you have to install PostGIS:
-
-    sudo apt-get install postgis
-    sudo -u postgres psql SS_gis -c "create extension postgis;"
-
-If you get errors try:
-
-    sudo apt-get install postgresql-9.5-postgis-scripts
-    sudo apt-get install postgresql-9.5-postgis-2.2
+(replace 'SS\_gis' with your db name)
 
 ## Configuration
 
-### Alternative projections
+silverstripe-gis, like any other SilverStripe module, can be [configured](https://docs.silverstripe.org/en/4/developer_guides/configuration/configuration/) using YAML files, the Config class or private static properties of Configurables. Check out the following sections to see what can be configured.
 
-By default the module uses WGS 84 aka LatLon (EPSG:4326). You can register other [projections in proj4 format](https://epsg.io/) change the default:
 
-app/_config/config.yml:
+## GIS Class
 
-    Smindel\GIS\ORM\FieldType\DBGeography:
-      default_projection: 2193
-      projections:
-         2193: "+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+__Methods:__
 
-or
+- `float GIS::distance(Geometry $geo1, Geometry $geo2)`
+  Returns the distance of the to Geometries in meters.
+- `array GIS::split_ewkt(string $ewkt)`
+  Splits an $ewkt string into the SRID and WKT
+- `string GIS::get_type(array $array)`
+  Returns the shape type of a geometry in $array representation
+- `array GIS::reproject_array(array $array, int $srid)`
+  Re-projects a geometry in $array representation to the given $srid
+- `array GIS::to_array(string $ewkt)`
+  Transforms a geometry in $ewkt representation into array representation
+- `string GIS::array_to_ewkt(array $array)`
+  Transforms a geometry in $array representation into eWKT representation
+- `string GIS::of(string $dataobjectClass)`
+  Returns the name of the geometry property of the given dataobjectClass
 
-app/_config.php:
+__Configuration:__
 
-    // defaults to 4326
-    \Smindel\GIS\ORM\FieldType\DBGeography::config()->set('default_projection', 2193);
-    // register New Zealand Transverse Mercator projection
-    \Smindel\GIS\ORM\FieldType\DBGeography::config()->set('projections', [
-        2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-    ]);
+- `GIS::$default_srid = 4326`
+  Default spacial reference sytem id
+- `GIS::$projections`
+  [proj4 definitions](https://epsg.io/) for SRIDs 4326, 3857 and 2193 are preconfigured
 
-### Default map center
 
-MapField and GridFieldMap will show the default_location if no data is available.
 
-app/_config/config.yml:
+## DataObject setup
 
-    Smindel\GIS\ORM\FieldType\DBGeography:
-      default_location: [5900755,1782733]
-      
-or
-
-app/_config.php;
-
-    // defaults to [10,53.5]
-    \Smindel\GIS\ORM\FieldType\DBGeography::config()->get('default_location', [5900755,1782733]);
-
-### TileRender
-
-You can choose from two renderers for the map tile service, the default one requires the php module Imagick to be installed. If that module is not available you can use the GD libaray through the GDTileRenderer
-
-app/_config/config.yml:
-
-    SilverStripe\Core\Injector\Injector:
-      TileRenderer:
-        class: Smindel\GIS\Service\GDTileRenderer
-
-or
-
-app/_config.php;
-
-    // defaults to [10,53.5]
-    \Smindel\GIS\ORM\FieldType\DBGeography::config()->get('TileRenderer', \Smindel\GIS\Service\GDTileRenderer::class);
-
-### Tile buffer
-
-In order to complete rendering of features that actually fall within a neighboring tile. Sometimes fetures have to be rendered in more than one tile, e.g. a Point marker of a certain size for a point that is exactly on the border of a tile extends into the neighboring tile. In order to guarantee the rendering of a circle with a radius of 5 pixel as a marker you can set a tile buffer of 5 pixel. The size of the buffer has a negative impact on the performance of the renderer as it has to load and render more features.
-
-app/_config/config.yml:
-
-    Smindel\GIS\Service\WebService:
-      tile_buffer: 10
-      
-or
-
-app/_config.php;
-
-    // defaults to 5
-    \Smindel\GIS\Service\WebService::config()->get('tile_buffer', 10);
-
-## Model setup
-
-### Adding Geography attributes to DataObjects
-
-Add Geography attributes like any other attribute using the new type Geography:
+Add Geometry attributes like any other attribute using the new type Geometry:
 
 app/src/Model/City.php
 
     <?php
-    
+
+    use SilverStripe\ORM\DataObject
+
     class City extends DataObject
     {
         private static $db = [
             'Name' => 'Varchar',
-            'Location' => 'Geography',
+            'Location' => 'Geometry',
         ];
     }
 
-### Activating the web services
+__Configuration:__
 
-The GeoJson and map tile service are deactivated by default. You can activate them using the config:
+- `[DataObject]::$default_geo_field = undefined`
+  The geo aspect of a DataObject is defined by the first field of type Geometry. If there is more than one Geometry field, you can specify, which one to use for things like MapFields.
+- `[DataObject]::$geojsonwebservice = undefined`
+  Set to true to turn on the GeoJSON webservice for the DataObject. If you need more control you can set it to an associative array with the following keys:
+  - geometry_field = undefined (witch field to use for the Geometry, by default the first one found is used)
+  - searchable_fields = undefined (by default searchable fields are used)
+  - code = undefined (set to SilverStripe permission codes to restrict access e.g. ADMIN)
+  - record_provider = undefined (callable to return the record to be used for the webservice)
+  - property_map = undefined (GeoJSON feature properties, summary fields if not specified)
+- `[DataObject]::$webmaptileservice = undefined`
+  Set to true to turn on the GeoJSON webservice for the DataObject. If you need more control you can set it to an associative array with the following keys:
+  - geometry_field = undefined (witch field to use for the Geometry, by default the first one found is used)
+  - searchable_fields = undefined (by default searchable fields are used)
+  - code = undefined (set to SilverStripe permission codes to restrict access e.g. ADMIN)
+  - record_provider = undefined (callable to return the record to be used for the webservice)
+  - tile_size = 256 (tile width and height in pixel)
+  - tile_buffer = 5 (extend the area for which DataObjects are sent to renderer beyond the size of the tile in pixel)
+  - wrap_date = true (wrap around the dateline)
 
-app/_config/config.yml:
 
-    City:
-      web_service: true
+## MapField
 
-or
+After adding a new geo type to your DataObjects db fields, the form scaffolder automatically gives you a MapField to your edit form.
 
-app/src/Model/City.php
+![MapField](docs/images/MapField.png)
 
-    <?php
-    
-    class City extends DataObject
+It supports editing the geo types POINT, LINESTRING and POLYGON. You can deactivate types you don't want to support in your DataObject:
+
+    public function getCMSFields()
     {
-        private static $db = [
-            'Name' => 'Varchar',
-            'Location' => 'Geography',
-        ];
-
-        private static $web_service = true;
+        $fields = parent::getCMSFields();
+        $fields->dataFieldByName('Location')->setControl('polygon', false)->setControl('polyline', false);
+        return $fields;
     }
 
-### Forms
+The above example disables the POLYGON and LINESTRING buttons for the geo db field 'Location'.
 
-#### MapField
+__Methods:__
 
-If you are using the module in combination with ModelAdmin, you will notice the new form field type MapField. It allows editing of Points, LineStings and unnested Polygons. If you want to limit the the geometry types you can remove them from the field:
+- `MapField MapField::setControl(string $shapeType, boolean $display = false)`
+  $display or hide controls for individual $shapeTypes. Possible values are 'marker' for POINTS, 'polyline' for LINESTRING and 'polygon'.
 
-app/src/Model/City.php
+__Configuration:__
 
-    <?php
-    
-    class City extends DataObject
-    {
-        private static $db = [
-            'Name' => 'Varchar',
-            'Location' => 'Geography',
-        ];
-        
-        public function getCMSFields()
-        {
-            $fields = parent::getCMSFields();
-            $fields->dataFieldByName('Location')->setControl('polygon', false)->setControl('polyline', false);
-            return $fields;
-        }
-    }
+- `MapField::$default_location = [174.5, -41.3]`
+  Empty MapField's _and_ GridFieldMap's are centred to this location
 
-#### GridFieldMap
 
-If you want to add a map to your GridField to visualise a DataList on a map, you can use the GridFieldMap component that comes with the module. E.g. you can build a GIS aware ModelAdmin like this:
+## GridFieldMap
 
-app/src/Model/City.php
+This module doesn't come with an admin interface out of the box. But if you are using [silverstripe-admin](https://github.com/silverstripe/silverstripe-admin/), adding one is simple. Create a ModelAdmin and add the new GridFieldMap component to visualise a DataList on a map:
+
+![GridFieldMap](docs/images/GridFieldMap.png)
+
+app/src/Admin/GISAdmin.php
 
     <?php
-    
+
     use SilverStripe\Admin\ModelAdmin;
-    use Smindel\GISDemo\Model\City;
     use Smindel\GIS\Forms\GridFieldMap;
-    use Smindel\GIS\ORM\FieldType\DBGeography;
+    use Smindel\GIS\GIS;
 
     class GISAdmin extends ModelAdmin
     {
         private static $url_segment = 'gis';
-        
+
         private static $menu_title = 'GIS';
-        
+
         private static $managed_models = [
             City::class,
         ];
-        
+
         public function getEditForm($id = NULL, $fields = NULL)
         {
             $form = parent::getEditForm($id, $fields);
-        
+
             if (
-                ($geography = DBGeography::of($this->modelClass))
+                ($geometry = GIS::of($this->modelClass))
                 && ($field = $form->Fields()->dataFieldByName($this->sanitiseClassName($this->modelClass)))
             ) {
-                $field->getConfig()->addComponent(new GridFieldMap($geography));
+                $field->getConfig()->addComponent(new GridFieldMap($geometry));
             }
-            
+
             return $form;
         }
     }
 
-### Utility methods
 
-#### Transforming Geographies from PHP to WKT
+## ORM filters
 
-Because PHP doesn't have native spacial types the module uses the extended Well Known Text format (eWKT, https://en.wikipedia.org/wiki/Well-known_text#Geometric_objects) as well as arrays.
+To find all DataObjects __within__ a polygon:
 
-You can use the helper DBGeography::from_array() to create eWKT from PHP arrays:
+    $cities = City::get()->filter('Location:WithinGeo', GIS::array_to_ewkt([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
 
-    // creates "SRID=0000;POINT (30 10)"
-    $ewkt = DBGeography::from_array([10,30])
-    
-    // creates "SRID=0000;LINESTRING (30 10, 10 30, 40 40)"
-    $ewkt = DBGeography::from_array([[10,30],[30,10],[40,40]])
-    
-    // creates "SRID=0000;POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))"
-    $ewkt = DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]])
+To find all DataObjects __intersecting__ with a given geometry:
 
-Or you can retrieve arrays from eWKT like this:
+    $cities = City::get()->filter('Location:IntersectsGeo', GIS::array_to_ewkt([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
 
-    // returns array([10,30])
-    $array = DBGeography::to_array("SRID=0000;POINT (30 10)")['coordinates']
+To find all DataObjects __within a certain distance__ in meters of a given geometry:
 
-#### Spacial queries
+    $cities = City::get()->filter('Location:DWithinGeo', [GIS::array_to_ewkt([10,30]), 100000]);
 
-##### Within Query
+To compute the __distance__ in meters between two given geometries:
 
-To find all DataObjects within a polygon:
+    $distance = GIS::distance(GIS::array_to_ewkt([10,30]), GIS::array_to_ewkt([40,40]));
 
-    $cities = City::get()->filter('Location:WithinGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
 
-##### Intersects Query
 
-To find all DataObjects intersects with a polygon:
+## GeoJSONImporter
 
-    $cities = City::get()->filter('Location:IntersectsGeo', DBGeography::from_array([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
+To import GeoJSON programmatically use the GeoJsonImporter.
 
-##### Whithin Distance Query
+__Methods:__
 
-To find all DataObjects within a 100000m of a point:
+- `void GeoJSONImporter::import(string $class, string $geoJson, array $propertyMap = null, string $geometryProperty = null, callable $featureCallback = null)`
+  Supply the DataObject's $class, the raw $geoJson string (e.g. file_get_contents($filename)), optional $propertyMap to re-map feature to DataObject properties, $geometryProperty to use (by default the first one found is used)
 
-    $cities = City::get()->filter('Location:DWithinGeo', [DBGeography::from_array([10,30]), 100000]);
 
-#### Compute Distance
+## GeoJSON API
 
-To compute the distance in meters between two points:
+After [setting up your DataObject for this service](#dataobject-setup) you can acces the endpoint:
 
-    $distance = DBGeography::distance(DBGeography::from_array([10,30]), DBGeography::from_array([40,40]));
+    http://yourdomain/geojsonservice/CLASS?QUERY
 
-### GeoJson import
+Just replace 'CLASS' with a sluggified name (replace namespace backslashes with dashes) of your DataObject's class and optionally append a query specifying a map of property names with search values
 
-You can invoke the importer in the simplest form like this:
+E.g.
 
-    Smindel\GIS\Service\GeoJsonImporter::import(
-        self::class,
-        file_get_contents(__DIR__ . '/City.geojson')
-    );
+    http://yourdomain/geojsonservice/VendorName-ProductName-DataObjectClassName?MyProperty:PartialMatch=searchterm&...
 
-Additional optional agruments are:
 
-- an associative array mapping DataObject properties to the GeoJson properties
-- the name of the geometry property of the DataObject, if omitted the first Geography is used
-- a callable called with every feature of the GeoJson feature set
+## WebMapTileService
+
+This service is configured through your [DataObject class](#dataobject-setup). The endpoint for the tiles is:
+
+    http://yourdomain/webmaptileservice/CLASS/Z/X/Y.png?QUERY
+
+E.g.
+
+    http://yourdomain/webmaptileservice/VendorName-ProductName-DataObjectClassName/6/63/39.png?MyProperty:PartialMatch=searchterm&...
+
+If you set the special query parameter debug=1 the tile will be rendered with debugging info like borders, Z, X and Y values and the number of records that have been rendered.
+
+
+![WebMapTileService](docs/images/WebMapTileService.png)
+
+__Configuration:__
+
+- `TileRenderer::$class = Smindel\GIS\Service\GDRenderer`
+  Set to Smindel\GIS\Service\ImagickRenderer for more rendering features

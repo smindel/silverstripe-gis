@@ -17,8 +17,6 @@ class GIS
 
     use Injectable;
 
-    private static $default_location = [10,53.5];
-
     private static $default_srid = 4326;
 
     CONST EWKT_PATTERN = '/^SRID=(\d+);(([A-Z]+)\s*(\(.+\)))$/i';

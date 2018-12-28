@@ -53,7 +53,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         return array(
             'header' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s"></div>',
-                GIS::array_to_ewkt(Config::inst()->get(GIS::class, 'default_location')),
+                GIS::array_to_ewkt(Config::inst()->get(MapField::class, 'default_location')),
                 htmlentities(self::get_geojson_from_list($gridField->getList(), $this->attribute), ENT_QUOTES, 'UTF-8')
             ),
         );

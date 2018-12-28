@@ -10,6 +10,8 @@ use Smindel\GIS\ORM\DBGeometry;
 
 class MapField extends FormField
 {
+    private static $default_location = [174.5, -41.3];
+
     protected $controls = [
         'polyline' => true,
         'polygon' => true,
@@ -40,7 +42,7 @@ class MapField extends FormField
     public function setValue($value, $data = null)
     {
         if ($value instanceof DBGeometry) $value = $value->getValue();
-        if (!$value) $value = GIS::array_to_ewkt(Config::inst()->get(GIS::class, 'default_location'));
+        if (!$value) $value = GIS::array_to_ewkt($this->config()->get('default_location'));
 
         $this->value = $value;
         return $this;

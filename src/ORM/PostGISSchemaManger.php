@@ -4,8 +4,12 @@ namespace Smindel\GIS\ORM;
 
 use SilverStripe\PostgreSQL\PostgreSQLSchemaManager;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
+use Smindel\GIS\ORM\FieldType\DBGeometry;
+use Exception;
 
 /*
 http://postgis.net/docs/PostGIS_Special_Functions_Index.html#PostGIS_3D_Functions
@@ -29,7 +33,7 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
 
     public function translateToWrite($field)
     {
-        return ["ST_GeomFromText(?, ?)" => GIS::split_ewkt($field->getValue(), (int)$field->srid)];
+        return $this->prepareFromText($field);
     }
 
     public function translateToRead($field)
@@ -42,9 +46,12 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
 
     public function translateFilterWithin($field, $value, $inclusive)
     {
+        if (!preg_match('/"([^"]+)"."([^"]+)"/', $field, $matches)) throw new Exception('Invalid $field parameter');
+        $statementFragment = ['ST_GeomFromText(?, ?)' => GIS::split_ewkt($value)];
+
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
-        $fragment = sprintf('%sST_Covers(ST_GeomFromText(?, ?),%s)%s', $inclusive ? '' : 'NOT ', $field, $null);
-        return [$fragment => GIS::split_ewkt($value)];
+        $fragment = sprintf('%sST_Covers(%s,%s)%s', $inclusive ? '' : 'NOT ', key($statementFragment), $field, $null);
+        return [$fragment => reset($statementFragment)];
     }
 
     public function translateFilterGeoType($field, $value, $inclusive)
@@ -90,5 +97,19 @@ class PostGISSchemaManger extends PostgreSQLSchemaManager
             DB::get_conn()->setSchemaSearchPath(DB::get_conn()->currentSchema(), 'public');
         }
         parent::schemaUpdate($callback);
+    }
+
+    protected function prepareFromText($field)
+    {
+        list($wkt, $srid) = GIS::split_ewkt($field->getValue(), (int)$field->srid);
+
+        if ($field instanceof DBGeometry) {
+            return ['ST_GeomFromText(?, ?)' => [$wkt, $srid]];
+        }
+
+        if ($srid != 4326) {
+            list($wkt) = GIS::split_ewkt(GIS::array_to_ewkt(GIS::reproject_array(GIS::ewkt_to_array($field->getValue()))));
+        }
+        return ['ST_GeogFromText(?)' => [$wkt]];
     }
 }

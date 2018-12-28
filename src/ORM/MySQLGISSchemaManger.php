@@ -8,6 +8,12 @@ use Smindel\GIS\GIS;
 
 class MySQLGISSchemaManger extends MySQLSchemaManager
 {
+    public function geography($values)
+    {
+        // ATTENTION: GEOGRAPHY IS NOT SUPPORTED BY MYSQL. THIS IS STRICTLY FOR COMPATIBILITY
+        return 'geometry';
+    }
+
     public function geometry($values)
     {
         return 'geometry';
