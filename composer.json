@@ -4,9 +4,12 @@
     "type": "silverstripe-vendormodule",
     "keywords": [
         "silverstripe",
-        "types",
-        "geospacial",
-        "gis"
+        "geometry",
+        "geospatial",
+        "gis",
+        "maps",
+        "geojson",
+        "wmts"
     ],
     "license": "MIT",
     "require": {
