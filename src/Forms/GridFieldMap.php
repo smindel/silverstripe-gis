@@ -7,6 +7,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_HTMLProvider;
 use SilverStripe\Forms\GridField\GridField_DataManipulator;
 use SilverStripe\View\Requirements;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\SS_List;
 use Smindel\GIS\GIS;
@@ -20,6 +21,8 @@ use proj4php\Point;
  */
 class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
 {
+    use Injectable;
+
     use Configurable;
 
     protected $attribute;
