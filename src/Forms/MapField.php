@@ -6,7 +6,7 @@ use SilverStripe\Forms\FormField;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
-use Smindel\GIS\ORM\DBGeometry;
+use Smindel\GIS\ORM\FieldType\DBGeography;
 
 class MapField extends FormField
 {
@@ -41,7 +41,7 @@ class MapField extends FormField
 
     public function setValue($value, $data = null)
     {
-        if ($value instanceof DBGeometry) $value = $value->getValue();
+        if ($value instanceof DBGeography) $value = $value->getValue();
         if (!$value) $value = GIS::array_to_ewkt($this->config()->get('default_location'));
 
         $this->value = $value;
