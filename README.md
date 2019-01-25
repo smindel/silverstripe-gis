@@ -162,6 +162,8 @@ __Configuration:__
 
 - `MapField::$default_location = ['lon' => 174.5, 'lat' => -41.3]`
   Empty MapField's _and_ GridFieldMap's are centred to this location
+- `MapField::$multi_enabled = false`
+  Whether or not the MapField allows to create multi shapes like MultiPoint, MultiLineString and MultiPolygon
 
 
 ## GridFieldMap
