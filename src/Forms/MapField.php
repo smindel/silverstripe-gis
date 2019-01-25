@@ -6,11 +6,27 @@ use SilverStripe\Forms\FormField;
 use SilverStripe\View\Requirements;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
-use Smindel\GIS\ORM\DBGeometry;
+use Smindel\GIS\ORM\FieldType\DBGeography;
 
 class MapField extends FormField
 {
-    private static $default_location = [174.5, -41.3];
+    /**
+     * Center for the map widget if the MapField is empty,
+     * in Long, Lat (EPSG:4326)
+     *
+     * @var array
+     */
+    private static $default_location = [
+        'lon' => 174.5,
+        'lat' => -41.3
+    ];
+
+    /**
+     * Whether the user can create complex gemoetries like e.g. MultiPoints
+     *
+     * @var boolean
+     */
+    private static $multi_enabled = false;
 
     protected $controls = [
         'polyline' => true,
@@ -41,10 +57,10 @@ class MapField extends FormField
 
     public function setValue($value, $data = null)
     {
-        if ($value instanceof DBGeometry) $value = $value->getValue();
-        if (!$value) $value = GIS::array_to_ewkt($this->config()->get('default_location'));
+        $this->value = $value instanceof DBGeography
+            ? $value->getValue()
+            : $value;
 
-        $this->value = $value;
         return $this;
     }
 
@@ -64,5 +80,15 @@ class MapField extends FormField
     public static function getDefaultSRID()
     {
         return Config::inst()->get(GIS::class, 'default_srid');
+    }
+
+    public function getDefaultLocation()
+    {
+        return json_encode(Config::inst()->get(MapField::class, 'default_location'));
+    }
+
+    public function getMultiEnabled()
+    {
+        return $this->config()->multi_enabled;
     }
 }

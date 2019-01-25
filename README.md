@@ -25,12 +25,13 @@ GIS developer toolkit for SilverStripe
 
 ## Features
 
-- __New field types:__ add geometries to DataObjects
-- __New form fields:__ edit the new geo types using the MapField or add maps to GridFields in ModelAdmin
-- __Configurable projections:__ support for alternative projections through proj4
+- __New field types:__ Geometry field type for DataObjects
+- __New form fields:__ edit the new Geometry type using the MapField or add maps to GridFields in ModelAdmin
+- __Configurable projections:__ support for multiple projections through proj4
+- __Primitive and multipart geometries:__ Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
 - __Developer tools:__ heaps of useful helpers, e.g. for re-projecting, distance measuring, ewkt
 - __MySQL and Postgres:__ supports Postgres with PostGIS, MySQL 5.7+, partial support for MariaDB
-- __ORM integration__: DataList filters, e.g. to find intersecting DataObjects or within distance
+- __ORM integration:__ DataList filters, e.g. to find intersecting DataObjects or within distance
 - __GeoJSON imorter:__ import a GeoJSON source as DataObjects
 - __GeoJSON web service:__ GeoJSON API for DataObjects
 - __WMTS:__ render DataObjects to ZXY tiles e.g. for a leaflet frontend
@@ -159,7 +160,7 @@ __Methods:__
 
 __Configuration:__
 
-- `MapField::$default_location = [174.5, -41.3]`
+- `MapField::$default_location = ['lon' => 174.5, 'lat' => -41.3]`
   Empty MapField's _and_ GridFieldMap's are centred to this location
 
 

@@ -7,6 +7,7 @@ use SilverStripe\Forms\GridField\GridField;
 use SilverStripe\Forms\GridField\GridField_HTMLProvider;
 use SilverStripe\Forms\GridField\GridField_DataManipulator;
 use SilverStripe\View\Requirements;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\SS_List;
 use Smindel\GIS\GIS;
@@ -20,6 +21,8 @@ use proj4php\Point;
  */
 class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
 {
+    use Injectable;
+
     use Configurable;
 
     protected $attribute;
@@ -50,10 +53,12 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         Requirements::css('smindel/silverstripe-gis: client/dist/css/MarkerCluster.Default.css');
         Requirements::css('smindel/silverstripe-gis: client/dist/css/leaflet-search.css');
 
+        $defaultLocation = Config::inst()->get(MapField::class, 'default_location');
+
         return array(
             'header' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s"></div>',
-                GIS::array_to_ewkt(Config::inst()->get(MapField::class, 'default_location')),
+                GIS::array_to_ewkt([$defaultLocation['lon'], $defaultLocation['lat']]),
                 htmlentities(self::get_geojson_from_list($gridField->getList(), $this->attribute), ENT_QUOTES, 'UTF-8')
             ),
         );
