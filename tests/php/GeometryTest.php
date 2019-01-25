@@ -25,63 +25,6 @@ class GeometryTest extends SapphireTest
         return [TestGeometry::class];
     }
 
-    public function testPointWktFromArray()
-    {
-        $wkt = GIS::array_to_ewkt([174.5,-41.3]);
-        $this->assertEquals($wkt, 'SRID=4326;POINT(174.5 -41.3)');
-    }
-
-    public function testLineWktFromArray()
-    {
-        $wkt = GIS::array_to_ewkt([[174.5,-41.3], [175.5,-42.3]]);
-        $this->assertEquals($wkt, 'SRID=4326;LINESTRING(174.5 -41.3,175.5 -42.3)');
-    }
-
-    public function testPolygonWktFromArray()
-    {
-        $wkt = GIS::array_to_ewkt([[
-            [-10,40],
-            [ -8,40],
-            [ -8,35],
-            [-10,35],
-            [-10,40],
-        ]]);
-        $this->assertEquals($wkt, 'SRID=4326;POLYGON((-10 40,-8 40,-8 35,-10 35,-10 40))');
-    }
-
-    public function testPointArrayFromWkt()
-    {
-        $array = GIS::ewkt_to_array('SRID=4326;POINT(174.5 -41.3)');
-        $this->assertEquals($array['coordinates'], [174.5,-41.3]);
-    }
-
-    public function testLineArrayFromWkt()
-    {
-        $array = GIS::ewkt_to_array('SRID=4326;LINESTRING(174.5 -41.3,175.5 -42.3)');
-        $this->assertEquals($array['coordinates'], [[174.5,-41.3], [175.5,-42.3]]);
-    }
-
-    public function testPolygonArrayFromWkt()
-    {
-        $array = GIS::ewkt_to_array('SRID=4326;POLYGON((-10 40,-8 40,-8 35,-10 35,-10 40))');
-        $this->assertEquals($array['coordinates'], [[
-            [-10,40],
-            [ -8,40],
-            [ -8,35],
-            [-10,35],
-            [-10,40],
-        ]]);
-    }
-
-    public function testReprojection()
-    {
-        $array = GIS::ewkt_to_array('SRID=4326;POINT(174.5 -41.3)');
-        $this->assertEquals([1725580.442709817, 5426854.149476525], GIS::reproject_array($array, 2193)['coordinates']);
-
-        $array = GIS::ewkt_to_array('SRID=2193;POINT(1753000	5432963)');
-        $this->assertEquals([174.82583517653558, -41.240268094959326], GIS::reproject_array($array, 4326)['coordinates']);
-    }
-
     public function testDbRoundTrip()
     {
         $wkt = GIS::array_to_ewkt([10,53.5]);
@@ -108,24 +51,30 @@ class GeometryTest extends SapphireTest
         $address->GeoLocation = GIS::array_to_ewkt([-9.1,38.7]);
         $address->write();
 
-        $box = GIS::array_to_ewkt([[
-            [-10,40],
-            [ -8,40],
-            [ -8,35],
-            [-10,35],
-            [-10,40],
-        ]]);
+        $box = GIS::array_to_ewkt([
+            'srid' => 4326,
+            'type' => 'Polygon',
+            'coordinates' => [[
+                [-10,40],
+                [ -8,40],
+                [ -8,35],
+                [-10,35],
+                [-10,40],
+        ]]]);
         $lisbon = TestGeometry::get()->filter('GeoLocation:WithinGeo', $box)->first();
         $this->assertEquals('Lisbon', $lisbon->Name);
         $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:WithinGeo:not', $box)->count());
 
-        $box = GIS::array_to_ewkt([[
-            [10,40],
-            [ 8,40],
-            [ 8,35],
-            [10,35],
-            [10,40],
-        ]]);
+        $box = GIS::array_to_ewkt([
+            'srid' => 4326,
+            'type' => 'Polygon',
+            'coordinates' => [[
+                [10,40],
+                [ 8,40],
+                [ 8,35],
+                [10,35],
+                [10,40],
+        ]]]);
         $lisbon = TestGeometry::get()->filter('GeoLocation:WithinGeo:not', $box)->first();
         $this->assertEquals('Lisbon', $lisbon->Name);
         $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:WithinGeo', $box)->count());
