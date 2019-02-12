@@ -5,8 +5,72 @@ jQuery(function($) {
 
         $('.map-field-widget').entwine({
             Map: null,
-            Feature: null,
+            Features: null,
             Queue: null,
+            IsMulti: false,
+            getLayerType: function(layer) {
+                switch (true) {
+                    case layer instanceof L.Polygon: return 'Polygon';
+                    case layer instanceof L.Polyline: return 'LineString';
+                    case layer instanceof L.Marker: return 'Point';
+                }
+            },
+            update: function() {
+                const features = this.getFeatures().getLayers(), me = this;
+                let ewkt = '', shapes = [];
+                if (features.length) {
+                    ewkt = 'SRID=' + this.data('defaultSrid');
+                    ewkt += features.length > 1 ? ';MULTI' : ';';
+                    ewkt += this.getLayerType(features[0]).toUpperCase();
+                    ewkt += features.length > 1 ? '(' : '';
+                    features.forEach(function(feature) {
+                        shapes.push(me['to' + me.getLayerType(feature)](feature));
+                    });
+                    ewkt += shapes.join(',');
+                    ewkt += features.length > 1 ? ')' : '';
+                }
+                this.getFormField().val(ewkt);
+            },
+            fromLatLng: function(latLng) {
+                return this.data('defaultSrid') == '4326'
+                    ? [latLng.lng, latLng.lat]
+                    : proj4('EPSG:' + this.data('defaultSrid')).forward([latLng.lng, latLng.lat]);
+            },
+            toPoint: function(point) {
+                var coords = this.fromLatLng(point.getLatLng());
+
+                return '(' + coords[0] + ' ' + coords[1] + ')';
+            },
+            toLineString: function(line) {
+                var points = [], me = this;
+
+                line.getLatLngs().forEach(function(point){
+                    point = me.fromLatLng(point);
+                    points.push(point[0] + ' ' + point[1]);
+                });
+
+                return '(' + points.join(',') + ')';
+            },
+            toPolygon: function(polygon) {
+                var rings = [], me = this;
+
+                polygon.getLatLngs().forEach(function(ring){
+                    var points = [], first;
+                    ring.forEach(function(point, r){
+                        console.log(r)
+                        point = me.fromLatLng(point);
+                        first = first || point;
+                        points.push(point[0] + ' ' + point[1]);
+                    });
+
+                    // close un-closed polygons
+                    if (points[0] != points[points.length - 1]) points.push(points[0]);
+
+                    rings.push('(' + points.join(',') + ')')
+                });
+
+                return '(' + rings.join(',') + ')';
+            },
             onmatch: function() {
 
                 this.getFormField().attr('readonly', 'readonly');
@@ -26,7 +90,8 @@ jQuery(function($) {
                 };
 
                 var feature = this.getFeatureFromFormFieldValue();
-                var drawnItems = new L.FeatureGroup([feature]);
+                var drawnItems = new L.FeatureGroup(feature ? [feature] : []);
+                me.setFeatures(drawnItems);
 
                 if (!this.getFormField().hasClass('mapfield_readonly')) {
                     var drawControl = new L.Control.Draw({
@@ -47,11 +112,6 @@ jQuery(function($) {
                         'lat', 'lon'
                     ],
                     marker: false,
-                    // moveToLocation: function(latlng, title, map) {
-                    //     me.setFieldValue([latlng.lat, latlng.lng]);
-                    //     updateMarker(latlng);
-                    //     map.flyTo(latlng);
-                    // },
                     autoCollapse: true,
                     autoType: false,
                     minLength: 2
@@ -59,25 +119,27 @@ jQuery(function($) {
 
                 L.control.layers(baseMaps).addTo(map);
 
-                map.on('draw:created', function(e) {
-                    drawnItems.clearLayers().addLayer(e.layer);
-                    if (e.layerType == 'marker') {}
-                    me.setFormFieldValueFromFeature(e.layer);
-                    me.setFeature(e.layer);
-                }).on('draw:edited', function(e) {
-                    e.layers.eachLayer(function(layer) {
-                        // drawnItems.clearLayers().addLayer(layer);
-                        me.setFormFieldValueFromFeature(layer);
-                        me.setFeature(layer);
-                    });
-                }).on('draw:deleted', function(e) {
-                    me.setFormFieldValueFromFeature();
-                    me.setFeature(null);
-                });
+                map
+                    .on(L.Draw.Event.CREATED, function(e) {
+                        if (
+                            me.data('multiEnabled')
+                            && drawnItems.getLayers().length
+                            && me.getLayerType(e.layer) == me.getLayerType(drawnItems.getLayers()[0])
+                        ) {
+                            drawnItems.addLayer(e.layer);
+                        } else {
+                            drawnItems.clearLayers().addLayer(e.layer);
+                        }
+                        me.update();
+                    })
+                    .on(L.Draw.Event.EDITED, function () { me.update(); })
+                    .on(L.Draw.Event.DELETED, function () { me.update(); });
 
-                this.setMap(map).setFeature(feature);
+                this.setMap(map);
 
-                if (feature.getBounds) {
+                if (!feature) {
+                    map.setView(this.data('defaultLocation'), 13);
+                } else if (feature.getBounds) {
                     map.fitBounds(feature.getBounds());
                 } else if (feature.getLatLng) {
                     map.setView(feature.getLatLng(), 13);
@@ -88,7 +150,7 @@ jQuery(function($) {
             },
             getFeatureFromFormFieldValue: function() {
                 var wkt = this.getFormField().val(),
-                    parts = wkt.match(/^srid=(\d+);(point|linestring|polygon|multipolygon)\(([-\d\.\s\(\),]+)\)/i),
+                    parts = wkt.match(/^srid=(\d+);(point|linestring|polygon|multipoint|multilinestring|multipolygon)\(([-\d\.\s\(\),]+)\)/i),
                     srid, proj, type, json, coordinates;
 
                 if (!parts) return null;
@@ -118,70 +180,15 @@ jQuery(function($) {
                     case 'POINT': return L.marker(coordinates[0]);
                     case 'LINESTRING': return L.polyline(coordinates);
                     case 'POLYGON': return L.polygon(coordinates[0]);
+                    case 'MULTIPOINT': return L.marker(coordinates);
+                    case 'MULTILINESTRING': return L.polyline(coordinates[0]);
                     case 'MULTIPOLYGON': return L.polygon(coordinates);
                 }
             },
-            setFormFieldValueFromFeature: function(feature) {
-                var srid = this.data('defaultSrid'), coords;
-
-                if (feature instanceof L.Marker) {
-                    var latlngs = feature.getLatLng();
-                    var wkt = 'SRID=' + srid + ';POINT(';
-                    if (srid != '4326') {
-                        coords = proj4('EPSG:' + srid).forward([
-                            latlngs.lng,
-                            latlngs.lat
-                        ]);
-                        wkt += coords[0] + ' ' + coords[1];
-                    } else {
-                        wkt += latlngs.lng + ' ' + latlngs.lat;
-                    }
-                    wkt += ')';
-                } else if (feature instanceof L.Polygon) {
-                    var latlngs = feature.getLatLngs()[0];
-                    var wkt = 'SRID=' + srid + ';POLYGON((';
-                    latlngs.push(latlngs[0]);
-                    for (var i = 0; i < latlngs.length; i++) {
-                        if (srid != '4326') {
-                            coords = proj4('EPSG:' + srid).forward([
-                                latlngs[i].lng,
-                                latlngs[i].lat
-                            ]);
-                            wkt += coords[0] + ' ' + coords[1];
-                        } else {
-                            wkt += latlngs[i].lng + ' ' + latlngs[i].lat;
-                        }
-                        if (i < latlngs.length - 1) wkt += ',';
-                    }
-                    wkt += '))';
-                } else if (feature instanceof L.Polyline) {
-                    var latlngs = feature.getLatLngs();
-                    var wkt = 'SRID=' + srid + ';LINESTRING(';
-                    for (var i = 0; i < latlngs.length; i++) {
-                        if (srid != '4326') {
-                            coords = proj4('EPSG:' + srid).forward([
-                                latlngs[i].lng,
-                                latlngs[i].lat
-                            ]);
-                            wkt += coords[0] + ' ' + coords[1];
-                        } else {
-                            wkt += latlngs[i].lng + ' ' + latlngs[i].lat;
-                        }
-                        if (i < latlngs.length - 1) wkt += ',';
-                    }
-                    wkt += ')';
-                } else {
-                    return this.getFormField().val('');
-                }
-                this.getFormField().val(wkt)
-            },
-            getCenter: function () {
-                var feature = this.getFeature();
-                if (feature) return feature.getCenter ? feature.getCenter() : feature.getLatLng();
-            },
             center: function() {
-                var latlng = this.getCenter();
-                this.getMap().flyTo(latlng);
+                if (this.getFeatures() && this.getFeatures().getLayers().length) {
+                    this.getMap().flyTo(this.getFeatures().getBounds().getCenter());
+                }
             },
             onmouseover: function() {
                 var queue = this.getQueue(),

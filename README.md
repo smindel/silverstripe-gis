@@ -25,12 +25,13 @@ GIS developer toolkit for SilverStripe
 
 ## Features
 
-- __New field types:__ add geometries to DataObjects
-- __New form fields:__ edit the new geo types using the MapField or add maps to GridFields in ModelAdmin
-- __Configurable projections:__ support for alternative projections through proj4
+- __New field types:__ Geometry field type for DataObjects
+- __New form fields:__ edit the new Geometry type using the MapField or add maps to GridFields in ModelAdmin
+- __Configurable projections:__ support for multiple projections through proj4
+- __Primitive and multipart geometries:__ Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
 - __Developer tools:__ heaps of useful helpers, e.g. for re-projecting, distance measuring, ewkt
 - __MySQL and Postgres:__ supports Postgres with PostGIS, MySQL 5.7+, partial support for MariaDB
-- __ORM integration__: DataList filters, e.g. to find intersecting DataObjects or within distance
+- __ORM integration:__ DataList filters, e.g. to find intersecting DataObjects or within distance
 - __GeoJSON imorter:__ import a GeoJSON source as DataObjects
 - __GeoJSON web service:__ GeoJSON API for DataObjects
 - __WMTS:__ render DataObjects to ZXY tiles e.g. for a leaflet frontend
@@ -117,7 +118,7 @@ __Configuration:__
 
 - `[DataObject]::$default_geo_field = undefined`
   The geo aspect of a DataObject is defined by the first field of type Geometry. If there is more than one Geometry field, you can specify, which one to use for things like MapFields.
-- `[DataObject]::$geojsonwebservice = undefined`
+- `[DataObject]::$geojsonservice = undefined`
   Set to true to turn on the GeoJSON webservice for the DataObject. If you need more control you can set it to an associative array with the following keys:
   - geometry_field = undefined (witch field to use for the Geometry, by default the first one found is used)
   - searchable_fields = undefined (by default searchable fields are used)
@@ -159,7 +160,7 @@ __Methods:__
 
 __Configuration:__
 
-- `MapField::$default_location = [174.5, -41.3]`
+- `MapField::$default_location = ['lon' => 174.5, 'lat' => -41.3]`
   Empty MapField's _and_ GridFieldMap's are centred to this location
 
 
@@ -235,7 +236,37 @@ __Methods:__
 
 ## GeoJSON API
 
-After [setting up your DataObject for this service](#dataobject-setup) you can acces the endpoint:
+After [setting up your DataObject for this service](#dataobject-setup), e.g.
+
+    private static $geojsonservice = true; // enables geojsonservice with default settings
+
+or
+
+    private static $geojsonservice = [
+        'geometry_field' => 'Location',     // set geometry field explicitly
+        'searchable_fields' => [            // set fields that can be searched by through the service
+            'FirstName' => [
+                'title' => 'given name',
+                'filter' => 'ExactMatchFilter',
+            ],
+            'Surname' => [
+                'title' => 'name',
+                'filter' => 'PartialMatchFilter',
+            ],
+        ],
+        'code' => 'ADMIN',                  // restrict access to admins (see: Permission::check())
+        'record_provider' => [              // callable to return a DataList of records to be served
+            'SomeClass',                    // receives 2 parameters:
+            'static_method'                 // the HTTPRequest and a reference which you can set to true
+        ],                                  // in order to skip filtering further down in the stack
+        'property_map' => [                 // map DataObject fields to GeoJSON properties
+            'ID' => 'id',
+            'FirstName' => 'given name',
+            'Surname' => 'name',
+        ],
+    ];
+
+you can acces the endpoint:
 
     http://yourdomain/geojsonservice/CLASS?QUERY
 

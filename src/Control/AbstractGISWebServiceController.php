@@ -45,7 +45,7 @@ class AbstractGISWebServiceController extends Controller
 
         $skip_filter = false;
         $list = is_callable($config['record_provider'])
-            ? ($config['record_provider'])($request, $skip_filter)
+            ? \Closure::fomCallable($config['record_provider'])($request, $skip_filter)
             : $model::get();
 
         if (!$skip_filter) {

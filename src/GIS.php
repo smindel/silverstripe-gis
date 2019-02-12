@@ -41,15 +41,25 @@ class GIS
         }
     }
 
-    public static function array_to_ewkt($array, $srid = null)
+    public static function array_to_ewkt($array, $srid = null, $useBestGuess = false)
     {
-        $srid = $srid ?: Config::inst()->get(self::class, 'default_srid');
+        $type = isset($array['type']) ? strtoupper($array['type']) : null;
+        $srid = isset($array['srid']) ? $array['srid'] : ($srid ?: Config::inst()->get(self::class, 'default_srid'));
+        $array = isset($array['coordinates']) ? $array['coordinates'] : $array;
 
-        if (is_numeric($array[0])) {
+        if ($type == 'POINT' || is_numeric($array[0])) {
+
             $type = 'POINT';
+
             $coords = implode(' ', $array);
-        } else if (is_numeric($array[0][0])) {
-            $type = 'LINESTRING';
+
+        } else if (in_array($type, ['LINESTRING', 'MULTIPOINT']) || is_numeric($array[0][0])) {
+
+            if (!$type) {
+                if (!$useBestGuess) throw new Exception('Cannot infer shape type from data.');
+                $type = 'LINESTRING';
+            }
+
             $coords = implode(
                 ',',
                 array_map(
@@ -62,8 +72,14 @@ class GIS
                     $array
                 )
             );
-        } else if (is_numeric($array[0][0][0])) {
-            $type = 'POLYGON';
+
+        } else if (in_array($type, ['POLYGON', 'MULTILINESTRING']) || is_numeric($array[0][0][0])) {
+
+            if (!$type) {
+                if (!$useBestGuess) throw new Exception('Cannot infer shape type from data.');
+                $type = 'POLYGON';
+            }
+
             $coords = '(' . implode(
                 '),(',
                 array_map(
@@ -84,8 +100,11 @@ class GIS
                     $array
                 )
             ) . ')';
+
         } else if (is_numeric($array[0][0][0][0])) {
+
             $type = 'MULTIPOLYGON';
+
             $coords = '(' . implode(
                 '),(',
                 array_map(
@@ -111,6 +130,7 @@ class GIS
                     $array
                 )
             ) . ')';
+
         }
 
         return sprintf('SRID=%d;%s(%s)', $srid, $type, $coords);
@@ -146,12 +166,12 @@ class GIS
         return [$wkt,$srid];
     }
 
-    public static function get_type($geometry)
+    public static function get_type($geometry, $useBestGuess = false)
     {
         if (is_array($geometry) && isset($geometry['type'])) {
             return self::TYPES[strtolower($geometry['type'])];
         } else if (is_array($geometry)) {
-            $geometry = self::array_to_ewkt($geometry);
+            $geometry = self::array_to_ewkt($geometry, null, $useBestGuess);
         }
         if (preg_match(
             '/;(' . implode('|', array_keys(self::TYPES)) . ')\(/i',
