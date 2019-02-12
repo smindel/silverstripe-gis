@@ -55,11 +55,10 @@ jQuery(function($) {
                 var rings = [], me = this;
 
                 polygon.getLatLngs().forEach(function(ring){
-                    var points = [], first;
+
+                    var points = [];
                     ring.forEach(function(point, r){
-                        console.log(r)
                         point = me.fromLatLng(point);
-                        first = first || point;
                         points.push(point[0] + ' ' + point[1]);
                     });
 
