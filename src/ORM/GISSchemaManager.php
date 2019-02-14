@@ -8,11 +8,13 @@ use Smindel\GIS\GIS;
 
 trait GISSchemaManager
 {
+    // Ellipsoidal spatial data type.
     public function geography($values)
     {
         return 'geography';
     }
 
+    // Planar spatial data type.
     public function geometry($values)
     {
         return 'geometry';
@@ -23,7 +25,7 @@ trait GISSchemaManager
         $table = $field->getTable();
         $column = $field->getName();
         $identifier = $table ? sprintf('"%s"."%s"', $table, $column) : sprintf('"%s"', $column);
-        return sprintf('CONCAT(\'SRID=\', ST_SRID(%s), \';\', ST_AsText(%s)) "%s"', $identifier, $identifier, $column);
+        return sprintf('CASE WHEN %s IS NULL THEN NULL ELSE CONCAT(\'SRID=\', ST_SRID(%s), \';\', ST_AsText(%s)) END AS "%s"', $identifier, $identifier, $identifier, $column);
     }
 
     public function translateToWrite($field)
@@ -106,6 +108,10 @@ trait GISSchemaManager
 
     protected function prepareFromText($field)
     {
+        if (!$field->getValue()) {
+            return ['?' => [null]];
+        }
+
         list($wkt, $srid) = GIS::split_ewkt($field->getValue(), (int)$field->srid);
 
         if ($field instanceof DBGeometry) {

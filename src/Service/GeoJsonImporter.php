@@ -6,9 +6,9 @@ use Smindel\GIS\GIS;
 
 class GeoJsonImporter
 {
-    public static function import($class, $geoJson, $propertyMap = null, $geometryProperty = null, $featureCallback = null)
+    public static function import($class, $geoJson, $propertyMap = null, $geoProperty = null, $featureCallback = null)
     {
-        $geometryProperty = $geometryProperty ?: GIS::of($class);
+        $geoProperty = $geoProperty ?: GIS::of($class);
         $features = (is_array($geoJson) ? $geoJson : json_decode($geoJson, true))['features'];
         foreach ($features as $feature) {
 
@@ -22,7 +22,7 @@ class GeoJsonImporter
             }
 
             $obj = $class::create();
-            $obj->$geometryProperty = GIS::array_to_ewkt($feature['geometry']);
+            $obj->$geoProperty = GIS::array_to_ewkt($feature['geometry']);
             foreach ($propertyMap as $doProperty => $jsonProperty) {
                 $obj->$doProperty = $feature['properties'][$jsonProperty];
             }

@@ -5,6 +5,7 @@ namespace Smindel\GIS\Control;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
+use Smindel\GIS\GIS;
 use Exception;
 
 class AbstractGISWebServiceController extends Controller
@@ -21,7 +22,7 @@ class AbstractGISWebServiceController extends Controller
         $modelConfig = Config::inst()->get($model, strtolower(array_reverse(explode('\\', static::class))[0]));
         if (!$modelConfig) return false;
         $defaults['record_provider'] = null;
-        $defaults['geometry_field'] = array_search('Geometry', Config::inst()->get($model, 'db'));
+        $defaults['geometry_field'] = GIS::of($model);
         $defaults['searchable_fields'] = singleton($model)->searchableFields();
         return is_array($modelConfig) ? array_merge($defaults, $modelConfig) : $defaults;
     }

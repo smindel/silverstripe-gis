@@ -18,7 +18,7 @@
         "proj4php/proj4php": "^2.0"
     },
     "require-dev": {
-        "phpunit/PHPUnit": "~5.7"
+        "phpunit/phpunit": "~5.7"
     },
     "suggest": {
         "ext-gd": "to use GD library based tile rendering.",

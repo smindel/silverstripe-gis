@@ -17,8 +17,8 @@ class MapField extends FormField
      * @var array
      */
     private static $default_location = [
-        'lon' => 174.5,
-        'lat' => -41.3
+        'lon' => 174.78,
+        'lat' => -41.29
     ];
 
     /**

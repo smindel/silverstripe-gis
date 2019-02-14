@@ -54,7 +54,7 @@ __MySQL__ natively supports geodetic coordinate systems for geometries since ver
 
 __MariaDB__ does not currently support ST\_Distance\_Sphere(), so that you cannot calculate distances.
 
-When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run the folloing commands:
+When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run the following commands:
 
     $ sudo apt-get install postgis
     $ sudo apt-get install postgresql-9.5-postgis-scripts
@@ -62,6 +62,8 @@ When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run th
     $ sudo -u postgres psql SS_gis -c "create extension postgis;"
 
 (replace 'SS\_gis' with your db name)
+
+Steps two and three may not be necessary, so you might want to try one and four first and if four fails, do two, three and four.
 
 ## Configuration
 
@@ -233,11 +235,12 @@ Check the [postgis docs](https://postgis.net/docs/reference.html#Spatial_Relatio
 
 The module implements two more filters that accept different parameter types:
 
-__ST_Distance__ accepts a numeric array with two values, a geometry and a distance. Records within the given distance of the geometry will be returned. Distance is in the unit of the geometries reference system (SRID). For SRID 4326 that would be degrees, for 3857 it would be metres.
+__ST_Distance__ accepts a numeric array with two values, a geometry and a distance. Records within the given distance of the geometry will be returned. Distance is in the unit of the geometries reference system (SRID). For SRID 4326 that would be degrees, for 3857 it would be metres. You can check [epsg.io](https://epsg.io/) to find out what your projection's unit is.
 
     $point = 'SRID=4326;POINT(173 -41)';
     $distance = 100000; // metres
-    $cities = City::get()->filter('Location:Distance', [$point, $distance / 111195]);
+    $degrees = $distance / 111195;
+    $cities = City::get()->filter('Location:Distance', [$point, $degrees]);
 
 __ST_GeometryType__ returns geometries of the given type:
 
