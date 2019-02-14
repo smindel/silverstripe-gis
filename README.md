@@ -208,23 +208,40 @@ app/src/Admin/GISAdmin.php
 
 ## ORM filters
 
-To find all DataObjects __within__ a polygon:
+The module adds spatial filters to the ORM in order to query DataObjects. Most of them test relationships and accept a geometry as a parameter:
 
-    $cities = City::get()->filter('Location:WithinGeo', GIS::array_to_ewkt([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
+    $country = Country::get()->filter('Name', 'New Zealand')->first();
+    $cities = City::get()->filter('Location:ST_Within', $country->Area);
 
-To find all DataObjects __intersecting__ with a given geometry:
+You can also invert filters:
 
-    $cities = City::get()->filter('Location:IntersectsGeo', GIS::array_to_ewkt([[[10,30],[40,40],[40,20],[20,10],[10,30]]]));
+    $point = 'SRID=4326;POINT(173 -41)';
+    $otherCountries = Country::get()->filter('Location:ST_Contains:not', $point);
 
-To find all DataObjects __within a certain distance__ in meters of a given geometry:
+The following filters match the above pattern:
 
-    $cities = City::get()->filter('Location:DWithinGeo', [GIS::array_to_ewkt([10,30]), 100000]);
+- ST_Contains
+- ST_Crosses
+- ST_Disjoint
+- ST_Equals
+- ST_Intersects
+- ST_Overlaps
+- ST_Touches
+- ST_Within
 
-To compute the __distance__ in meters between two given geometries:
+Check the [postgis docs](https://postgis.net/docs/reference.html#Spatial_Relationships_Measurements) if you are unsure which filter to use.
 
-    $distance = GIS::distance(GIS::array_to_ewkt([10,30]), GIS::array_to_ewkt([40,40]));
+The module implements two more filters that accept different parameter types:
 
+__ST_Distance__ accepts a numeric array with two values, a geometry and a distance. Records within the given distance of the geometry will be returned. Distance is in the unit of the geometries reference system (SRID). For SRID 4326 that would be degrees, for 3857 it would be metres.
 
+    $point = 'SRID=4326;POINT(173 -41)';
+    $distance = 100000; // metres
+    $cities = City::get()->filter('Location:Distance', [$point, $distance / 111195]);
+
+__ST_GeometryType__ returns geometries of the given type:
+
+    $points = Geometries::get()->filter('Geometry:ST_GeometryType', 'Point');
 
 ## GeoJSONImporter
 

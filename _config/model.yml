@@ -10,22 +10,46 @@ SilverStripe\Core\Injector\Injector:
 Name: gissearchfilters
 ---
 SilverStripe\Core\Injector\Injector:
-  DataListFilter.WithinGeo:
-    class: Smindel\GIS\ORM\Filters\WithinGeoFilter
-  DataListFilter.TypeGeo:
-    class: Smindel\GIS\ORM\Filters\TypeGeoFilter
-  DataListFilter.IntersectsGeo:
-    class: Smindel\GIS\ORM\Filters\IntersectsGeoFilter
-  DataListFilter.DWithinGeo:
-    class: Smindel\GIS\ORM\Filters\DWithinGeoFilter
+  DataListFilter.ST_Contains:
+    class: Smindel\GIS\ORM\Filters\StContainsFilter
+  DataListFilter.ST_Crosses:
+    class: Smindel\GIS\ORM\Filters\StCrossesFilter
+  DataListFilter.ST_Disjoint:
+    class: Smindel\GIS\ORM\Filters\StDisjointFilter
+  DataListFilter.ST_Distance:
+    class: Smindel\GIS\ORM\Filters\StDistanceFilter
+  DataListFilter.ST_Equals:
+    class: Smindel\GIS\ORM\Filters\StEqualsFilter
+  DataListFilter.ST_GeometryType:
+    class: Smindel\GIS\ORM\Filters\StGeometryTypeFilter
+  DataListFilter.ST_Intersects:
+    class: Smindel\GIS\ORM\Filters\StIntersectsFilter
+  DataListFilter.ST_Overlaps:
+    class: Smindel\GIS\ORM\Filters\StOverlapsFilter
+  DataListFilter.ST_Touches:
+    class: Smindel\GIS\ORM\Filters\StTouchesFilter
+  DataListFilter.ST_Within:
+    class: Smindel\GIS\ORM\Filters\StWithinFilter
 ---
 Name: gissearchaliases
 ---
 SilverStripe\Core\Injector\Injector:
-  WithinGeoFilter: '%$DataListFilter.WithinGeo'
+  StContainsFilter: '%$DataListFilter.ST_Contains'
 SilverStripe\Core\Injector\Injector:
-  TypeGeoFilter: '%$DataListFilter.TypeGeo'
+  StCrossesFilter: '%$DataListFilter.ST_Crosses'
 SilverStripe\Core\Injector\Injector:
-  IntersectsGeoFilter: '%$DataListFilter.IntersectsGeo'
+  StDisjointFilter: '%$DataListFilter.ST_Disjoint'
 SilverStripe\Core\Injector\Injector:
-  DWithinGeoFilter: '%$DataListFilter.DWithinGeo'
+  StDistanceFilter: '%$DataListFilter.ST_Distance'
+SilverStripe\Core\Injector\Injector:
+  StEqualsFilter: '%$DataListFilter.ST_Equals'
+SilverStripe\Core\Injector\Injector:
+  StGeometryTypeFilter: '%$DataListFilter.ST_GeometryType'
+SilverStripe\Core\Injector\Injector:
+  StIntersectsFilter: '%$DataListFilter.ST_Intersects'
+SilverStripe\Core\Injector\Injector:
+  StOverlapsFilter: '%$DataListFilter.ST_Overlaps'
+SilverStripe\Core\Injector\Injector:
+  StTouchesFilter: '%$DataListFilter.ST_Touches'
+SilverStripe\Core\Injector\Injector:
+  StWithinFilter: '%$DataListFilter.ST_Within'

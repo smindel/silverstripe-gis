@@ -5,8 +5,9 @@ namespace Smindel\GIS\ORM\Filters;
 use SilverStripe\ORM\Filters\SearchFilter;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use ReflectionClass;
 
-class WithinGeoFilter extends SearchFilter
+class StContainsFilter extends SearchFilter
 {
     /**
      * Applies an exact match (equals) on a field value.
@@ -50,7 +51,10 @@ class WithinGeoFilter extends SearchFilter
         }
 
         // Value comparison check
-        $where = DB::get_schema()->translateFilterWithin($field, $value, $inclusive);
+        $shortName = (new ReflectionClass($this))->getShortName();
+        $translationMethod = 'translate' . $shortName;
+        $stMethodHint = preg_match('/^St([a-zA-Z]+)Filter$/', $shortName, $matches) ? $matches[1] : false;
+        $where = DB::get_schema()->$translationMethod($field, $value, $inclusive, $stMethodHint);
 
         return $this->aggregate ?
             $this->applyAggregate($query, $where) :

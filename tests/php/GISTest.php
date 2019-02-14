@@ -90,4 +90,13 @@ class GISTest extends SapphireTest
         $array = GIS::ewkt_to_array('SRID=2193;POINT(1753000	5432963)');
         $this->assertEquals([174.82583517653558, -41.240268094959326], GIS::reproject_array($array, 4326)['coordinates']);
     }
+
+    public function testDistance()
+    {
+        $geo1 = GIS::array_to_ewkt([10,53.5]);
+        $geo2 = GIS::array_to_ewkt([-9.1,38.7]);
+        $distance = GIS::distance($geo1, $geo2);
+
+        $this->assertTrue($distance > 2190000 && $distance < 2200000);
+    }
 }

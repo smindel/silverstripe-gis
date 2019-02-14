@@ -6,7 +6,7 @@ use SilverStripe\ORM\Filters\SearchFilter;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 
-class TypeGeoFilter extends SearchFilter
+class StDistanceFilter extends SearchFilter
 {
     /**
      * Applies an exact match (equals) on a field value.
@@ -15,6 +15,11 @@ class TypeGeoFilter extends SearchFilter
      * @return DataQuery
      */
     protected function applyOne(DataQuery $query)
+    {
+        throw new InvalidArgumentException(static::class . " is used by supplying an array containing a geometry and a distance.");
+    }
+
+    protected function applyMany(DataQuery $query)
     {
         return $this->oneFilter($query, true);
     }
@@ -26,6 +31,11 @@ class TypeGeoFilter extends SearchFilter
      * @return DataQuery
      */
     protected function excludeOne(DataQuery $query)
+    {
+        throw new InvalidArgumentException(static::class . " is used by supplying an array containing a geometry and a distance.");
+    }
+
+    protected function excludeMany(DataQuery $query)
     {
         return $this->oneFilter($query, false);
     }
@@ -43,14 +53,8 @@ class TypeGeoFilter extends SearchFilter
         $field = $this->getDbName();
         $value = $this->getValue();
 
-        // Null comparison check
-        if ($value === null) {
-            $where = DB::get_conn()->nullCheckClause($field, $inclusive);
-            return $query->where($where);
-        }
-
         // Value comparison check
-        $where = DB::get_schema()->translateFilterGeoType($field, $value, $inclusive);
+        $where = DB::get_schema()->translateStDistanceFilter($field, $value, $inclusive);
 
         return $this->aggregate ?
             $this->applyAggregate($query, $where) :

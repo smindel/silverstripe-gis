@@ -6,7 +6,7 @@ use SilverStripe\ORM\Filters\SearchFilter;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
 
-class IntersectsGeoFilter extends SearchFilter
+class StGeometryTypeFilter extends SearchFilter
 {
     /**
      * Applies an exact match (equals) on a field value.
@@ -50,7 +50,7 @@ class IntersectsGeoFilter extends SearchFilter
         }
 
         // Value comparison check
-        $where = DB::get_schema()->translateFilterIntersects($field, $value, $inclusive);
+        $where = DB::get_schema()->translateStGeometryTypeFilter($field, $value, $inclusive);
 
         return $this->aggregate ?
             $this->applyAggregate($query, $where) :

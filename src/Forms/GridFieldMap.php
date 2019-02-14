@@ -56,7 +56,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         $defaultLocation = Config::inst()->get(MapField::class, 'default_location');
 
         return array(
-            'header' => sprintf(
+            'before' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s"></div>',
                 GIS::array_to_ewkt([$defaultLocation['lon'], $defaultLocation['lat']]),
                 htmlentities(self::get_geojson_from_list($gridField->getList(), $this->attribute), ENT_QUOTES, 'UTF-8')

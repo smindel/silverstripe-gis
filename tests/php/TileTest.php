@@ -10,7 +10,7 @@ use Smindel\GIS\Service\Tile;
 
 class TileTest extends SapphireTest
 {
-    protected static $fixture_file = 'TestGeometry.yml';
+    protected static $fixture_file = 'TestLocation.yml';
 
     public function setUp()
     {
@@ -23,7 +23,7 @@ class TileTest extends SapphireTest
 
     public static function getExtraDataObjects()
     {
-        return [TestGeometry::class];
+        return [TestLocation::class];
     }
 
     public function testWrapAtDateline()
@@ -32,37 +32,37 @@ class TileTest extends SapphireTest
         $x = 63;
         $y = 31;
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertRenders($list, $tile, 255, 255);
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertRenders($list, $tile, 255, 255);
 
         $x = 64;
         $y = 32;
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertRenders($list, $tile, 0, 0);
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertRenders($list, $tile, 0, 0);
 
         $x = 0;
         $y = 32;
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertRenders($list, $tile, 0, 0);
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertRenders($list, $tile, 0, 0);
 
         $x = -1;
         $y = 31;
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertRenders($list, $tile, 255, 255);
         $tile = Tile::create($z, $x, $y, true);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertRenders($list, $tile, 255, 255);
     }
 
@@ -72,37 +72,37 @@ class TileTest extends SapphireTest
         $x = -1;
         $y = 31;
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertNotRenders($list, $tile, 255, 255);
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertRenders($list, $tile, 255, 255);
 
         $x = 0;
         $y = 32;
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertNotRenders($list, $tile, 0, 0);
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertRenders($list, $tile, 0, 0);
 
         $x = 63;
         $y = 31;
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertRenders($list, $tile, 255, 255);
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertNotRenders($list, $tile, 255, 255);
 
         $x = 64;
         $y = 32;
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Eastern Dateline');
+        $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
         $this->assertRenders($list, $tile, 0, 0);
         $tile = Tile::create($z, $x, $y, false);
-        $list = TestGeometry::get()->filter('Name', 'Western Dateline');
+        $list = TestLocation::get()->filter('Name', 'Western Dateline');
         $this->assertNotRenders($list, $tile, 0, 0);
     }
 

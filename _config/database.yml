@@ -4,4 +4,4 @@ After: '#databaseconnectors'
 ---
 SilverStripe\Core\Injector\Injector:
   MySQLSchemaManager:
-    class: 'Smindel\GIS\ORM\MySQLGISSchemaManger'
+    class: 'Smindel\GIS\ORM\MySQLGISSchemaManager'

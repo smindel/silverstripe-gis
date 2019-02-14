@@ -9,13 +9,14 @@ use Smindel\GIS\GIS;
 
 class GeometryTest extends SapphireTest
 {
-    protected $usesDatabase = true;
+    protected static $fixture_file = 'TestGeometry.yml';
 
     public function setUp()
     {
-        Config::modify()->set(GIS::class, 'default_srid', 4326);
+        // reset GIS environment
+        Config::modify()->set(GIS::class, 'default_srid', 0);
         Config::modify()->set(GIS::class, 'projections', [
-            2193 => '+proj=tmerc +lat_0=0 +lon_0=173 +k=0.9996 +x_0=1600000 +y_0=10000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+            0 => null,
         ]);
         parent::setUp();
     }
@@ -27,95 +28,73 @@ class GeometryTest extends SapphireTest
 
     public function testDbRoundTrip()
     {
+        // write a geometry
         $wkt = GIS::array_to_ewkt([10,53.5]);
         $address = TestGeometry::create();
         $address->GeoLocation = $wkt;
         $id = $address->write();
 
+        // read it back
         $address1 = TestGeometry::get()->byID($id);
         $this->assertEquals($wkt, $address1->GeoLocation);
 
+        // change and check changed
         $wkt = GIS::array_to_ewkt([174.5,-41.3]);
         $address->GeoLocation = $wkt;
         $address->write();
         $this->assertEquals($wkt, TestGeometry::get()->byID($id)->GeoLocation);
-
-        $address1->GeoLocation = $wkt;
-        $address1->write();
-        $this->assertEquals($wkt, TestGeometry::get()->byID($id)->GeoLocation);
     }
 
-    public function testWithinFilter()
+    public function testStGenericFilter()
     {
-        $address = TestGeometry::create(['Name' => 'Lisbon']);
-        $address->GeoLocation = GIS::array_to_ewkt([-9.1,38.7]);
-        $address->write();
+        $reference = $this->objFromFixture(TestGeometry::class, 'reference');
 
-        $box = GIS::array_to_ewkt([
-            'srid' => 4326,
-            'type' => 'Polygon',
-            'coordinates' => [[
-                [-10,40],
-                [ -8,40],
-                [ -8,35],
-                [-10,35],
-                [-10,40],
-        ]]]);
-        $lisbon = TestGeometry::get()->filter('GeoLocation:WithinGeo', $box)->first();
-        $this->assertEquals('Lisbon', $lisbon->Name);
-        $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:WithinGeo:not', $box)->count());
-
-        $box = GIS::array_to_ewkt([
-            'srid' => 4326,
-            'type' => 'Polygon',
-            'coordinates' => [[
-                [10,40],
-                [ 8,40],
-                [ 8,35],
-                [10,35],
-                [10,40],
-        ]]]);
-        $lisbon = TestGeometry::get()->filter('GeoLocation:WithinGeo:not', $box)->first();
-        $this->assertEquals('Lisbon', $lisbon->Name);
-        $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:WithinGeo', $box)->count());
-    }
-
-    public function testTypeFilter()
-    {
-        $address = TestGeometry::create();
-        $address->GeoLocation = GIS::array_to_ewkt([10,53.5]);
-        $address->write();
-
-        $this->assertEquals(1, TestGeometry::get()->filter('GeoLocation:TypeGeo', 'Point')->count());
-        $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:TypeGeo:not', 'Point')->count());
-    }
-
-    public function testDWithinFilter()
-    {
-        if (preg_match('/MariaDB/', DB::get_conn()->getVersion(), $matches)) {
-            $this->markTestSkipped('ST_Distance_Sphere currently not implemented in MariaDB.');
+        foreach ([
+            'Contains' => ['Contains', 'Equals'],
+            'Crosses' => ['Crosses'],
+            'Disjoint' => ['Disjoint', 'Distance', 'GeometryType'],
+            'Equals' => ['Equals'],
+            'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
+            'Overlaps' => ['Intersects', 'Overlaps'],
+            'Touches' => ['Touches'],
+            'Within' => ['Equals', 'Within'],
+        ] as $filter => $geometries) {
+            $matches = TestGeometry::get()
+                ->exclude('ID', $reference->ID)
+                ->filter('GeoLocation:ST_' . $filter, $reference->GeoLocation)
+                ->map()
+                ->toArray();
+            asort($matches);
+            $this->assertEquals($geometries, array_values($matches), $filter);
         }
-
-        $address = TestGeometry::create();
-        $address->GeoLocation = GIS::array_to_ewkt([10,53.5]);
-        $address->write();
-
-        $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:DWithinGeo', [GIS::array_to_ewkt([-9.1,38.7]), 2190000])->count());
-        $this->assertEquals(1, TestGeometry::get()->filter('GeoLocation:DWithinGeo', [GIS::array_to_ewkt([-9.1,38.7]), 2200000])->count());
-        $this->assertEquals(1, TestGeometry::get()->filter('GeoLocation:DWithinGeo:not', [GIS::array_to_ewkt([-9.1,38.7]), 2190000])->count());
-        $this->assertEquals(0, TestGeometry::get()->filter('GeoLocation:DWithinGeo:not', [GIS::array_to_ewkt([-9.1,38.7]), 2200000])->count());
     }
 
-    public function testDistance()
+    public function testStDistanceFilter()
     {
-        if (preg_match('/MariaDB/', DB::get_conn()->getVersion(), $matches)) {
-            $this->markTestSkipped('ST_Distance_Sphere currently not implemented in MariaDB.');
+        $reference = $this->objFromFixture(TestGeometry::class, 'distance');
+
+        foreach ([
+            9 => 2,
+            10 => 8,
+            11 => 10,
+        ] as $distance => $count) {
+
+            $within = TestGeometry::get()
+                ->exclude('ID', $reference->ID)
+                ->filter('GeoLocation:ST_Distance', [$reference->GeoLocation, $distance]);
+
+            $notWithin = TestGeometry::get()
+                ->exclude('ID', $reference->ID)
+                ->filter('GeoLocation:ST_Distance:not', [$reference->GeoLocation, $distance]);
+
+            $this->assertEquals($count, $within->count(), 'within ' . $distance);
+            $this->assertEquals(10 - $count, $notWithin->count(), 'not within ' . $distance);
         }
+    }
 
-        $geo1 = GIS::array_to_ewkt([10,53.5]);
-        $geo2 = GIS::array_to_ewkt([-9.1,38.7]);
-        $distance = GIS::distance($geo1, $geo2);
-
-        $this->assertTrue($distance > 2190000 && $distance < 2200000);
+    public function testGeometryTypeFilter()
+    {
+        $this->assertEquals(1, TestGeometry::get()->filter('GeoLocation:ST_GeometryType', 'MultiLineString')->count());
+        $this->assertEquals(3, TestGeometry::get()->filter('GeoLocation:ST_GeometryType:not', 'Polygon')->count());
     }
 }

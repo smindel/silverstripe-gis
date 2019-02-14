@@ -4,4 +4,4 @@ After: '#postgresqlconnectors'
 ---
 SilverStripe\Core\Injector\Injector:
   PostgreSQLSchemaManager:
-    class: 'Smindel\GIS\ORM\PostGISSchemaManger'
+    class: 'Smindel\GIS\ORM\PostGISSchemaManager'

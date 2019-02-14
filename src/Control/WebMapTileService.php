@@ -78,7 +78,7 @@ class WebMapTileService extends AbstractGISWebServiceController
         ];
 
         $list = $list->filter(
-            $geometryField . ':IntersectsGeo',
+            $geometryField . ':ST_Intersects',
             GIS::array_to_ewkt(
                 GIS::reproject_array(
                     $bounds,
