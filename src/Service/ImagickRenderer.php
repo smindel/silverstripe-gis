@@ -32,7 +32,7 @@ class ImagickRenderer
     {
         $this->width = $width;
         $this->height = $height;
-        $this->defaultStyle = $defaultStyle['imagic'];
+        $this->defaultStyle = $defaultStyle['imagick'];
 
         $this->image = new Imagick();
 

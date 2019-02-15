@@ -23,6 +23,10 @@ class GDRenderer
 
     protected $defaultStyle;
 
+    public $backgroundcolor;
+    public $strokecolor;
+    public $fillcolor;
+
     public function __construct($width, $height, $defaultStyle = [])
     {
         $this->width = $width;
@@ -33,9 +37,22 @@ class GDRenderer
 
         foreach ($defaultStyle['gd'] as $key => $val) {
             if ($key == 'pointradius') continue;
-            $method = 'image' . $key;
-            array_unshift($val, $this->image);
-            $method(...$val);
+
+            switch ($key) {
+                case 'pointradius':
+                    continue;
+                case 'backgroundcolor':
+                case 'strokecolor':
+                case 'fillcolor':
+                    $method = count($val) == 4 ? 'imagecolorallocatealpha' : 'imagecolorallocate';
+                    $this->$key = $method($this->image, ...$val);
+                    break;
+                default:
+                    $method = 'image' . $key;
+                    array_unshift($val, $this->image);
+                    $method(...$val);
+            }
+
         }
     }
 
@@ -59,9 +76,9 @@ class GDRenderer
 
     public function drawPoint($coordinates)
     {
-        $boxpadding = $this->defaultStyle['gd']['pointradius'];
         list($x, $y) = $coordinates;
-        imagefilledrectangle($this->image, $x - $boxpadding, $y - $boxpadding, $x + $boxpadding, $y + $boxpadding, 1);
+        imagefilledarc($this->image, $x, $y, 2 * $this->defaultStyle['gd']['pointradius'], 2 * $this->defaultStyle['gd']['pointradius'], 0, 360, $this->fillcolor, IMG_ARC_PIE);
+        imagearc($this->image, $x, $y, 2 * $this->defaultStyle['gd']['pointradius'], 2 * $this->defaultStyle['gd']['pointradius'], 0, 360, $this->strokecolor);
     }
 
     public function drawLineString($coordinates)
@@ -69,9 +86,8 @@ class GDRenderer
         $boxpadding = 2;
         foreach ($coordinates as $coord) {
             if (isset($prev)) {
-                imageline($this->image, $prev[0], $prev[1], $coord[0], $coord[1], 1);
+                imageline($this->image, $prev[0], $prev[1], $coord[0], $coord[1], $this->strokecolor);
             }
-            imagefilledrectangle($this->image, $coord[0] - $boxpadding, $coord[1] - $boxpadding, $coord[0] + $boxpadding, $coord[1] + $boxpadding, 1);
             $prev = $coord;
         }
     }
@@ -85,8 +101,8 @@ class GDRenderer
                 $xy[] = $coord[0];
                 $xy[] = $coord[1];
             }
-            imagefilledpolygon($this->image, $xy, count($xy) / 2, 2);
-            imagepolygon($this->image, $xy, count($xy) / 2, 1);
+            imagefilledpolygon($this->image, $xy, count($xy) / 2, $this->fillcolor);
+            imagepolygon($this->image, $xy, count($xy) / 2, $this->strokecolor);
         }
     }
 

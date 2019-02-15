@@ -31,13 +31,17 @@ class WebMapTileService extends AbstractGISWebServiceController
 
     private static $wrap_date = true;
 
+    private static $cache_path = 'tile-cache';
+
+    private static $cache_ttl = 0;
+
     private static $default_style = [
         'gd' => [
-            'colorallocatealpha' => [0, 0, 0, 127],
-            'colorallocate' => [60, 60, 210],
-            'colorallocatealpha' => [60, 60, 210, 25],
+            'backgroundcolor' => [0, 0, 0, 127],
+            'strokecolor' => [60, 60, 210, 0],
+            'fillcolor' => [60, 60, 210, 80],
             'setthickness' => [2],
-            'pointradius' => 2,
+            'pointradius' => 5,
         ],
         'imagick' => [
             'StrokeOpacity' => 1,
@@ -53,6 +57,17 @@ class WebMapTileService extends AbstractGISWebServiceController
         $model = $this->getModel($request);
         $config = $this->getConfig($model);
         $list = $this->getRecords($request);
+
+        if (
+            ($cache = $config['cache_ttl'] ? sha1(json_encode($request->getVars())) : false)
+            && ($age = $this->cacheAge($cache)) !== false
+            && $config['cache_ttl'] > $age
+        ) {
+            $response = $this->getResponse();
+            $response->addHeader('Content-Type', 'image/png');
+            $response->setBody($this->readCache($cache));
+            return $response;
+        }
 
         $z = $request->param('z');
         $x = $request->param('x');
@@ -111,6 +126,42 @@ class WebMapTileService extends AbstractGISWebServiceController
         $response = $this->getResponse();
         $response->addHeader('Content-Type', $tile->getContentType());
         $response->setBody($tile->render($list));
+
+        if ($cache) {
+            $this->writeCache($cache, $response->getBody());
+        }
+
         return $response;
+    }
+
+    protected function cacheFile($cache)
+    {
+        $dir = $this->config()->cache_path . DIRECTORY_SEPARATOR;
+        $dir = $dir[0] != DIRECTORY_SEPARATOR
+            ? TEMP_PATH . '/../' . $dir
+            : $dir;
+
+        if (!file_exists($dir)) {
+            mkdir($dir, fileperms(TEMP_PATH), true);
+        }
+
+        return $dir . $cache;
+    }
+
+    protected function cacheAge($cache)
+    {
+        return is_readable($file = $this->cacheFile($cache))
+            ? time() - filemtime($file)
+            : false;
+    }
+
+    protected function readCache($cache)
+    {
+        return file_get_contents($this->cacheFile($cache));
+    }
+
+    protected function writeCache($cache, $data)
+    {
+        file_put_contents($this->cacheFile($cache), $data);
     }
 }

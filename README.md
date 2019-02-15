@@ -129,6 +129,22 @@ __Configuration:__
   - property_map = undefined (GeoJSON feature properties, summary fields if not specified)
 - `[DataObject]::$webmaptileservice = undefined`
   Set to true to turn on the GeoJSON webservice for the DataObject. If you need more control you can set it to an associative array with the following keys:
+  - default_style = [
+      'gd' => [
+          'backgroundcolor' => [0, 0, 0, 127],
+          'strokecolor' => [60, 60, 210, 0],
+          'fillcolor' => [60, 60, 210, 80],
+          'setthickness' => [2],
+          'pointradius' => 5,
+      ],
+      'imagick' => [
+          'StrokeOpacity' => 1,
+          'StrokeWidth' => 2,
+          'StrokeColor' => 'rgb(60,60,210)',
+          'FillColor' => 'rgba(60,60,210,.25)',
+          'PointRadius' => 5,
+      ],
+  ] (gd and imagick work differently. GD is faster, while Imagick has more features and smother rendering. In order for you to leverage the advantages of the chosen renderer I refrained from normalising the two.)
   - geometry_field = undefined (witch field to use for the Geometry, by default the first one found is used)
   - searchable_fields = undefined (by default searchable fields are used)
   - code = undefined (set to SilverStripe permission codes to restrict access e.g. ADMIN)
@@ -136,6 +152,8 @@ __Configuration:__
   - tile_size = 256 (tile width and height in pixel)
   - tile_buffer = 5 (extend the area for which DataObjects are sent to renderer beyond the size of the tile in pixel)
   - wrap_date = true (wrap around the dateline)
+  - cache_path = 'tile-cache' (absolute path to tile cache or path relative to TEMP_PATH . '/..')
+  - cache_ttl = 0 (cache file life time in seconds, falsish values to turn the tile cache off)
 
 
 ## MapField
