@@ -29,7 +29,7 @@ GIS developer toolkit for SilverStripe
 - __New form fields:__ edit the new Geometry type using the MapField or add maps to GridFields in ModelAdmin
 - __Configurable projections:__ support for multiple projections through proj4
 - __Primitive and multipart geometries:__ Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
-- __Developer tools:__ heaps of useful helpers, e.g. for re-projecting, distance measuring, ewkt
+- __Developer tools:__ heaps of useful helpers, e.g. for re-projecting, distance measuring, [EWKT](https://postgis.net/docs/manual-2.1/using_postgis_dbmanagement.html#EWKB_EWKT)
 - __MySQL and Postgres:__ supports Postgres with PostGIS, MySQL 5.7+, partial support for MariaDB
 - __ORM integration:__ DataList filters, e.g. to find intersecting DataObjects or within distance
 - __GeoJSON imorter:__ import a GeoJSON source as DataObjects
@@ -75,9 +75,9 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 __Methods:__
 
 - `float GIS::distance(Geometry $geo1, Geometry $geo2)`
-  Returns the distance of the to Geometries in meters.
+  Returns the distance of the to Geometries in the geometry's projection's unit (metres, kilometre or degree).
 - `array GIS::split_ewkt(string $ewkt)`
-  Splits an $ewkt string into the SRID and WKT
+  Splits an $ewkt string into the [SRID](https://en.wikipedia.org/wiki/Spatial_reference_system#Identifier) and [WKT](https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry)
 - `string GIS::get_type(array $array)`
   Returns the shape type of a geometry in $array representation
 - `array GIS::reproject_array(array $array, int $srid)`
