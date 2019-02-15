@@ -26,7 +26,7 @@ class MapField extends FormField
      *
      * @var boolean
      */
-    private static $multi_enabled = false;
+    protected $multiEnabled = false;
 
     protected $controls = [
         'polyline' => true,
@@ -87,8 +87,14 @@ class MapField extends FormField
         return json_encode(Config::inst()->get(MapField::class, 'default_location'));
     }
 
+    public function enableMulti($enable = true)
+    {
+        $this->multiEnabled = $enable;
+        return $this;
+    }
+
     public function getMultiEnabled()
     {
-        return $this->config()->multi_enabled;
+        return $this->multiEnabled;
     }
 }
