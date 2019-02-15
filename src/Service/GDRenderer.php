@@ -21,16 +21,22 @@ class GDRenderer
 
     protected $image;
 
-    public function __construct($width, $height)
+    protected $defaultStyle;
+
+    public function __construct($width, $height, $defaultStyle = [])
     {
         $this->width = $width;
         $this->height = $height;
+        $this->defaultStyle = $defaultStyle;
 
         $this->image = imagecreate($this->width, $this->height);
-        imagecolorallocatealpha($this->image, 0, 0, 0, 127);
-        imagecolorallocate($this->image, 255, 0, 0);
-        imagecolorallocatealpha($this->image, 255, 0, 0, 96);
-        imagesetthickness($this->image, 2);
+
+        foreach ($defaultStyle['gd'] as $key => $val) {
+            if ($key == 'pointradius') continue;
+            $method = 'image' . $key;
+            array_unshift($val, $this->image);
+            $method(...$val);
+        }
     }
 
     public function debug($text)
@@ -53,7 +59,7 @@ class GDRenderer
 
     public function drawPoint($coordinates)
     {
-        $boxpadding = 2;
+        $boxpadding = $this->defaultStyle['gd']['pointradius'];
         list($x, $y) = $coordinates;
         imagefilledrectangle($this->image, $x - $boxpadding, $y - $boxpadding, $x + $boxpadding, $y + $boxpadding, 1);
     }
@@ -84,19 +90,24 @@ class GDRenderer
         }
     }
 
-    public function drawMultipolygon($coordinates)
+    public function drawMultipoint($multicoordinates)
     {
-        $boxpadding = 2;
-        foreach ($coordinates as $polygonCoords) {
-            foreach ($polygonCoords as $coords) {
-                $xy = [];
-                foreach ($coords as $coord) {
-                    $xy[] = $coord[0];
-                    $xy[] = $coord[1];
-                }
-                imagefilledpolygon($this->image, $xy, count($xy) / 2, 2);
-                imagepolygon($this->image, $xy, count($xy) / 2, 1);
-            }
+        foreach ($multicoordinates as $coordinates) {
+            $this->drawPoint($coordinates);
+        }
+    }
+
+    public function drawMultilinestring($multicoordinates)
+    {
+        foreach ($multicoordinates as $coordinates) {
+            $this->drawLinestring($coordinates);
+        }
+    }
+
+    public function drawMultipolygon($multicoordinates)
+    {
+        foreach ($multicoordinates as $coordinates) {
+            $this->drawPolygon($coordinates);
         }
     }
 

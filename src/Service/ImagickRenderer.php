@@ -26,10 +26,13 @@ class ImagickRenderer
 
     protected $image;
 
-    public function __construct($width, $height)
+    protected $defaultStyle;
+
+    public function __construct($width, $height, $defaultStyle = [])
     {
         $this->width = $width;
         $this->height = $height;
+        $this->defaultStyle = $defaultStyle['imagic'];
 
         $this->image = new Imagick();
 
@@ -69,73 +72,85 @@ class ImagickRenderer
         return 'image/png';
     }
 
-    public function drawPoint($coordinates)
+    public function getDraw(&$style)
     {
-        $point = new ImagickDraw();
-        $point->setStrokeOpacity(1);
-        $point->setStrokeColor(new ImagickPixel('rgb(60,60,210)'));
-        $point->setFillColor(new ImagickPixel('rgb(60,60,210)'));
-        $point->setStrokeWidth(2);
+        if ($style instanceof ImagickDraw) return $style;
 
-        list($x, $y) = $coordinates;
-        $point->circle($x, $y, $x + 5, $y + 5);
+        $style = array_merge($this->defaultStyle, $style);
 
-        $this->image->drawImage($point);
+        $draw = new ImagickDraw();
+
+        foreach ($style as $key => $value) {
+            if (substr($key, -5) == 'Color') $value = new ImagickPixel($value);
+            else if ($value === null || $key == 'PointRadius') continue;
+            $draw->{'set' . $key}($value);
+        }
+
+        return $draw;
     }
 
-    public function drawLineString($coordinates)
+    public function drawPoint($coordinates, $style = [])
     {
-        $linestring = new ImagickDraw();
-        $linestring->setStrokeOpacity(1);
-        $linestring->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
-        $linestring->setFillColor(new ImagickPixel('rgba(92,92,255,0)'));
-        $linestring->setStrokeWidth(2);
+        $draw = $this->getDraw($style);
+
+        list($x, $y) = $coordinates;
+        $draw->circle($x, $y, $x + $style['PointRadius'], $y + $style['PointRadius']);
+
+        $this->image->drawImage($draw);
+    }
+
+    public function drawLineString($coordinates, $style = [])
+    {
+        $draw = $this->getDraw($style);
 
         $points = [];
         foreach ($coordinates as $j => $coordinate) {
             $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
         }
 
-        $linestring->polyline($points);
+        $draw->polyline($points);
 
-        $this->image->drawImage($linestring);
+        $this->image->drawImage($draw);
     }
 
-    public function drawPolygon($coordinates)
+    public function drawPolygon($coordinates, $style = [])
     {
-        $polygon = new ImagickDraw();
-        $polygon->setStrokeOpacity(1);
-        $polygon->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
-        $polygon->setFillColor(new ImagickPixel('rgba(92,92,255,.25)'));
-        $polygon->setStrokeWidth(2);
+        $draw = $this->getDraw($style);
 
         foreach ($coordinates as $polyCoordinates) {
             $points = [];
             foreach ($polyCoordinates as $j => $coordinate) {
                 $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
             }
-            $polygon->polygon($points);
-            $this->image->drawImage($polygon);
+            $draw->polygon($points);
+            $this->image->drawImage($draw);
         }
     }
 
-    public function drawMultipolygon($coordinates)
+    public function drawMultipoint($multiCoordinates, $style = [])
     {
-        $polygon = new ImagickDraw();
-        $polygon->setStrokeOpacity(1);
-        $polygon->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
-        $polygon->setFillColor(new ImagickPixel('rgba(92,92,255,.25)'));
-        $polygon->setStrokeWidth(2);
+        $draw = $this->getDraw($style);
 
-        foreach ($coordinates as $polygonCoordinates) {
-            foreach ($polygonCoordinates as $coords) {
-                $points = [];
-                foreach ($coords as $j => $coordinate) {
-                    $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
-                }
-                $polygon->polygon($points);
-                $this->image->drawImage($polygon);
-            }
+        foreach ($multiCoordinates as $coordinates) {
+            $this->drawPoint($coordinates, $draw);
+        }
+    }
+
+    public function drawMultilinestring($multiCoordinates, $style = [])
+    {
+        $draw = $this->getDraw($style);
+
+        foreach ($multiCoordinates as $coordinates) {
+            $this->drawLinestring($coordinates, $draw);
+        }
+    }
+
+    public function drawMultipolygon($multiCoordinates, $style = [])
+    {
+        $draw = $this->getDraw($style);
+
+        foreach ($multiCoordinates as $coordinates) {
+            $this->drawPolygon($coordinates, $draw);
         }
     }
 

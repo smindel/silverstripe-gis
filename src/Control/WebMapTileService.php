@@ -31,6 +31,23 @@ class WebMapTileService extends AbstractGISWebServiceController
 
     private static $wrap_date = true;
 
+    private static $default_style = [
+        'gd' => [
+            'colorallocatealpha' => [0, 0, 0, 127],
+            'colorallocate' => [60, 60, 210],
+            'colorallocatealpha' => [60, 60, 210, 25],
+            'setthickness' => [2],
+            'pointradius' => 2,
+        ],
+        'imagick' => [
+            'StrokeOpacity' => 1,
+            'StrokeWidth' => 2,
+            'StrokeColor' => 'rgb(60,60,210)',
+            'FillColor' => 'rgba(60,60,210,.25)',
+            'PointRadius' => 5,
+        ],
+    ];
+
     public function index($request)
     {
         $model = $this->getModel($request);
@@ -42,7 +59,7 @@ class WebMapTileService extends AbstractGISWebServiceController
         $y = $request->param('y');
 
         $tileSize = $config['tile_size'];
-        $tile = Tile::create($z, $x, $y, $config['wrap_date'], $tileSize);
+        $tile = Tile::create($z, $x, $y, $config['default_style'], $config['wrap_date'], $tileSize);
 
         list($lon1, $lat1) = Tile::zxy2lonlat($z, $x, $y);
         list($lon2, $lat2) = Tile::zxy2lonlat($z, $x + 1, $y + 1);

@@ -59,7 +59,7 @@ class Tile
 
     protected $resource;
 
-    public function __construct($z, $x, $y, $wrap = null, $size = null)
+    public function __construct($z, $x, $y, $defaultStyle = [], $wrap = null, $size = null)
     {
         $this->z = $z;
         $this->x = $x;
@@ -75,7 +75,7 @@ class Tile
             (0.5 - log((1 + sin($lat * pi()/180)) / (1 - sin($lat * pi()/180))) / (4 * pi())) * $this->size * pow(2, $this->z),
         ];
 
-        $this->resource = Injector::inst()->get('TileRenderer', false, [$this->size, $this->size]);
+        $this->resource = Injector::inst()->get('TileRenderer', false, [$this->size, $this->size, $defaultStyle]);
     }
 
     public function debug($text = null)
