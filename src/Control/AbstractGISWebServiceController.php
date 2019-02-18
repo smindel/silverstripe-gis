@@ -15,14 +15,26 @@ class AbstractGISWebServiceController extends Controller
         return str_replace('-', '\\', $request->param('Model'));
     }
 
+    /**
+     * Retrieve the module-applicable SilverStripe config for the given model.
+     *
+     * @param  string $model
+     * @return array
+     */
     public function getConfig($model)
     {
         $defaults = Config::inst()->get(static::class);
         $modelConfig = Config::inst()->get($model, strtolower(array_reverse(explode('\\', static::class))[0]));
-        if (!$modelConfig) return false;
+
+        if (!$modelConfig) {
+            return [];
+        }
+
         $defaults['record_provider'] = null;
         $defaults['geometry_field'] = array_search('Geometry', Config::inst()->get($model, 'db'));
         $defaults['searchable_fields'] = singleton($model)->searchableFields();
+        $defaults['property_map'] = singleton($model)->summaryFields();
+
         return is_array($modelConfig) ? array_merge($defaults, $modelConfig) : $defaults;
     }
 

@@ -13,16 +13,6 @@ class GeoJsonService extends AbstractGISWebServiceController
         '$Model' => 'handleAction',
     );
 
-    public function getConfig($model)
-    {
-        $modelConfig = parent::getConfig($model);
-        if (!$modelConfig) return false;
-        $defaults = [
-            'property_map' => singleton($model)->summaryFields(),
-        ];
-        return is_array($modelConfig) ? array_merge($defaults, $modelConfig) : $defaults;
-    }
-
     public function index($request)
     {
         $model = $this->getModel($request);
