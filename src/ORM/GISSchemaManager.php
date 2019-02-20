@@ -20,19 +20,6 @@ trait GISSchemaManager
         return 'geometry';
     }
 
-    public function translateToRead($field)
-    {
-        $table = $field->getTable();
-        $column = $field->getName();
-        $identifier = $table ? sprintf('"%s"."%s"', $table, $column) : sprintf('"%s"', $column);
-        return sprintf('CASE WHEN %s IS NULL THEN NULL ELSE CONCAT(\'SRID=\', ST_SRID(%s), \';\', ST_AsText(%s)) END AS "%s"', $identifier, $identifier, $identifier, $column);
-    }
-
-    public function translateToWrite($field)
-    {
-        return $this->prepareFromText($field);
-    }
-
     public function translateStGenericFilter($field, $value, $inclusive, $hint)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
@@ -105,23 +92,4 @@ trait GISSchemaManager
     {
         return $this->translateStGenericFilter($field, $value, $inclusive, $hint);
     }
-
-    protected function prepareFromText($field)
-    {
-        if (!$field->getValue()) {
-            return ['?' => [null]];
-        }
-
-        list($wkt, $srid) = GIS::split_ewkt($field->getValue(), (int)$field->srid);
-
-        if ($field instanceof DBGeometry) {
-            return ['ST_GeomFromText(?, ?)' => [$wkt, $srid]];
-        }
-
-        if ($srid != 4326) {
-            list($wkt) = GIS::split_ewkt(GIS::array_to_ewkt(GIS::reproject_array(GIS::ewkt_to_array($field->getValue()))));
-        }
-        return ['ST_GeogFromText(?)' => [$wkt]];
-    }
-
 }

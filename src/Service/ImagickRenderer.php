@@ -81,8 +81,15 @@ class ImagickRenderer
         $draw = new ImagickDraw();
 
         foreach ($style as $key => $value) {
-            if ($value === null || !method_exists($draw, $key)) continue;
-            if (substr($key, -5) == 'Color') $value = new ImagickPixel($value);
+
+            if ($value === null || !method_exists($draw, 'set' . $key)) {
+                continue;
+            }
+
+            if (substr($key, -5) == 'Color') {
+                $value = new ImagickPixel($value);
+            }
+
             $draw->{'set' . $key}($value);
         }
 

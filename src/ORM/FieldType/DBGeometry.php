@@ -3,6 +3,7 @@
 namespace Smindel\GIS\ORM\FieldType;
 
 use SilverStripe\ORM\DB;
+use Smindel\GIS\GIS;
 
 class DBGeometry extends DBGeography
 {
@@ -34,5 +35,16 @@ class DBGeometry extends DBGeography
     public function compositeDatabaseFields()
     {
         return ['' => 'Geometry'];
+    }
+
+    public function prepValueForDB($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        list($wkt, $srid) = GIS::split_ewkt($value);
+
+        return ['ST_GeomFromText(?, ?)' => [$wkt, $srid]];
     }
 }

@@ -6,6 +6,7 @@ use SilverStripe\ORM\DB;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\FieldType\DBComposite;
 use Smindel\GIS\Forms\MapField;
+use Smindel\GIS\GIS;
 
 class DBGeography extends DBComposite
 {
@@ -25,7 +26,10 @@ class DBGeography extends DBComposite
 
     public function addToQuery(&$query)
     {
-        $select = DB::get_schema()->translateToRead($this);
+        $table = $this->getTable();
+        $column = $this->getName();
+        $identifier = $table ? sprintf('"%s"."%s"', $table, $column) : sprintf('"%s"', $column);
+        $select = sprintf('CASE WHEN %s IS NULL THEN NULL ELSE CONCAT(\'SRID=\', ST_SRID(%s), \';\', ST_AsText(%s)) END AS "%s"', $identifier, $identifier, $identifier, $column);
         $query->selectField($select);
     }
 
@@ -34,21 +38,36 @@ class DBGeography extends DBComposite
         return ['' => 'Geography'];
     }
 
-    public function writeToManipulation(&$manipulation)
+    public function prepValueForDB($value)
     {
-        $value = $this->exists() ? DB::get_schema()->translateToWrite($this) : $this->nullValue();
-        $manipulation['fields'][$this->name] = $value;
+        if (!$value) {
+            return null;
+        }
+
+        list($wkt, $srid) = GIS::split_ewkt($value);
+
+        if ($srid != 4326) {
+            list($wkt) = GIS::split_ewkt(GIS::array_to_ewkt(GIS::reproject_array(GIS::ewkt_to_array($value), 4326)));
+        }
+
+        return ['ST_GeogFromText(?)' => [$wkt]];
     }
 
     public function exists()
     {
-        // reinstates parent::parent::writeToManipulation()
+        // reinstates parent::parent::exists()
         return DBField::exists();
+    }
+
+    public function writeToManipulation(&$manipulation)
+    {
+        // reinstates parent::parent::writeToManipulation()
+        return DBField::writeToManipulation($manipulation);
     }
 
     public function saveInto($dataObject)
     {
-        // reinstates parent::parent::setValue()
+        // reinstates parent::parent::saveInto()
         return DBField::saveInto($dataObject);
     }
 
