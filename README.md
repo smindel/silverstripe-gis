@@ -6,7 +6,7 @@
 
 GIS developer toolkit for SilverStripe
 
-![feature name](../images/MapField.png)
+![feature name](docs/images/MapField.png)
 
 ## Features
 
