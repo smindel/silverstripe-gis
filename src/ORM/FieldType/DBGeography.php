@@ -81,4 +81,9 @@ class DBGeography extends DBComposite
     {
         return MapField::create($this->name, $title);
     }
+
+    public function scalarValueOnly()
+    {
+        return false;
+    }
 }
