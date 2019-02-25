@@ -69,3 +69,7 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 - [MapField](docs/en/MapField.md) - Form field to edit geo types
 - [GeoJsonService](docs/en/GeoJsonService.md) - Expose your DataObjects dynamically in GeoJSON format though an API
 - [WebMapTileService](docs/en/WebMapTileService.md) - Generate map tiles for Leaflet or Openlayers from your DataObjects
+
+## Note
+
+The module is incompatible with the framework version 4.3.1. I am in touch with the developers and confident that this [will be fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815) in the next realease of the framework.
