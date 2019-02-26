@@ -54,7 +54,7 @@ class WebMapTileService extends AbstractGISWebServiceController
 
     public function index($request)
     {
-        $model = $this->getModel($request);
+        $model = $this->model = $this->getModel($request);
         $config = $this->getConfig($model);
         $list = $this->getRecords($request);
 
@@ -136,9 +136,9 @@ class WebMapTileService extends AbstractGISWebServiceController
 
     protected function cacheFile($cache)
     {
-        $dir = $this->config()->cache_path . DIRECTORY_SEPARATOR;
+        $dir = $this->getConfig($this->model)['cache_path'] . DIRECTORY_SEPARATOR;
         $dir = $dir[0] != DIRECTORY_SEPARATOR
-            ? TEMP_PATH . '/../' . $dir
+            ? TEMP_PATH . DIRECTORY_SEPARATOR . $dir
             : $dir;
 
         if (!file_exists($dir)) {

@@ -27,7 +27,7 @@ class PostGISSchemaManager extends PostgreSQLSchemaManager
     {
         list($wkt1, $srid1) = GIS::split_ewkt($geo1);
         list($wkt2, $srid2) = GIS::split_ewkt($geo2);
-        return sprintf("ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d),true)", $wkt1, $srid1, $wkt2, $srid2);
+        return sprintf("ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d))", $wkt1, $srid1, $wkt2, $srid2);
     }
 
     public function schemaUpdate($callback)

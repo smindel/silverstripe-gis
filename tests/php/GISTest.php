@@ -95,8 +95,8 @@ class GISTest extends SapphireTest
     {
         $geo1 = GIS::array_to_ewkt([10,53.5]);
         $geo2 = GIS::array_to_ewkt([-9.1,38.7]);
-        $distance = GIS::distance($geo1, $geo2);
+        $distance = round(GIS::distance($geo1, $geo2) * 111195 / 1000);
 
-        $this->assertTrue($distance > 2190000 && $distance < 2200000);
+        $this->assertEquals(2687, $distance);
     }
 }

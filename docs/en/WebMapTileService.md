@@ -28,7 +28,7 @@ How to wrap around the date line. The default is true and wraps
 
 ### private static WebMapTileService::$cache_path
 
-Path to the cache directory. Paths are absolute or relative to TEMP_PATH . '/..'. Default is 'tile-cache'
+Path to the cache directory. Paths are absolute or relative to TEMP_PATH. Default is 'tile-cache'
 
 ### private static WebMapTileService::$cache_ttl
 

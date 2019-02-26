@@ -10,6 +10,8 @@ use Smindel\GIS\Service\Tile;
 
 class TileTest extends SapphireTest
 {
+    use RenderingAssertion;
+
     protected static $fixture_file = 'TestLocation.yml';
 
     protected $defaultStyle = [
@@ -50,37 +52,37 @@ class TileTest extends SapphireTest
         $y = 31;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertRenders($list, $tile, 255, 255);
+        $this->assertRenders($tile->render($list), 255, 255);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertRenders($list, $tile, 255, 255);
+        $this->assertRenders($tile->render($list), 255, 255);
 
         $x = 64;
         $y = 32;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertRenders($list, $tile, 0, 0);
+        $this->assertRenders($tile->render($list), 0, 0);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertRenders($list, $tile, 0, 0);
+        $this->assertRenders($tile->render($list), 0, 0);
 
         $x = 0;
         $y = 32;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertRenders($list, $tile, 0, 0);
+        $this->assertRenders($tile->render($list), 0, 0);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertRenders($list, $tile, 0, 0);
+        $this->assertRenders($tile->render($list), 0, 0);
 
         $x = -1;
         $y = 31;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertRenders($list, $tile, 255, 255);
+        $this->assertRenders($tile->render($list), 255, 255);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, true);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertRenders($list, $tile, 255, 255);
+        $this->assertRenders($tile->render($list), 255, 255);
     }
 
     public function testDontWrapAtDateline()
@@ -90,52 +92,36 @@ class TileTest extends SapphireTest
         $y = 31;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertNotRenders($list, $tile, 255, 255);
+        $this->assertNotRenders($tile->render($list), 255, 255);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertRenders($list, $tile, 255, 255);
+        $this->assertRenders($tile->render($list), 255, 255);
 
         $x = 0;
         $y = 32;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertNotRenders($list, $tile, 0, 0);
+        $this->assertNotRenders($tile->render($list), 0, 0);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertRenders($list, $tile, 0, 0);
+        $this->assertRenders($tile->render($list), 0, 0);
 
         $x = 63;
         $y = 31;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertRenders($list, $tile, 255, 255);
+        $this->assertRenders($tile->render($list), 255, 255);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertNotRenders($list, $tile, 255, 255);
+        $this->assertNotRenders($tile->render($list), 255, 255);
 
         $x = 64;
         $y = 32;
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Eastern Dateline');
-        $this->assertRenders($list, $tile, 0, 0);
+        $this->assertRenders($tile->render($list), 0, 0);
         $tile = Tile::create($z, $x, $y, $this->defaultStyle, false);
         $list = TestLocation::get()->filter('Name', 'Western Dateline');
-        $this->assertNotRenders($list, $tile, 0, 0);
-    }
-
-    public function assertRenders($list, $tile, $x, $y, $msg = null)
-    {
-        $image = imagecreatefromstring($tile->render($list));
-        // $tile->debug();
-        // file_put_contents('public/assets/tile.png', $tile->render($list));
-        $this->assertNotEquals(0, imagecolorat($image, $x, $y), $msg);
-    }
-
-    public function assertNotRenders($list, $tile, $x, $y, $msg = null)
-    {
-        $image = imagecreatefromstring($tile->render($list));
-        // $tile->debug();
-        // file_put_contents('public/assets/tile.png', $tile->render($list));
-        $this->assertEquals(0, imagecolorat($image, $x, $y), $msg);
+        $this->assertNotRenders($tile->render($list), 0, 0);
     }
 }

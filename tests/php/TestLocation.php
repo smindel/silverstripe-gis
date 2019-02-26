@@ -13,4 +13,13 @@ class TestLocation extends DataObject implements TestOnly
         'Name' => 'Varchar',
         'GeoLocation' => 'Geometry',
     ];
+
+    private static $geojsonservice = true;
+
+    private static $webmaptileservice = true;
+
+    public function canView($member = NULL)
+    {
+        return true;
+    }
 }
