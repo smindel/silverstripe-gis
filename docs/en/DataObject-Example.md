@@ -89,6 +89,10 @@ class City extends DataObject
                 'StrokeColor' => 'rgb(60,60,210)',
                 'FillColor' => 'rgba(60,60,210,.25)',
                 'PointRadius' => 5,
+                'marker' => [
+                    'image' => '../vendor/smindel/silverstripe-gis/src/Service/map.pin.32.png',
+                    'offset' => ['center', 'bottom'],
+                ],
             ],
         ],
         'geometry_field' => 'Location',     // set geometry field explicitly

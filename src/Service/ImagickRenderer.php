@@ -38,6 +38,24 @@ class ImagickRenderer
 
         $this->image->newImage($this->width, $this->height, new ImagickPixel('rgba(0,0,0,0)'));
         $this->image->setImageFormat('png');
+
+        if ($this->defaultStyle['marker'] ?? 0) {
+            switch ($this->defaultStyle['marker']['offset'][0] ?? 0) {
+                case 'left': $this->defaultStyle['marker_offset_x'] = 0; break;
+                case 'center': $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0] / 2; break;
+                case 'right': $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0]; break;
+                default: $this->defaultStyle['marker_offset_x'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
+            }
+            switch ($this->defaultStyle['marker']['offset'][1] ?? 0) {
+                case 'top': $this->defaultStyle['marker_offset_y'] = 0; break;
+                case 'middle': $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1] / 2; break;
+                case 'bottom': $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1]; break;
+                default: $this->defaultStyle['marker_offset_y'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
+            }
+
+            $this->defaultStyle['marker_image'] = new Imagick();
+            $this->defaultStyle['marker_image']->readImage($this->defaultStyle['marker']['image']);
+        }
     }
 
     public function debug($text)
@@ -82,21 +100,31 @@ class ImagickRenderer
 
         foreach ($style as $key => $value) {
 
-            if ($value === null || !method_exists($draw, 'set' . $key)) {
-                continue;
-            }
-
             if (substr($key, -5) == 'Color') {
                 $value = new ImagickPixel($value);
             }
 
-            $draw->{'set' . $key}($value);
+            if ($value !== null) {
+                if (!is_array($value)) $value = [$value];
+                if (method_exists($draw, $key)) {
+                    $draw->$key(...$value);
+                } else if (method_exists($draw, 'set' . $key)) {
+                    $draw->{'set' . $key}(...$value);
+                }
+            }
         }
 
         return $draw;
     }
 
-    public function drawPoint($coordinates, $style = [])
+    public function drawMarker($coordinates, $style = [])
+    {
+        if (!count($style)) $this->getDraw($style);
+
+        $this->image->compositeImage($style['marker_image'], imagick::COMPOSITE_OVER, $coordinates[0] - $style['marker_offset_x'], $coordinates[1] - $style['marker_offset_y']);
+    }
+
+    public function drawCircle($coordinates, $style = [])
     {
         $draw = $this->getDraw($style);
 
@@ -104,6 +132,17 @@ class ImagickRenderer
         $draw->circle($x, $y, $x + $style['PointRadius'], $y + $style['PointRadius']);
 
         $this->image->drawImage($draw);
+    }
+
+    public function drawPoint($coordinates, $style = [])
+    {
+        $draw = $this->getDraw($style);
+
+        if (isset($style['marker_image'])) {
+            return $this->drawMarker($coordinates, $style);
+        } else {
+            return $this->drawCircle($coordinates, $style);
+        }
     }
 
     public function drawLineString($coordinates, $style = [])

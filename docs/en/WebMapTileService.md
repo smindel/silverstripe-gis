@@ -53,12 +53,7 @@ Deafult is
             'StrokeColor' => 'rgb(60,60,210)',
             'FillColor' => 'rgba(60,60,210,.25)',
             'PointRadius' => 5,
-            'IconFile' => '[uups]',
-            'IconAnchor' => 'center south',
-            'IconOffset' => [0, 0],
-            'TextColor' => 'rgb(0,0,0)',
-            'TextAnchor' => 'center south',
-            'TextOffset' => [0, 0],
+            'marker' => false,
         ],
     ]
 
