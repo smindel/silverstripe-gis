@@ -56,6 +56,7 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 
 ## Examples and how tos:
 
+- [Why would you bother?](docs/en/Why-bother.md) - And if you should, what should you bother about?
 - [DataObject Example](docs/en/DataObject-Example.md) - How to set up your own DataObjects
 - [GridFieldMap](docs/en/GridFieldMap.md#example) - How create a spatially aware admin interface
 - [MapField](docs/en/MapField.md#examples) - How to edit geo types
@@ -72,4 +73,4 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 
 ## Note
 
-The module is incompatible with the framework version 4.3.1. I am in touch with the developers and confident that this [will be fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815) in the next realease of the framework.
+The module is incompatible with the framework version 4.3.1, which disallowed parameterised field assignments. The issue [has been fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815), so that all versions of the framework before and after 4.3.1 are working.
