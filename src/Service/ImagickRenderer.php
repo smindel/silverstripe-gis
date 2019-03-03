@@ -180,28 +180,22 @@ class ImagickRenderer
 
     public function drawMultipoint($multiCoordinates, $style = [])
     {
-        $draw = $this->getDraw($style);
-
         foreach ($multiCoordinates as $coordinates) {
-            $this->drawPoint($coordinates, $draw);
+            $this->drawPoint($coordinates, $style);
         }
     }
 
     public function drawMultilinestring($multiCoordinates, $style = [])
     {
-        $draw = $this->getDraw($style);
-
         foreach ($multiCoordinates as $coordinates) {
-            $this->drawLinestring($coordinates, $draw);
+            $this->drawLinestring($coordinates, $style);
         }
     }
 
     public function drawMultipolygon($multiCoordinates, $style = [])
     {
-        $draw = $this->getDraw($style);
-
         foreach ($multiCoordinates as $coordinates) {
-            $this->drawPolygon($coordinates, $draw);
+            $this->drawPolygon($coordinates, $style);
         }
     }
 
