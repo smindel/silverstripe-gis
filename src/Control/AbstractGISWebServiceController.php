@@ -20,7 +20,9 @@ class AbstractGISWebServiceController extends Controller
     {
         $defaults = Config::inst()->get(static::class);
         $modelConfig = Config::inst()->get($model, strtolower(array_reverse(explode('\\', static::class))[0]));
-        if (!$modelConfig) return false;
+        if (!$modelConfig) {
+            return false;
+        }
         $defaults['record_provider'] = null;
         $defaults['geometry_field'] = GIS::of($model);
         $defaults['searchable_fields'] = singleton($model)->searchableFields();
@@ -50,7 +52,6 @@ class AbstractGISWebServiceController extends Controller
             : $model::get();
 
         if (!$skip_filter) {
-
             $queryParams = array_intersect_ukey(
                 $request->requestVars(),
                 $config['searchable_fields'],

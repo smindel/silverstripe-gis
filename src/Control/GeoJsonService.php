@@ -16,7 +16,9 @@ class GeoJsonService extends AbstractGISWebServiceController
     public function getConfig($model)
     {
         $modelConfig = parent::getConfig($model);
-        if (!$modelConfig) return false;
+        if (!$modelConfig) {
+            return false;
+        }
         $defaults = [
             'property_map' => singleton($model)->summaryFields(),
         ];
@@ -36,7 +38,6 @@ class GeoJsonService extends AbstractGISWebServiceController
         $propertyMap = $config['property_map'];
 
         foreach ($list as $item) {
-
             if (!$item->canView()) {
                 continue;
             }

@@ -87,7 +87,6 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         $collection = [];
 
         foreach ($list as $item) {
-
             if (!$item->canView()) {
                 continue;
             }

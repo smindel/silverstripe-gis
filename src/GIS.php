@@ -19,7 +19,7 @@ class GIS
 
     private static $default_srid = 4326;
 
-    CONST EWKT_PATTERN = '/^SRID=(\d+);(([A-Z]+)\s*(\(.+\)))$/i';
+    const EWKT_PATTERN = '/^SRID=(\d+);(([A-Z]+)\s*(\(.+\)))$/i';
 
     const TYPES = [
         'point' => 'Point',
@@ -48,15 +48,14 @@ class GIS
         $array = isset($array['coordinates']) ? $array['coordinates'] : $array;
 
         if ($type == 'POINT' || is_numeric($array[0])) {
-
             $type = 'POINT';
 
             $coords = implode(' ', $array);
-
-        } else if (in_array($type, ['LINESTRING', 'MULTIPOINT']) || is_numeric($array[0][0])) {
-
+        } elseif (in_array($type, ['LINESTRING', 'MULTIPOINT']) || is_numeric($array[0][0])) {
             if (!$type) {
-                if (!$useBestGuess) throw new Exception('Cannot infer shape type from data.');
+                if (!$useBestGuess) {
+                    throw new Exception('Cannot infer shape type from data.');
+                }
                 $type = 'LINESTRING';
             }
 
@@ -72,11 +71,11 @@ class GIS
                     $array
                 )
             );
-
-        } else if (in_array($type, ['POLYGON', 'MULTILINESTRING']) || is_numeric($array[0][0][0])) {
-
+        } elseif (in_array($type, ['POLYGON', 'MULTILINESTRING']) || is_numeric($array[0][0][0])) {
             if (!$type) {
-                if (!$useBestGuess) throw new Exception('Cannot infer shape type from data.');
+                if (!$useBestGuess) {
+                    throw new Exception('Cannot infer shape type from data.');
+                }
                 $type = 'POLYGON';
             }
 
@@ -100,9 +99,7 @@ class GIS
                     $array
                 )
             ) . ')';
-
-        } else if (is_numeric($array[0][0][0][0])) {
-
+        } elseif (is_numeric($array[0][0][0][0])) {
             $type = 'MULTIPOLYGON';
 
             $coords = '(' . implode(
@@ -130,7 +127,6 @@ class GIS
                     $array
                 )
             ) . ')';
-
         }
 
         return sprintf('SRID=%d;%s(%s)', $srid, $type, $coords);
@@ -170,7 +166,7 @@ class GIS
     {
         if (is_array($geometry) && isset($geometry['type'])) {
             return self::TYPES[strtolower($geometry['type'])];
-        } else if (is_array($geometry)) {
+        } elseif (is_array($geometry)) {
             $geometry = self::array_to_ewkt($geometry, null, $useBestGuess);
         }
         if (preg_match(
@@ -226,7 +222,7 @@ class GIS
             if (!isset($projDefs[$srid])) {
                 throw new Exception("Cannot use unregistered SRID $srid. Register it's <a href=\"http://spatialreference.org/ref/epsg/$srid/proj4/\">PROJ.4 definition</a> in GIS::projections.");
             }
-            self::$proj4->addDef('EPSG:' . $srid        , $projDefs[$srid]);
+            self::$proj4->addDef('EPSG:' . $srid, $projDefs[$srid]);
         }
 
         return new Proj('EPSG:' . $srid, self::$proj4);
@@ -234,7 +230,7 @@ class GIS
 
     protected static function reproject($coordinates, $fromProj, $toProj)
     {
-        return self::each($coordinates, function($coordinate) use ($fromProj, $toProj) {
+        return self::each($coordinates, function ($coordinate) use ($fromProj, $toProj) {
             return array_slice(self::$proj4->transform($toProj, new Point($coordinate[0], $coordinate[1], $fromProj))->toArray(), 0, 2);
         });
     }
@@ -255,8 +251,8 @@ class GIS
         return $callback($coordinates);
     }
 
-    public static function distance($geo1,$geo2)
+    public static function distance($geo1, $geo2)
     {
-        return DB::query('select ' . DB::get_schema()->translateDistanceQuery($geo1,$geo2))->value();
+        return DB::query('select ' . DB::get_schema()->translateDistanceQuery($geo1, $geo2))->value();
     }
 }

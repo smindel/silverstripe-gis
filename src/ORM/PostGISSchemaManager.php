@@ -23,7 +23,7 @@ class PostGISSchemaManager extends PostgreSQLSchemaManager
 {
     use GISSchemaManager;
 
-    public function translateDistanceQuery($geo1,$geo2)
+    public function translateDistanceQuery($geo1, $geo2)
     {
         list($wkt1, $srid1) = GIS::split_ewkt($geo1);
         list($wkt2, $srid2) = GIS::split_ewkt($geo2);

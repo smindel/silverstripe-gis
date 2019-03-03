@@ -124,13 +124,13 @@ class Tile
 
         foreach ($distance as $offset => &$dist) {
             $dist = GIS::each(
-                    $array,
-                    function ($lonlat) use ($offset) {
-                        return [
+                $array,
+                function ($lonlat) use ($offset) {
+                    return [
                             (($lonlat[0] + 180 - $offset) / 360) * $this->size * pow(2, $this->z) - $this->topLeft[0],
                             (0.5 - log((1 + sin($lonlat[1] * pi()/180)) / (1 - sin($lonlat[1] * pi()/180))) / (4 * pi())) * $this->size * pow(2, $this->z) - $this->topLeft[1],
                         ];
-                    }
+                }
                 );
         }
 

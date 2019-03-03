@@ -84,7 +84,7 @@ class WebMapTileService extends AbstractGISWebServiceController
         $bufferSize = $config['tile_buffer'];
         if (!is_array($bufferSize)) {
             $bufferSize = array_fill(0, 4, $bufferSize);
-        } else if (count($bufferSize) == 2) {
+        } elseif (count($bufferSize) == 2) {
             $bufferSize += $bufferSize;
         }
 

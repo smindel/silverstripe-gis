@@ -110,7 +110,6 @@ class GeographyTest extends SapphireTest
         $reference = $this->objFromFixture($class, 'distance');
 
         foreach (static::$test_distances as $distance => $count) {
-
             $within = $class::get()
                 ->exclude('ID', $reference->ID)
                 ->filter('GeoLocation:ST_Distance', [$reference->GeoLocation, $distance]);
@@ -135,7 +134,9 @@ class GeographyTest extends SapphireTest
 
         $class = $this->getExtraDataObjects()[0];
 
-        if ($class == TestGeography::class) $this->markTestSkipped('GeometryTypeFilter does not yet work with Geography');
+        if ($class == TestGeography::class) {
+            $this->markTestSkipped('GeometryTypeFilter does not yet work with Geography');
+        }
 
         $this->assertEquals(1, $class::get()->filter('GeoLocation:ST_GeometryType', 'MultiLineString')->count());
         $this->assertEquals(3, $class::get()->filter('GeoLocation:ST_GeometryType:not', 'Polygon')->count());

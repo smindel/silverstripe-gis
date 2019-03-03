@@ -11,10 +11,13 @@ class GeoJsonImporter
         $geoProperty = $geoProperty ?: GIS::of($class);
         $features = (is_array($geoJson) ? $geoJson : json_decode($geoJson, true))['features'];
         foreach ($features as $feature) {
+            if (is_callable($featureCallback)) {
+                $feature = $featureCallback($feature);
+            }
 
-            if (is_callable($featureCallback)) $feature = $featureCallback($feature);
-
-            if ($feature['type'] != 'Feature') continue;
+            if ($feature['type'] != 'Feature') {
+                continue;
+            }
 
             if ($propertyMap === null) {
                 $propertyMap = array_intersect(array_keys($class::config()->get('db')), array_keys($feature['properties']));

@@ -18,7 +18,7 @@ class TestLocation extends DataObject implements TestOnly
 
     private static $webmaptileservice = true;
 
-    public function canView($member = NULL)
+    public function canView($member = null)
     {
         return true;
     }

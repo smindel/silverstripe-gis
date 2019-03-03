@@ -92,23 +92,26 @@ class ImagickRenderer
 
     public function getDraw(&$style)
     {
-        if ($style instanceof ImagickDraw) return $style;
+        if ($style instanceof ImagickDraw) {
+            return $style;
+        }
 
         $style = array_merge($this->defaultStyle, $style);
 
         $draw = new ImagickDraw();
 
         foreach ($style as $key => $value) {
-
             if (substr($key, -5) == 'Color') {
                 $value = new ImagickPixel($value);
             }
 
             if ($value !== null) {
-                if (!is_array($value)) $value = [$value];
+                if (!is_array($value)) {
+                    $value = [$value];
+                }
                 if (method_exists($draw, $key)) {
                     $draw->$key(...$value);
-                } else if (method_exists($draw, 'set' . $key)) {
+                } elseif (method_exists($draw, 'set' . $key)) {
                     $draw->{'set' . $key}(...$value);
                 }
             }
@@ -119,7 +122,9 @@ class ImagickRenderer
 
     public function drawMarker($coordinates, $style = [])
     {
-        if (!count($style)) $this->getDraw($style);
+        if (!count($style)) {
+            $this->getDraw($style);
+        }
 
         $this->image->compositeImage($style['marker_image'], imagick::COMPOSITE_OVER, $coordinates[0] - $style['marker_offset_x'], $coordinates[1] - $style['marker_offset_y']);
     }

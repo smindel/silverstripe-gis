@@ -36,7 +36,9 @@ class GDRenderer
         $this->image = imagecreate($this->width, $this->height);
 
         foreach ($defaultStyle['gd'] as $key => $val) {
-            if ($key == 'pointradius') continue;
+            if ($key == 'pointradius') {
+                continue;
+            }
 
             switch ($key) {
                 case 'pointradius':
@@ -52,7 +54,6 @@ class GDRenderer
                     array_unshift($val, $this->image);
                     $method(...$val);
             }
-
         }
     }
 
