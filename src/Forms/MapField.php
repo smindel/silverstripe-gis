@@ -28,6 +28,8 @@ class MapField extends FormField
      */
     protected $multiEnabled = false;
 
+    protected $hideFormField = false;
+
     protected $controls = [
         'polyline' => true,
         'polygon' => true,
@@ -39,6 +41,8 @@ class MapField extends FormField
 
     public function Field($properties = array())
     {
+        $type = $this->hideFormField ? 'hidden' : 'readonly';
+        $this->setAttribute($type, $type);
         $srid = Config::inst()->get(GIS::class, 'default_srid');
         $proj = Config::inst()->get(GIS::class, 'projections')[$srid];
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.js');
@@ -90,6 +94,12 @@ class MapField extends FormField
     public function enableMulti($enable = true)
     {
         $this->multiEnabled = $enable;
+        return $this;
+    }
+
+    public function hideFormField($hide = true)
+    {
+        $this->hideFormField = $hide;
         return $this;
     }
 

@@ -21,20 +21,28 @@ MapField::$default_location = [
 
 ## Methods
 
+### public function MapField::enableMulti($enable = true)
+
+Enable multi geometries like MultiPoint or MultiPolygon
+
+- __$enable__ (bool) whether to enable or disable the control in the widget
+
+Returns the MapField instance for chaining
+
+### public function MapField::hideFormField($hide = true)
+
+Hide form field showing the actual EWKT value that will be stored in the database.
+
+- __$hide__ (bool) whether to hide or shoe the readonly field
+
+Returns the MapField instance for chaining
+
 ### public function MapField::setControl($shapeType, $enabled = true) : MapField
 
 Hide controls for selected shape types
 
 - __$shapeType__ (string) Leaflet shape type, Note: those are different from the GIS shapes
 - __$enabled__ (bool) whether to enable or disable the control in the widget
-
-Returns the MapField instance for chaining
-
-### public function MapField::enableMulti($enable = true)
-
-Enable multi geometries like MultiPoint or MultiPolygon
-
-- __$enable__ (bool) whether to enable or disable the control in the widget
 
 Returns the MapField instance for chaining
 
