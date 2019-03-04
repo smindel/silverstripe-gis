@@ -150,12 +150,12 @@ class Tile
                 $property = GIS::of(get_class($item));
                 $primary = $this->getRelativePixelCoordinates($item->$property, $reflections);
 
-                if ($this->wrap = false) {
+                if ($this->wrap) {
                     foreach ($reflections as $reflection) {
                         $this->resource->{'draw' . GIS::get_type($item->$property)}($reflection);
                     }
                 } else {
-                    if ($item->Name == 'Bay of Plenty Region') $this->resource->{'draw' . GIS::get_type($item->$property)}($primary);
+                    $this->resource->{'draw' . GIS::get_type($item->$property)}($primary);
                 }
             }
         }

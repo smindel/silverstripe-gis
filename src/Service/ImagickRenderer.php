@@ -168,14 +168,16 @@ class ImagickRenderer
     {
         $draw = $this->getDraw($style);
 
-        foreach ($coordinates as $polyCoordinates) {
-            $points = [];
-            foreach ($polyCoordinates as $j => $coordinate) {
-                $points[$j] = ['x' => $coordinate[0], 'y' => $coordinate[1]];
+        $draw->pathStart();
+        foreach ($coordinates as $ring) {
+            $draw->pathMoveToAbsolute(...array_shift($ring));
+            foreach ($ring as $point) {
+                $draw->pathLineToAbsolute(...$point);
             }
-            $draw->polygon($points);
-            $this->image->drawImage($draw);
+            $draw->pathclose();
         }
+        $draw->pathFinish();
+        $this->image->drawImage($draw);
     }
 
     public function drawMultipoint($multiCoordinates, $style = [])
