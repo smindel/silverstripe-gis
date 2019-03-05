@@ -14,6 +14,8 @@ class TestLocation extends DataObject implements TestOnly
         'GeoLocation' => 'Geometry',
     ];
 
+    private static $default_sort = 'Name';
+
     private static $geojsonservice = true;
 
     private static $webmaptileservice = true;

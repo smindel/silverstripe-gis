@@ -24,31 +24,15 @@ class GeoJsonServiceTest extends FunctionalTest
 
     public function testService()
     {
-        $response = $this->get('geojsonservice/Smindel-GIS-Tests-TestLocation.GeoJson');
+        $this->expectOutputString('{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[175,5],[185,5],[185,-5],[175,-5],[175,5]]]},"properties":{"Name":"Eastern Dateline"}},{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-20,30],[60,30],[60,70],[-20,70],[-20,30]]]},"properties":{"Name":"Europe"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[10,53.5]},"properties":{"Name":"Hamburg"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[-9.1,38.7]},"properties":{"Name":"Lisbon"}},{"type":"Feature","geometry":{"type":"Point","coordinates":[174.78,-41.29]},"properties":{"Name":"Wellington"}},{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-182.5,2.5],[-177.5,2.5],[-177.5,-2.5],[-182.5,-2.5],[-182.5,2.5]]]},"properties":{"Name":"Western Dateline"}}]}');
 
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('application/geo+json', $response->getHeaders()['content-type']);
-
-        $array = json_decode($response->getBody(), true);
-
-        $this->assertEquals(6, count($array['features']));
-
-        $feature = $array['features'][0];
-        $this->assertEquals(['Name'], array_keys($feature['properties']));
-
-        $record = TestLocation::get()->filter('Name', $feature['properties']['Name'])->first();
-        $this->assertEquals($feature['geometry']['coordinates'], GIS::ewkt_to_array($record->GeoLocation)['coordinates']);
+        $this->get('geojsonservice/Smindel-GIS-Tests-TestLocation.GeoJson');
     }
 
     public function testServiceFilter()
     {
-        $response = $this->get('geojsonservice/Smindel-GIS-Tests-TestLocation.GeoJson?Name=Hamburg');
+        $this->expectOutputString('{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10,53.5]},"properties":{"Name":"Hamburg"}}]}');
 
-        $array = json_decode($response->getBody(), true);
-
-        $this->assertEquals(1, count($array['features']));
-
-        $feature = $array['features'][0];
-        $this->assertEquals(['Name' => 'Hamburg'], $feature['properties']);
+        $this->get('geojsonservice/Smindel-GIS-Tests-TestLocation.GeoJson?Name=Hamburg');
     }
 }

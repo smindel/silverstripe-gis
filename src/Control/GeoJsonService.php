@@ -37,10 +37,18 @@ class GeoJsonService extends AbstractGISWebServiceController
 
         $propertyMap = $config['property_map'];
 
+        // The HTTP kernel keeps a copy of the response body, which
+        // can exhaust the memory limit for large data sets. So we
+        // opt out and flush the buffer after processing each feature.
+        if (!($is_test = headers_sent())) header('Content-Type: application/geo+json');
+        echo '{"type":"FeatureCollection","features":[';
+
         foreach ($list as $item) {
             if (!$item->canView()) {
                 continue;
             }
+
+            echo isset($geometry) ? ',' : '';
 
             $geometry = $item->{$config['geometry_field']};
 
@@ -51,24 +59,17 @@ class GeoJsonService extends AbstractGISWebServiceController
 
             $array = GIS::reproject_array(GIS::ewkt_to_array($geometry), 4326);
 
-            $collection[] = [
+            echo json_encode([
                 'type' => 'Feature',
                 'geometry' => [
                     'type' => $array['type'],
                     'coordinates' => $array['coordinates']
                 ],
                 'properties' => $properties,
-            ];
+            ]);
         }
 
-        $raw = [
-            'type' => 'FeatureCollection',
-            'features' => $collection,
-        ];
-
-        $response = Controller::curr()->getResponse();
-        $response->addHeader('Content-Type', 'application/geo+json');
-        $response->setBody(json_encode($raw));
-        return $response;
+        echo ']}';
+        if (!$is_test) die;
     }
 }
