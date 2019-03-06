@@ -62,7 +62,7 @@ class GIS
             $coords = implode(
                 ',',
                 array_map(
-                    function ($coord) {
+                    function($coord) {
                         return implode(
                             ' ',
                             $coord
@@ -82,11 +82,11 @@ class GIS
             $coords = '(' . implode(
                 '),(',
                 array_map(
-                    function ($coords) {
+                    function($coords) {
                         return implode(
                             ',',
                             array_map(
-                                function ($coord) {
+                                function($coord) {
                                     return implode(
                                         ' ',
                                         $coord
@@ -105,15 +105,15 @@ class GIS
             $coords = '(' . implode(
                 '),(',
                 array_map(
-                    function ($coords) {
+                    function($coords) {
                         return '(' . implode(
                             '),(',
                             array_map(
-                                function ($coords) {
+                                function($coords) {
                                     return implode(
                                         ',',
                                         array_map(
-                                            function ($coord) {
+                                            function($coord) {
                                                 return implode(' ', $coord);
                                             },
                                             $coords
@@ -159,7 +159,7 @@ class GIS
             $wkt = $ewkt;
             $srid = (int)$fallbackSrid;
         }
-        return [$wkt,$srid];
+        return [$wkt, $srid];
     }
 
     public static function get_type($geometry, $useBestGuess = false)
@@ -230,7 +230,7 @@ class GIS
 
     protected static function reproject($coordinates, $fromProj, $toProj)
     {
-        return self::each($coordinates, function ($coordinate) use ($fromProj, $toProj) {
+        return self::each($coordinates, function($coordinate) use ($fromProj, $toProj) {
             return array_slice(self::$proj4->transform($toProj, new Point($coordinate[0], $coordinate[1], $fromProj))->toArray(), 0, 2);
         });
     }

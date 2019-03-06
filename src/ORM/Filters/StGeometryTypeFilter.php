@@ -53,7 +53,6 @@ class StGeometryTypeFilter extends SearchFilter
         $where = DB::get_schema()->translateStGeometryTypeFilter($field, $value, $inclusive);
 
         return $this->aggregate ?
-            $this->applyAggregate($query, $where) :
-            $query->where($where);
+            $this->applyAggregate($query, $where) : $query->where($where);
     }
 }

@@ -84,7 +84,6 @@ class GDRenderer
 
     public function drawLineString($coordinates)
     {
-        $boxpadding = 2;
         foreach ($coordinates as $coord) {
             if (isset($prev)) {
                 imageline($this->image, $prev[0], $prev[1], $coord[0], $coord[1], $this->strokecolor);
@@ -95,7 +94,6 @@ class GDRenderer
 
     public function drawPolygon($coordinates)
     {
-        $boxpadding = 2;
         foreach ($coordinates as $coords) {
             $xy = [];
             foreach ($coords as $coord) {

@@ -31,16 +31,14 @@ class GeoJsonService extends AbstractGISWebServiceController
         $config = $this->getConfig($model);
         $list = $this->getRecords($request);
 
-        $collection = [];
-
-        $geometryField = $config['geometry_field'];
-
         $propertyMap = $config['property_map'];
 
         // The HTTP kernel keeps a copy of the response body, which
         // can exhaust the memory limit for large data sets. So we
         // opt out and flush the buffer after processing each feature.
-        if (!($is_test = headers_sent())) header('Content-Type: application/geo+json');
+        if (!($is_test = headers_sent())) {
+            header('Content-Type: application/geo+json');
+        }
         echo '{"type":"FeatureCollection","features":[';
 
         foreach ($list as $item) {
@@ -70,6 +68,8 @@ class GeoJsonService extends AbstractGISWebServiceController
         }
 
         echo ']}';
-        if (!$is_test) die;
+        if (!$is_test) {
+            die;
+        }
     }
 }

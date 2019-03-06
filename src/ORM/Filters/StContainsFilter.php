@@ -57,7 +57,6 @@ class StContainsFilter extends SearchFilter
         $where = DB::get_schema()->$translationMethod($field, $value, $inclusive, $stMethodHint);
 
         return $this->aggregate ?
-            $this->applyAggregate($query, $where) :
-            $query->where($where);
+            $this->applyAggregate($query, $where) : $query->where($where);
     }
 }

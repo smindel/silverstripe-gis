@@ -121,7 +121,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
      *
      * @param GridField $gridField
      * @param SS_List $dataList
-     * @return DataList
+     * @return \SilverStripe\ORM\DataList
      */
     public function getManipulatedData(GridField $gridField, SS_List $dataList)
     {

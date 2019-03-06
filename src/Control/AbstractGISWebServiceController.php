@@ -5,6 +5,7 @@ namespace Smindel\GIS\Control;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Permission;
 use Smindel\GIS\GIS;
 use Exception;
 
@@ -48,14 +49,14 @@ class AbstractGISWebServiceController extends Controller
 
         $skip_filter = false;
         $list = is_callable($config['record_provider'])
-            ? \Closure::fomCallable($config['record_provider'])($request, $skip_filter)
+            ? \Closure::fromCallable($config['record_provider'])($request, $skip_filter)
             : $model::get();
 
         if (!$skip_filter) {
             $queryParams = array_intersect_ukey(
                 $request->requestVars(),
                 $config['searchable_fields'],
-                function ($a, $b) {
+                function($a, $b) {
                     $a = explode(':', $a)[0];
                     $b = explode(':', $b)[0];
                     return strcmp($a, $b);

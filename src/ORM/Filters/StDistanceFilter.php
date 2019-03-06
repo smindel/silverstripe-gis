@@ -5,6 +5,7 @@ namespace Smindel\GIS\ORM\Filters;
 use SilverStripe\ORM\Filters\SearchFilter;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
+use Psr\Cache\InvalidArgumentException;
 
 class StDistanceFilter extends SearchFilter
 {
@@ -57,7 +58,6 @@ class StDistanceFilter extends SearchFilter
         $where = DB::get_schema()->translateStDistanceFilter($field, $value, $inclusive);
 
         return $this->aggregate ?
-            $this->applyAggregate($query, $where) :
-            $query->where($where);
+            $this->applyAggregate($query, $where) : $query->where($where);
     }
 }

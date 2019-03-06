@@ -62,13 +62,13 @@ class DBGeography extends DBComposite
     public function writeToManipulation(&$manipulation)
     {
         // reinstates parent::parent::writeToManipulation()
-        return DBField::writeToManipulation($manipulation);
+        DBField::writeToManipulation($manipulation);
     }
 
     public function saveInto($dataObject)
     {
         // reinstates parent::parent::saveInto()
-        return DBField::saveInto($dataObject);
+        DBField::saveInto($dataObject);
     }
 
     public function setValue($value, $record = null, $markChanged = true)

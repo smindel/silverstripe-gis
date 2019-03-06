@@ -64,7 +64,7 @@ class ImagickRenderer
         $draw->setStrokeOpacity(1);
         $draw->setStrokeColor(new ImagickPixel('rgb(92,92,255)'));
         $draw->setFillColor(new ImagickPixel('rgba(92,92,255,0)'));
-        $draw->setStrokeDashArray([5,5]);
+        $draw->setStrokeDashArray([5, 5]);
         $draw->setStrokeWidth(1);
 
         $draw->polyline([
@@ -141,12 +141,12 @@ class ImagickRenderer
 
     public function drawPoint($coordinates, $style = [])
     {
-        $draw = $this->getDraw($style);
+        $this->getDraw($style);
 
         if (isset($style['marker_image'])) {
-            return $this->drawMarker($coordinates, $style);
+            $this->drawMarker($coordinates, $style);
         } else {
-            return $this->drawCircle($coordinates, $style);
+            $this->drawCircle($coordinates, $style);
         }
     }
 
