@@ -1,0 +1,53 @@
+build:
+    nodes:
+        code-quality:
+            project_setup:
+                override:
+                    - 'true'
+            tests:
+                override:
+                    - php-scrutinizer-run
+                    -
+                        command: phpcs-run
+                        use_website_config: true
+                    - js-scrutinizer-run
+        test-mysql:
+            services:
+                mysql: 5.7
+        test-postgres:
+            environment:
+                variables:
+                    SS_DATABASE_CLASS: 'PostgreSQLDatabase'
+                    SS_DATABASE_SERVER: 'localhost'
+                    SS_DATABASE_NAME: 'scrutinizer'
+                    SS_DATABASE_USERNAME: 'scrutinizer'
+                    SS_DATABASE_PASSWORD: 'scrutinizer'
+            services:
+                postgres-postgis:
+                    image: mdillon/postgis
+                    env:
+                        POSTGRES_PASSWORD: 'postgres'
+                    ports:
+                        - 5432
+            tests:
+                before:
+                    - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "CREATE DATABASE scrutinizer;"'
+                    - PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "CREATE USER scrutinizer WITH PASSWORD 'scrutinizer';"
+                    - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE scrutinizer to scrutinizer;"'
+                    - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -d scrutinizer -c "create extension postgis;"'
+                    - 'composer require silverstripe/postgresql'
+filter:
+    excluded_paths:
+        - 'tests/*'
+        - '*.min.js'
+        - '*/dist/*'
+checks:
+    php: true
+    javascript: true
+coding_style:
+    php:
+        spaces:
+            around_operators:
+                concatenation: true
+            other:
+                after_type_cast: false

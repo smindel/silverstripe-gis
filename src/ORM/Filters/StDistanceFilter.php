@@ -5,7 +5,7 @@ namespace Smindel\GIS\ORM\Filters;
 use SilverStripe\ORM\Filters\SearchFilter;
 use SilverStripe\ORM\DataQuery;
 use SilverStripe\ORM\DB;
-use Psr\Cache\InvalidArgumentException;
+use InvalidArgumentException;
 
 class StDistanceFilter extends SearchFilter
 {
