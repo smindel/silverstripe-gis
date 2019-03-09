@@ -31,6 +31,11 @@ build:
                         - 5432
             tests:
                 before:
+                    - 'php -v'
+                    - 'apt-cache search php | grep dev'
+                    - 'sudo apt-get install -y php-pear php5-dev libmagickwand-dev'
+                    - 'sudo pecl install imagick'
+                    - 'php -m'
                     - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "CREATE DATABASE scrutinizer;"'
                     - PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "CREATE USER scrutinizer WITH PASSWORD 'scrutinizer';"
                     - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE scrutinizer to scrutinizer;"'

@@ -34,7 +34,7 @@ class GIS
             return $field;
         }
 
-        foreach ($dataObjectClass::config()->get('db') as $field => $type) {
+        foreach ($dataObjectClass::config()->get('db') ?: [] as $field => $type) {
             if ($type == 'Geography' || $type == 'Geometry') {
                 return $field;
             }
