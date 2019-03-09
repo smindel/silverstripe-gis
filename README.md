@@ -9,13 +9,13 @@
 [![Total Downloads](https://poser.pugx.org/smindel/silverstripe-gis/downloads.svg)](https://packagist.org/packages/smindel/silverstripe-gis)
 [![License](http://img.shields.io/packagist/l/smindel/silverstripe-gis.svg?style=flat)](LICENSE.md)
 
-GIS developer toolkit for SilverStripe
+GIS developer toolkit for SilverStripe, turns SilverStripe into a [GeoCMS](https://en.wikipedia.org/wiki/Geospatial_content_management_system) and map service.
 
 ![feature name](docs/images/MapField.png)
 
 ## Features
 
-- __New field types:__ geo field types Geometry and Geography for DataObjects
+- __New field types:__ geo field types Geometry and Geography (Postgres only) for DataObjects
 - __New form fields:__ edit the new geo types using the MapField or add maps to GridFields in ModelAdmin
 - __Configurable projections:__ support for multiple projections through proj4
 - __Primitive and multipart geometries:__ Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
@@ -25,6 +25,7 @@ GIS developer toolkit for SilverStripe
 - __GeoJSON imorter:__ import a GeoJSON source as DataObjects
 - __GeoJSON web service:__ GeoJSON API for DataObjects
 - __WMTS:__ render DataObjects to ZXY tiles e.g. for a leaflet frontend
+- __Rasters:__ (Postgres only) import GeoTIFFs, access values, generate stats and render map tiles
 
 
 ## Requirements
@@ -75,6 +76,7 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 - [MapField](docs/en/MapField.md) - Form field to edit geo types
 - [GeoJsonService](docs/en/GeoJsonService.md) - Expose your DataObjects dynamically in GeoJSON format though an API
 - [WebMapTileService](docs/en/WebMapTileService.md) - Generate map tiles for Leaflet or Openlayers from your DataObjects
+- [Rasters](docs/en/Raster.md) - Import raster files, access values and stats, render WMTS tiles
 
 ## Note
 
