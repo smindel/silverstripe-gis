@@ -1,11 +1,12 @@
 # SilverStripe GIS Module
 
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/?branch=master)
-[![Code Coverage](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/?branch=master)
-[![Build Status](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/build.png?b=master)](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/build-status/master)
-[![Code Intelligence Status](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/code-intelligence.svg?b=master)](https://scrutinizer-ci.com/code-intelligence)
 [![Build Status](https://travis-ci.org/smindel/silverstripe-gis.svg?branch=master)](https://travis-ci.org/smindel/silverstripe-gis)
+[![Build Status](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/build.png?b=master)](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/build-status/master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/?branch=master)
+[![Code Intelligence Status](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/code-intelligence.svg?b=master)](https://scrutinizer-ci.com/code-intelligence)
+[![Code Coverage](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/smindel/silverstripe-gis/?branch=master)
 [![Version](http://img.shields.io/packagist/v/smindel/silverstripe-gis.svg?style=flat)](https://packagist.org/packages/smindel/silverstripe-gis)
+[![Total Downloads](https://poser.pugx.org/smindel/silverstripe-gis/downloads.svg)](https://packagist.org/packages/smindel/silverstripe-gis)
 [![License](http://img.shields.io/packagist/l/smindel/silverstripe-gis.svg?style=flat)](LICENSE.md)
 
 GIS developer toolkit for SilverStripe
