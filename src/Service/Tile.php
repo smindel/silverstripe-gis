@@ -105,7 +105,7 @@ class Tile
 
     public function getRelativePixelCoordinates($wkt, &$reflection = null)
     {
-        $array = GIS::reproject_array(GIS::ewkt_to_array($wkt), 4326);
+        $array = GIS::reproject($wkt, 4326);
 
         { // determin rendering offset
             $min = $max = null;

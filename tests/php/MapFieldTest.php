@@ -19,7 +19,7 @@ class MapFieldTest extends SapphireTest
 
     public function testMapField()
     {
-        $field = MapField::create('Location', null, GIS::array_to_ewkt(['srid' => '2193', 'type' => 'Point', 'coordinates' => [5436343, 1760120]]))
+        $field = MapField::create('Location', null, GIS::to_ewkt(['srid' => '2193', 'type' => 'Point', 'coordinates' => [5436343, 1760120]]))
             ->setControl('polyline', false)
             ->setControl('polygon', false)
             ->enableMulti();

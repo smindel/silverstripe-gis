@@ -42,7 +42,7 @@ class GeographyTest extends SapphireTest
         $class = $this->getExtraDataObjects()[0];
 
         // write a geometry
-        $wkt = GIS::array_to_ewkt([10,53.5]);
+        $wkt = GIS::to_ewkt([10,53.5]);
         $address = $class::create();
         $address->GeoLocation = $wkt;
         $id = $address->write();
@@ -52,7 +52,7 @@ class GeographyTest extends SapphireTest
         $this->assertEquals($wkt, $address1->GeoLocation);
 
         // change and check changed
-        $wkt = GIS::array_to_ewkt([174.5,-41.3]);
+        $wkt = GIS::to_ewkt([174.5,-41.3]);
         $address->GeoLocation = $wkt;
         $address->write();
         $this->assertEquals($wkt, $class::get()->byID($id)->GeoLocation);

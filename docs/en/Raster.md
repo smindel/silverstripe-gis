@@ -53,7 +53,7 @@ class Temperature extends Raster
 You can now use the raster methods:
 
 ```php
-$temperature = Temperature::create()->ST_Value(GIS::ewkt_to_array('SRID=4326;POINT(174.78 -41.29)'));
+$temperature = Temperature::create()->ST_Value(GIS::to_array('SRID=4326;POINT(174.78 -41.29)'));
 // 130
 ```
 

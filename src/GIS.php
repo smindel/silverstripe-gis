@@ -6,6 +6,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DB;
+use Smindel\GIS\ORM\FieldType\DBGeography;
 use proj4php\Proj4php;
 use proj4php\Proj;
 use proj4php\Point;
@@ -41,100 +42,62 @@ class GIS
         }
     }
 
-    public static function array_to_ewkt($array, $srid = null, $useBestGuess = false)
+    public static function to_ewkt($geo)
     {
-        $type = isset($array['type']) ? strtoupper($array['type']) : null;
-        $srid = isset($array['srid']) ? $array['srid'] : ($srid ?: Config::inst()->get(self::class, 'default_srid'));
-        $array = isset($array['coordinates']) ? $array['coordinates'] : $array;
+        if (is_string($geo)) return $geo;
 
-        if ($type == 'POINT' || is_numeric($array[0])) {
-            $type = 'POINT';
+        if ($geo instanceof DBGeography) $geo = $geo->getValue();
 
-            $coords = implode(' ', $array);
-        } elseif (in_array($type, ['LINESTRING', 'MULTIPOINT']) || is_numeric($array[0][0])) {
-            if (!$type) {
-                if (!$useBestGuess) {
-                    throw new Exception('Cannot infer shape type from data.');
-                }
-                $type = 'LINESTRING';
+        $type = isset($geo['type']) ? strtoupper($geo['type']) : null;
+        $srid = isset($geo['srid']) ? $geo['srid'] : Config::inst()->get(self::class, 'default_srid');
+        $array = isset($geo['coordinates']) ? $geo['coordinates'] : $geo;
+
+        if (!$type) {
+            switch (true) {
+                case is_numeric($array[0]): $type = 'POINT'; break;
+                case is_numeric($array[0][0]): $type = 'LINESTRING'; break;
+                case is_numeric($array[0][0][0]): $type = 'POLYGON'; break;
+                case is_numeric($array[0][0][0][0]): $type = 'MULTIPOLYGON'; break;
             }
-
-            $coords = implode(
-                ',',
-                array_map(
-                    function($coord) {
-                        return implode(
-                            ' ',
-                            $coord
-                        );
-                    },
-                    $array
-                )
-            );
-        } elseif (in_array($type, ['POLYGON', 'MULTILINESTRING']) || is_numeric($array[0][0][0])) {
-            if (!$type) {
-                if (!$useBestGuess) {
-                    throw new Exception('Cannot infer shape type from data.');
-                }
-                $type = 'POLYGON';
-            }
-
-            $coords = '(' . implode(
-                '),(',
-                array_map(
-                    function($coords) {
-                        return implode(
-                            ',',
-                            array_map(
-                                function($coord) {
-                                    return implode(
-                                        ' ',
-                                        $coord
-                                    );
-                                },
-                                $coords
-                            )
-                        );
-                    },
-                    $array
-                )
-            ) . ')';
-        } elseif (is_numeric($array[0][0][0][0])) {
-            $type = 'MULTIPOLYGON';
-
-            $coords = '(' . implode(
-                '),(',
-                array_map(
-                    function($coords) {
-                        return '(' . implode(
-                            '),(',
-                            array_map(
-                                function($coords) {
-                                    return implode(
-                                        ',',
-                                        array_map(
-                                            function($coord) {
-                                                return implode(' ', $coord);
-                                            },
-                                            $coords
-                                        )
-                                    );
-                                },
-                                $coords
-                            )
-                        ) . ')';
-                    },
-                    $array
-                )
-            ) . ')';
         }
 
-        return sprintf('SRID=%d;%s(%s)', $srid, $type, $coords);
+        $replacements = [
+            '/(?<=\d),(?=-|\d)/' => ' ',
+            '/\[\[\[\[/' => '(((',
+            '/\]\]\]\]/' => ')))',
+            '/\[\[\[/' => '((',
+            '/\]\]\]/' => '))',
+            '/\[\[/' => '(',
+            '/\]\]/' => ')',
+            '/\[/' => '',
+            '/\]/' => '',
+        ];
+
+        $coords = preg_replace(array_keys($replacements), array_values($replacements), json_encode($array));
+
+        return sprintf('SRID=%d;%s%s', $srid, $type, $type == 'POINT' ? "($coords)" : $coords);
     }
 
-    public static function ewkt_to_array($ewkt)
+    public static function to_array($geo)
     {
-        if (preg_match(self::EWKT_PATTERN, $ewkt, $matches)) {
+        if ($geo instanceof DBGeography) return $geo->getValue();
+
+        if (is_array($geo)) {
+            if (isset($geo['coordinates'])) return $geo;
+            switch (true) {
+                case is_numeric($geo[0]): $type = 'Point'; break;
+                case is_numeric($geo[0][0]): $type = 'LineString'; break;
+                case is_numeric($geo[0][0][0]): $type = 'Polygon'; break;
+                case is_numeric($geo[0][0][0][0]): $type = 'MultiPolygon'; break;
+            }
+            return [
+                'srid' => Config::inst()->get(self::class, 'default_srid'),
+                'type' => $type,
+                'cooridinates' => $geo
+            ];
+        }
+
+        if (preg_match(self::EWKT_PATTERN, $geo, $matches)) {
             $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
             if (strtolower($matches[3]) != 'point') {
                 $coords = "[$coords]";
@@ -162,16 +125,16 @@ class GIS
         return [$wkt, $srid];
     }
 
-    public static function get_type($geometry, $useBestGuess = false)
+    public static function get_type($geo, $useBestGuess = false)
     {
-        if (is_array($geometry) && isset($geometry['type'])) {
-            return self::TYPES[strtolower($geometry['type'])];
-        } elseif (is_array($geometry)) {
-            $geometry = self::array_to_ewkt($geometry, null, $useBestGuess);
+        if (is_array($geo) && isset($geo['type'])) {
+            return self::TYPES[strtolower($geo['type'])];
+        } elseif (is_array($geo)) {
+            $geo = self::to_ewkt($geo);
         }
         if (preg_match(
             '/;(' . implode('|', array_keys(self::TYPES)) . ')\(/i',
-            strtolower(substr($geometry, 8, 30)),
+            strtolower(substr($geo, 8, 30)),
             $matches
         )) {
             return self::TYPES[$matches[1]];
@@ -181,22 +144,18 @@ class GIS
     /**
      * reproject an array representation of a geometry to the given srid
      */
-    public static function reproject_array($array, $toSrid = 4326)
+    public static function reproject($geo, $toSrid = 4326)
     {
-        if (isset($array['srid'])) {
-            $fromSrid = $array['srid'];
-            $fromCoordinates = $array['coordinates'];
-            $type = $array['type'];
-        } else {
-            $fromSrid = Config::inst()->get(self::class, 'default_srid') ?: 4326;
-            $fromCoordinates = $array;
-            $type = is_array($array[0]) ? (is_array($array[0][0]) ? 'Polygon' : 'LineString') : 'Point';
-        }
+        $array = self::to_array($geo);
+
+        $fromSrid = $array['srid'];
+        $fromCoordinates = $array['coordinates'];
+        $type = $array['type'];
 
         if ($fromSrid != $toSrid) {
             $fromProj = self::get_proj4($fromSrid);
             $toProj = self::get_proj4($toSrid);
-            $toCoordinates = self::reproject($fromCoordinates, $fromProj, $toProj);
+            $toCoordinates = self::reproject_array($fromCoordinates, $fromProj, $toProj);
         } else {
             $toCoordinates = $fromCoordinates;
         }
@@ -228,7 +187,7 @@ class GIS
         return new Proj('EPSG:' . $srid, self::$proj4);
     }
 
-    protected static function reproject($coordinates, $fromProj, $toProj)
+    protected static function reproject_array($coordinates, $fromProj, $toProj)
     {
         return self::each($coordinates, function($coordinate) use ($fromProj, $toProj) {
             return array_slice(self::$proj4->transform($toProj, new Point($coordinate[0], $coordinate[1], $fromProj))->toArray(), 0, 2);

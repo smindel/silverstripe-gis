@@ -80,4 +80,4 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 
 ## Note
 
-The module is incompatible with the framework version 4.3.1, which disallowed parameterised field assignments. The issue [has been fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815), so that all versions of the framework before and after 4.3.1 are working.
+The module is incompatible with the framework versions 4.3.1 and 4.3.2, which disallowed parameterised field assignments. The issue [has been fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815), so that all versions of the framework before 4.3.1 and after 4.3.2 are working.

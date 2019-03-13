@@ -127,8 +127,8 @@ class WebMapTileService extends AbstractGISWebServiceController
 
         $list = $list->filter(
             $geometryField . ':ST_Intersects',
-            GIS::array_to_ewkt(
-                GIS::reproject_array(
+            GIS::to_ewkt(
+                GIS::reproject(
                     $bounds,
                     Config::inst()->get(GIS::class, 'default_srid')
                 )
@@ -159,8 +159,8 @@ class WebMapTileService extends AbstractGISWebServiceController
         list($lon1, $lat1) = Tile::zxy2lonlat($z, $x, $y);
         list($lon2, $lat2) = Tile::zxy2lonlat($z, $x + 1, $y + 1);
 
-        list($x1, $y1) = ($srid = $raster->getSrid()) == 4326 ? [$lon1, $lat1] : GIS::reproject_array(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon1, $lat1]], $srid)['coordinates'];
-        list($x2, $y2) = ($srid = $raster->getSrid()) == 4326 ? [$lon2, $lat2] : GIS::reproject_array(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon2, $lat2]], $srid)['coordinates'];
+        list($x1, $y1) = ($srid = $raster->getSrid()) == 4326 ? [$lon1, $lat1] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon1, $lat1]], $srid)['coordinates'];
+        list($x2, $y2) = ($srid = $raster->getSrid()) == 4326 ? [$lon2, $lat2] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon2, $lat2]], $srid)['coordinates'];
 
         $sfx = ($x2 - $x1) / $config['tile_size'];
         $sfy = ($y2 - $y1) / $config['tile_size'];

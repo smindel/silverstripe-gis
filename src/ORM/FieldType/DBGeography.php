@@ -47,7 +47,7 @@ class DBGeography extends DBComposite
         list($wkt, $srid) = GIS::split_ewkt($value);
 
         if ($srid != 4326) {
-            list($wkt) = GIS::split_ewkt(GIS::array_to_ewkt(GIS::reproject_array(GIS::ewkt_to_array($value), 4326)));
+            list($wkt) = GIS::split_ewkt(GIS::to_ewkt(GIS::reproject($value, 4326)));
         }
 
         return ['ST_GeogFromText(?)' => [$wkt]];

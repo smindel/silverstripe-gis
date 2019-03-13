@@ -58,7 +58,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         return array(
             'before' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s" style="z-index:0;"></div>',
-                GIS::array_to_ewkt([$defaultLocation['lon'], $defaultLocation['lat']]),
+                GIS::to_ewkt([$defaultLocation['lon'], $defaultLocation['lat']]),
                 htmlentities(
                     self::get_geojson_from_list(
                         $gridField->getList(),
@@ -91,7 +91,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                 continue;
             }
 
-            $array = GIS::ewkt_to_array($item->$geometryField);
+            $array = GIS::to_array($item->$geometryField);
 
             if ($srid != 4326) {
                 if (strtolower($array['type']) == 'point') {

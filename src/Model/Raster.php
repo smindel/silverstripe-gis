@@ -85,7 +85,7 @@ class Raster
         $sql .= $geo ? sprintf('
             WHERE ST_Intersects(%1$s, ST_GeomFromText(\'%2$s\', %3$d))',
             $this->rasterColumn,
-            ...GIS::split_ewkt(GIS::array_to_ewkt($geo))
+            ...GIS::split_ewkt(GIS::to_ewkt($geo))
         ) : '';
 
         return DB::query($sql)->first();
@@ -93,7 +93,7 @@ class Raster
 
     public function ST_Value($geo, $band = 1)
     {
-        $split = GIS::split_ewkt(GIS::array_to_ewkt($geo));
+        $split = GIS::split_ewkt(GIS::to_ewkt($geo));
 
         $sql = sprintf('
             SELECT
