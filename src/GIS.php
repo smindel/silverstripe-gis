@@ -44,9 +44,13 @@ class GIS
 
     public static function to_ewkt($geo)
     {
-        if (is_string($geo)) return $geo;
+        if (is_string($geo)) {
+            return $geo;
+        }
 
-        if ($geo instanceof DBGeography) $geo = $geo->getValue();
+        if ($geo instanceof DBGeography) {
+            $geo = $geo->getValue();
+        }
 
         $type = isset($geo['type']) ? strtoupper($geo['type']) : null;
         $srid = isset($geo['srid']) ? $geo['srid'] : Config::inst()->get(self::class, 'default_srid');
@@ -80,10 +84,14 @@ class GIS
 
     public static function to_array($geo)
     {
-        if ($geo instanceof DBGeography) return $geo->getValue();
+        if ($geo instanceof DBGeography) {
+            return $geo->getValue();
+        }
 
         if (is_array($geo)) {
-            if (isset($geo['coordinates'])) return $geo;
+            if (isset($geo['coordinates'])) {
+                return $geo;
+            }
             switch (true) {
                 case is_numeric($geo[0]): $type = 'Point'; break;
                 case is_numeric($geo[0][0]): $type = 'LineString'; break;

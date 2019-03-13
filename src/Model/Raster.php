@@ -118,7 +118,7 @@ class Raster
             $this->tableName,
             $this->rasterColumn,
             $band,
-            $split[0],$split[1]
+            $split[0], $split[1]
         );
 
         return DB::query($sql)->value();
