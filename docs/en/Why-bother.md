@@ -7,6 +7,7 @@ If all you want to do is save a lat/lon with your DataObject and use that on a m
 - Is your geo data projected or do you need to project it?
 - Would you like to render map tiles from your data to be used in map frontends like Leaflet or Openlayers?
 - Would you like to produce GeoJSON from your data on the fly to be used in map frontends like Leaflet or Openlayers?
+- Are you dealing with raster data?
 
 If any of the above words didn't make sense to you, carry on ready my own layman's theory of GIS.
 
@@ -26,7 +27,7 @@ Geographies are a spherical representation, Geometries cartesian representations
 
 ## MySQL vs Postgres
 
-MySQL has only limited GIS features and does not support Geographies.
+MySQL has only limited GIS features and does not support geographies or raster data.
 
 ## Precision and accuracy
 

@@ -55,7 +55,7 @@ class GeoJsonService extends AbstractGISWebServiceController
                 $properties[$propertyName] = $item->$fieldName;
             }
 
-            $array = GIS::reproject_array(GIS::ewkt_to_array($geometry), 4326);
+            $array = GIS::reproject($geometry, 4326);
 
             echo json_encode([
                 'type' => 'Feature',

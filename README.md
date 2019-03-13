@@ -41,9 +41,7 @@ It's recommended to use composer to install the module
     $ composer require smindel/silverstripe-gis
     $ vendor/bin/sake dev/build flush=all
 
-__MySQL__ natively supports geodetic coordinate systems for geometries since version 5.7.6.
-
-__MariaDB__ does not currently support ST\_Distance\_Sphere(), so that you cannot calculate distances.
+__MySQL__ natively supports geometries since version 5.7.6 but not geographies or raster data.
 
 When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run the following commands:
 
@@ -80,4 +78,4 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 
 ## Note
 
-The module is incompatible with the framework version 4.3.1, which disallowed parameterised field assignments. The issue [has been fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815), so that all versions of the framework before and after 4.3.1 are working.
+The module is incompatible with the framework versions 4.3.1 and 4.3.2, which disallowed parameterised field assignments. The issue [has been fixed](https://github.com/silverstripe/silverstripe-framework/pull/8815), so that all versions of the framework before 4.3.1 and after 4.3.2 are working.

@@ -39,8 +39,8 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
      */
     public function getHTMLFragments($gridField)
     {
-        $srid = Config::inst()->get(GIS::class, 'default_srid');
-        $proj = Config::inst()->get(GIS::class, 'projections')[$srid];
+        $srid = GIS::config()->default_srid;
+        $proj = GIS::config()->projections[$srid];
 
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.js');
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.markercluster.js');
@@ -58,7 +58,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
         return array(
             'before' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s" style="z-index:0;"></div>',
-                GIS::array_to_ewkt([$defaultLocation['lon'], $defaultLocation['lat']]),
+                GIS::to_ewkt([$defaultLocation['lon'], $defaultLocation['lat']]),
                 htmlentities(
                     self::get_geojson_from_list(
                         $gridField->getList(),
@@ -77,8 +77,8 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
 
         $geometryField = $geometryField ?: GIS::of($modelClass);
 
-        if (($srid = Config::inst()->get(GIS::class, 'default_srid')) != 4326) {
-            $projDef = Config::inst()->get(GIS::class, 'projections')[$srid];
+        if (($srid = GIS::config()->default_srid) != 4326) {
+            $projDef = GIS::config()->projections[$srid];
             $proj4 = new Proj4php();
             $proj4->addDef('EPSG:' . $srid, $projDef);
             $proj = new Proj('EPSG:' . $srid, $proj4);
@@ -91,7 +91,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                 continue;
             }
 
-            $array = GIS::ewkt_to_array($item->$geometryField);
+            $array = GIS::to_array($item->$geometryField);
 
             if ($srid != 4326) {
                 if (strtolower($array['type']) == 'point') {

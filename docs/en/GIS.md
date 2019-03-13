@@ -30,12 +30,11 @@ GIS::$projections = [
 
 ## Methods
 
-### public static function GIS::array_to_ewkt($array, $srid = null) : string
+### public static function GIS::to_ewkt($array) : string
 
 Transforms a geometry from array to EWKT representation
 
 - __$array__ (array) geo as simple or explicit array
-- __$srid__ (int) SRID to instead of default if geo was supplied as simple array
 
 Returns the EWKT representation of the given array
 
@@ -48,7 +47,7 @@ Returns the distance between geometries
 
 Returns the distance between the supplied geos in the projections unit (e.g. m, km or degrees)
 
-### public static function GIS::ewkt_to_array($ewkt) : array
+### public static function GIS::to_array($ewkt) : array
 
 Transforms a geometry from EWKT to explicit array representation
 
@@ -72,7 +71,7 @@ Returns the name of the geometry property of the given DataObject class, be that
 
 Returns the DataObject classes preferred geo field as a string or null if none can be found
 
-### public static function GIS::reproject_array($array, $toSrid = 4326) : array
+### public static function GIS::reproject($array, $toSrid = 4326) : array
 
 Re-projects a geometry
 

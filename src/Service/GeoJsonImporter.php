@@ -25,7 +25,7 @@ class GeoJsonImporter
             }
 
             $obj = $class::create();
-            $obj->$geoProperty = GIS::array_to_ewkt($feature['geometry']);
+            $obj->$geoProperty = GIS::to_ewkt($feature['geometry']);
             foreach ($propertyMap as $doProperty => $jsonProperty) {
                 $obj->$doProperty = $feature['properties'][$jsonProperty];
             }

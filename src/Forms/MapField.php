@@ -43,8 +43,8 @@ class MapField extends FormField
     {
         $type = $this->hideFormField ? 'hidden' : 'readonly';
         $this->setAttribute($type, $type);
-        $srid = Config::inst()->get(GIS::class, 'default_srid');
-        $proj = Config::inst()->get(GIS::class, 'projections')[$srid];
+        $srid = GIS::config()->default_srid;
+        $proj = GIS::config()->projections[$srid];
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.js');
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet-search.js');
         Requirements::javascript('smindel/silverstripe-gis: client/dist/js/leaflet.draw.1.0.4.js');
@@ -83,7 +83,7 @@ class MapField extends FormField
 
     public static function getDefaultSRID()
     {
-        return Config::inst()->get(GIS::class, 'default_srid');
+        return GIS::config()->default_srid;
     }
 
     public function getDefaultLocation()
