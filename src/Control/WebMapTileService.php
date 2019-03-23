@@ -149,7 +149,6 @@ class WebMapTileService extends AbstractGISWebServiceController
     public function raster_renderer($request)
     {
         $model = $this->model = $this->getModel($request);
-        $config = $this->getConfig($model);
         $raster = singleton($model);
 
         $z = $request->param('z');
@@ -162,82 +161,22 @@ class WebMapTileService extends AbstractGISWebServiceController
         list($x1, $y1) = ($srid = $raster->getSrid()) == 4326 ? [$lon1, $lat1] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon1, $lat1]], $srid)['coordinates'];
         list($x2, $y2) = ($srid = $raster->getSrid()) == 4326 ? [$lon2, $lat2] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon2, $lat2]], $srid)['coordinates'];
 
-        $sfx = ($x2 - $x1) / $config['tile_size'];
-        $sfy = ($y2 - $y1) / $config['tile_size'];
-
-        DB::query("set bytea_output='escape'");
-
-        $rasterDef = ($colormap = $raster->getColorMap())
-            ? sprintf('ST_ColorMap(%1$s, \'%2$s\')', $raster->getRasterColumn(), $raster->getColorMap())
-            : $raster->getRasterColumn();
-
-        $sql = sprintf('
-            SELECT
-                ST_AsPNG(%3$s) pngbinary
-            FROM
-                ST_Retile(
-                    \'%1$s\'::regclass,
-                    \'%2$s\',
-                    ST_MakeEnvelope(%4$f, %5$f, %6$f, %7$f, %8$d),
-                    %9$f, %10$f,
-                    %11$d, %11$d
-                ) %2$s
-            LIMIT 1;
-            ',
-            $raster->getTableName(),
-            $raster->getRasterColumn(),
-            $rasterDef,
-            $x1, $y1, $x2, $y2,
-            $srid,
-            $sfx, $sfy,
-            $config['tile_size']
-        );
-
-        $query = DB::query($sql);
-
-        $raw = $query->value();
+        $tile_size_x = $tile_size_y = 256;
+        $input_filename = $raster->getFullPath();
+        $output_filename = '/dev/stdout';
         $response = $this->getResponse();
 
-        $dimensions = $raster->getDimensions();
+        $cmd = sprintf('
+            gdal_translate -of PNG -q -projwin %1$f, %2$f, %3$f, %4$f -outsize %5$d %6$d %7$s %8$s',
+            $x1, $y1, $x2, $y2,
+            $tile_size_x, $tile_size_y,
+            $input_filename,
+            $output_filename
+        );
 
-        $padding[0] = ($dimensions[0] - $x1) / $sfx;
-        $padding[1] = ($dimensions[1] - $y1) / $sfy;
-        $padding[2] = ($x2 - $dimensions[2]) / $sfx;
-        $padding[3] = ($y2 - $dimensions[3]) / $sfy;
-
-        $response->addHeader('Content-Type', 'image/png');
-        if (!$raw) {
-            $response->setBody(base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII='));
-        } else if (max(...$padding) > 0) {
-
-            $imgout = imagecreatetruecolor($config['tile_size'], $config['tile_size']);
-            imagecolortransparent($imgout, imagecolorallocatealpha($imgout, 0, 0, 0, 0));
-            imagealphablending($imgout, true);
-
-            imagecopyresampled(
-                $imgout,
-                imagecreatefromstring(pg_unescape_bytea($raw)),
-                $padding[0] > 0 ? $padding[0] : 0,
-                $padding[1] > 0 ? $padding[1] : 0,
-                0,
-                0,
-                $config['tile_size'],
-                $config['tile_size'],
-                (max($x1, $x2) - min($x1, $x2)) / abs($sfx),
-                (max($y1, $y2) - min($y1, $y2)) / abs($sfy)
-            );
-
-            ob_start();
-            imagepng($imgout);
-
-            $response->setBody(ob_get_clean());
-        } else {
-            $response->setBody(pg_unescape_bytea($raw));
-        }
-
-        DB::query("set bytea_output='hex'");
-
-        return $response;
+        return $response
+            ->addHeader('Content-Type', 'image/png')
+            ->setBody(`$cmd`);
     }
 
     protected function cacheFile($cache)

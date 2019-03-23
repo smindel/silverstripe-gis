@@ -80,25 +80,30 @@ class GIS
 
     public static function to_array($geo)
     {
-        if ($geo instanceof DBGeography) return $geo->getValue();
+        if ($geo instanceof DBGeography) $geo = $geo->getValue();
 
         if (is_array($geo)) {
+
             if (isset($geo['coordinates'])) return $geo;
+
             switch (true) {
                 case is_numeric($geo[0]): $type = 'Point'; break;
                 case is_numeric($geo[0][0]): $type = 'LineString'; break;
                 case is_numeric($geo[0][0][0]): $type = 'Polygon'; break;
                 case is_numeric($geo[0][0][0][0]): $type = 'MultiPolygon'; break;
             }
+
             return [
                 'srid' => Config::inst()->get(self::class, 'default_srid'),
                 'type' => $type,
-                'cooridinates' => $geo
+                'coordinates' => $geo
             ];
         }
 
         if (preg_match(self::EWKT_PATTERN, $geo, $matches)) {
+
             $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
+
             if (strtolower($matches[3]) != 'point') {
                 $coords = "[$coords]";
             }
@@ -122,6 +127,7 @@ class GIS
             $wkt = $ewkt;
             $srid = (int)$fallbackSrid;
         }
+
         return [$wkt, $srid];
     }
 
@@ -132,6 +138,7 @@ class GIS
         } elseif (is_array($geo)) {
             $geo = self::to_ewkt($geo);
         }
+
         if (preg_match(
             '/;(' . implode('|', array_keys(self::TYPES)) . ')\(/i',
             strtolower(substr($geo, 8, 30)),
@@ -177,10 +184,13 @@ class GIS
         self::$proj4 = self::$proj4 ?: new Proj4php();
 
         if (!self::$proj4->hasDef('EPSG:' . $srid)) {
+
             $projDefs = Config::inst()->get(self::class, 'projections');
+
             if (!isset($projDefs[$srid])) {
                 throw new Exception("Cannot use unregistered SRID $srid. Register it's <a href=\"http://spatialreference.org/ref/epsg/$srid/proj4/\">PROJ.4 definition</a> in GIS::projections.");
             }
+
             self::$proj4->addDef('EPSG:' . $srid, $projDefs[$srid]);
         }
 
@@ -201,9 +211,11 @@ class GIS
         }
 
         if (is_array($coordinates[0])) {
+
             foreach ($coordinates as &$coordinate) {
                 $coordinate = self::each($coordinate, $callback);
             }
+
             return $coordinates;
         }
 
