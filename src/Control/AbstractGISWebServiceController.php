@@ -14,7 +14,8 @@ class AbstractGISWebServiceController extends Controller
     public function getModel($request)
     {
         $request = $request ?: $this->getRequest();
-        return str_replace('-', '\\', $request->param('Model'));
+        $class = str_replace('-', '\\', $request->param('Model'));
+        return $class;
     }
 
     public function getConfig($model)

@@ -33,7 +33,7 @@ build:
                 before:
                     - 'php -v'
                     - 'apt-cache search php | grep dev'
-                    - 'sudo apt-get install -y php-pear php5-dev libmagickwand-dev'
+                    - 'sudo apt-get install -y php-pear php5-dev libmagickwand-dev gdal-bin'
                     - 'sudo pecl install imagick'
                     - 'php -m'
                     - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "CREATE DATABASE scrutinizer;"'

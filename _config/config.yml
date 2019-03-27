@@ -6,3 +6,5 @@ SilverStripe\Core\Injector\Injector:
     class: Smindel\GIS\Service\GDRenderer
 SilverStripe\ORM\DataObject:
   tile_renderer: 'vector_renderer'
+SilverStripe\Assets\File:
+  tile_renderer: 'raster_renderer'

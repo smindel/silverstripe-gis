@@ -9,11 +9,15 @@ use SilverStripe\Security\Permission;
 use SilverStripe\ORM\DB;
 use Smindel\GIS\GIS;
 use Smindel\GIS\Service\Tile;
+use Smindel\GIS\Model\Raster;
+use SilverStripe\Assets\File;
+use Exception;
 
 class WebMapTileService extends AbstractGISWebServiceController
 {
     private static $url_handlers = array(
-        '$Model//$z/$x/$y' => 'handleAction',
+        '$Model//$ID!/$z!/$x!/$y!' => 'handleAction',
+        '$Model//$z!/$x!/$y!' => 'handleAction',
     );
 
     /**
@@ -149,7 +153,20 @@ class WebMapTileService extends AbstractGISWebServiceController
     public function raster_renderer($request)
     {
         $model = $this->model = $this->getModel($request);
-        $raster = singleton($model);
+        if (is_a($model, File::class, true)) {
+            $file = $model::get()->byID($request->param('ID'));
+            if (!$file) {
+                return $this->getResponse()->setStatusCode(404);
+            }
+            if (!$file->canView()) {
+                return $this->getResponse()->setStatusCode(403);
+            }
+            $raster = new Raster(PUBLIC_PATH . $file->getURL());
+        } else if (is_a($model, Raster::class, true)) {
+            $raster = singleton($model);
+        } else {
+            throw new Exception('Cannot render tile from ' . $model);
+        }
 
         $z = $request->param('z');
         $x = $request->param('x');
@@ -162,21 +179,16 @@ class WebMapTileService extends AbstractGISWebServiceController
         list($x2, $y2) = ($srid = $raster->getSrid()) == 4326 ? [$lon2, $lat2] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon2, $lat2]], $srid)['coordinates'];
 
         $tile_size_x = $tile_size_y = 256;
-        $input_filename = $raster->getFullPath();
+        $input_filename = $raster->getFilename();
         $output_filename = '/dev/stdout';
         $response = $this->getResponse();
 
-        $cmd = sprintf('
-            gdal_translate -of PNG -q -projwin %1$f, %2$f, %3$f, %4$f -outsize %5$d %6$d %7$s %8$s',
-            $x1, $y1, $x2, $y2,
-            $tile_size_x, $tile_size_y,
-            $input_filename,
-            $output_filename
-        );
-
         return $response
             ->addHeader('Content-Type', 'image/png')
-            ->setBody(`$cmd`);
+            ->setBody($raster->translateRaster(
+                [$x1, $y1], [$x2, $y2],
+                256, 256
+            ));
     }
 
     protected function cacheFile($cache)

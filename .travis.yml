@@ -37,6 +37,7 @@ addons:
       - mysql-server
 
 before_script:
+  - sudo apt-get install -y gdal-bin
   - printf "\n" | pecl install imagick
   - composer self-update || true
   - phpenv rehash
