@@ -111,14 +111,18 @@ class GIS
                     }
 
                     return json_decode($coords, true)[0];
-                } else return null;
+                } else {
+                    return null;
+                }
             default: throw new Exception('Unkown property ' . $property);
         }
     }
 
     public function __toString()
     {
-        if (is_string($this->value)) return $this->value;
+        if (is_string($this->value)) {
+            return $this->value;
+        }
 
         $type = isset($this->value['type']) ? strtoupper($this->value['type']) : null;
         $srid = isset($this->value['srid']) ? $this->value['srid'] : GIS::config()->default_srid;

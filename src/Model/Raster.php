@@ -63,7 +63,7 @@ class Raster
 
         if (preg_match_all('/\sBand\s*(\d+):\s*Value:\s*([\d\.\-]+)/', $output, $matches)) {
             $bands = array_combine($matches[1], $matches[2]);
-            array_walk($bands, function(&$item){
+            array_walk($bands, function(&$item) {
                 $item = (int)$item;
             });
             return $bands;

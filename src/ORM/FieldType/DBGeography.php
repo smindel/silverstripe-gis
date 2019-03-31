@@ -46,7 +46,7 @@ class DBGeography extends DBComposite
             return null;
         }
 
-        return ['ST_GeogFromText(?)' => [ $value->reproject(4326)->wkt ]];
+        return ['ST_GeogFromText(?)' => [$value->reproject(4326)->wkt]];
     }
 
     public function exists()
