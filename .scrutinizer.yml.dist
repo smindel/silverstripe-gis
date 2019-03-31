@@ -12,6 +12,11 @@ build:
                         use_website_config: true
                     - js-scrutinizer-run
         test-mysql:
+            tests:
+                before:
+                    - 'php -v'
+                    - 'apt-cache search php | grep dev'
+                    - 'sudo apt-get install -y gdal-bin'
             services:
                 mysql: 5.7
         test-postgres:
@@ -41,6 +46,11 @@ build:
                     - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE scrutinizer to scrutinizer;"'
                     - 'PGPASSWORD=postgres sudo -E psql -h localhost -U postgres -d scrutinizer -c "create extension postgis;"'
                     - 'composer require silverstripe/postgresql'
+                override:
+                    - command: vendor/bin/phpunit --coverage-clover tmp/coverage.xml
+                      coverage:
+                        file: tmp/coverage.xml
+                        format: clover
 filter:
     excluded_paths:
         - 'tests/*'

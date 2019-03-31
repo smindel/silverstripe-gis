@@ -46,22 +46,20 @@ class GeoJsonService extends AbstractGISWebServiceController
                 continue;
             }
 
-            echo isset($geometry) ? ',' : '';
+            echo isset($geo) ? ',' : '';
 
-            $geometry = $item->{$config['geometry_field']};
+            $geo = GIS::create($item->{$config['geometry_field']})->reproject(4326);
 
             $properties = [];
             foreach ($propertyMap as $fieldName => $propertyName) {
                 $properties[$propertyName] = $item->$fieldName;
             }
 
-            $array = GIS::reproject($geometry, 4326);
-
             echo json_encode([
                 'type' => 'Feature',
                 'geometry' => [
-                    'type' => $array['type'],
-                    'coordinates' => $array['coordinates']
+                    'type' => $geo->type,
+                    'coordinates' => $geo->coordinates
                 ],
                 'properties' => $properties,
             ]);

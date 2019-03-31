@@ -42,20 +42,20 @@ class GeographyTest extends SapphireTest
         $class = $this->getExtraDataObjects()[0];
 
         // write a geometry
-        $wkt = GIS::to_ewkt([10,53.5]);
+        $geo = GIS::create([10,53.5]);
         $address = $class::create();
-        $address->GeoLocation = $wkt;
+        $address->GeoLocation = (string)$geo;
         $id = $address->write();
 
         // read it back
         $address1 = $class::get()->byID($id);
-        $this->assertEquals($wkt, $address1->GeoLocation);
+        $this->assertEquals((string)$geo, $address1->GeoLocation);
 
         // change and check changed
-        $wkt = GIS::to_ewkt([174.5,-41.3]);
-        $address->GeoLocation = $wkt;
+        $wkt = GIS::create([174.5,-41.3]);
+        $address->GeoLocation = (string)$wkt;
         $address->write();
-        $this->assertEquals($wkt, $class::get()->byID($id)->GeoLocation);
+        $this->assertEquals((string)$wkt, $class::get()->byID($id)->GeoLocation);
     }
 
     public function testStGenericFilter()

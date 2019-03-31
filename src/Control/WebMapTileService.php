@@ -131,12 +131,7 @@ class WebMapTileService extends AbstractGISWebServiceController
 
         $list = $list->filter(
             $geometryField . ':ST_Intersects',
-            GIS::to_ewkt(
-                GIS::reproject(
-                    $bounds,
-                    GIS::config()->default_srid
-                )
-            )
+            GIS::create($bounds)->reproject(GIS::config()->default_srid)
         );
 
         if ($request->requestVar('debug')) {
@@ -175,19 +170,23 @@ class WebMapTileService extends AbstractGISWebServiceController
         list($lon1, $lat1) = Tile::zxy2lonlat($z, $x, $y);
         list($lon2, $lat2) = Tile::zxy2lonlat($z, $x + 1, $y + 1);
 
-        list($x1, $y1) = ($srid = $raster->getSrid()) == 4326 ? [$lon1, $lat1] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon1, $lat1]], $srid)['coordinates'];
-        list($x2, $y2) = ($srid = $raster->getSrid()) == 4326 ? [$lon2, $lat2] : GIS::reproject(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon2, $lat2]], $srid)['coordinates'];
+        list($x1, $y1) = ($srid = $raster->getSrid()) == 4326
+            ? [$lon1, $lat1]
+            : GIS::create(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon1, $lat1]])
+            ->reproject($srid)->coordinates;
+        list($x2, $y2) = ($srid = $raster->getSrid()) == 4326
+            ? [$lon2, $lat2]
+            : GIS::create(['srid' => 4326, 'type' => 'Point', 'coordinates' => [$lon2, $lat2]])
+            ->reproject($srid)->coordinates;
 
         $tile_size_x = $tile_size_y = 256;
-        $input_filename = $raster->getFilename();
-        $output_filename = '/dev/stdout';
         $response = $this->getResponse();
 
         return $response
             ->addHeader('Content-Type', 'image/png')
             ->setBody($raster->translateRaster(
                 [$x1, $y1], [$x2, $y2],
-                256, 256
+                $tile_size_x, $tile_size_y
             ));
     }
 

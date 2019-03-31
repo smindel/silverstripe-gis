@@ -19,7 +19,6 @@ trait GISSchemaManager
     {
         return 'geometry';
     }
-
     public function translateStGenericFilter($field, $value, $inclusive, $hint)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
@@ -30,7 +29,7 @@ trait GISSchemaManager
             $field,
             $null
         );
-        return [$fragment => GIS::split_ewkt($value)];
+        return [$fragment => [GIS::create($value)->wkt, GIS::create($value)->srid]];
     }
 
     public function translateStContainsFilter($field, $value, $inclusive, $hint = false)
@@ -52,9 +51,9 @@ trait GISSchemaManager
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
         $fragment = sprintf('ST_Distance(ST_GeomFromText(?, ?),%s) %s ?%s', $field, $inclusive ? '<=' : '> ', $null);
-        list($wkt, $srid) = GIS::split_ewkt($value[0]);
+        $geo = GIS::create($value[0]);
         $distance = $value[1];
-        return [$fragment => [$wkt, $srid, $distance]];
+        return [$fragment => [$geo->wkt, $geo->srid, $distance]];
     }
 
     public function translateStEqualsFilter($field, $value, $inclusive, $hint = false)
@@ -91,5 +90,12 @@ trait GISSchemaManager
     public function translateStWithinFilter($field, $value, $inclusive, $hint = false)
     {
         return $this->translateStGenericFilter($field, $value, $inclusive, $hint);
+    }
+
+    public function translateDistanceQuery($geo1, $geo2)
+    {
+        $geo1 = GIS::create($geo1);
+        $geo2 = GIS::create($geo2);
+        return sprintf("ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d))", $geo1->wkt, $geo1->srid, $geo2->wkt, $geo2->srid);
     }
 }

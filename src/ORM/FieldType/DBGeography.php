@@ -40,17 +40,13 @@ class DBGeography extends DBComposite
 
     public function prepValueForDB($value)
     {
-        if (!$value) {
+        $value = GIS::create($value);
+
+        if ($value->isNull()) {
             return null;
         }
 
-        list($wkt, $srid) = GIS::split_ewkt($value);
-
-        if ($srid != 4326) {
-            list($wkt) = GIS::split_ewkt(GIS::to_ewkt(GIS::reproject($value, 4326)));
-        }
-
-        return ['ST_GeogFromText(?)' => [$wkt]];
+        return ['ST_GeogFromText(?)' => [$value->reproject(4326)->wkt]];
     }
 
     public function exists()
@@ -80,5 +76,10 @@ class DBGeography extends DBComposite
     public function scaffoldFormField($title = null, $params = null)
     {
         return MapField::create($this->name, $title);
+    }
+
+    public function getRAW()
+    {
+        return (string)$this;
     }
 }

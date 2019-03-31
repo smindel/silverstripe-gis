@@ -105,12 +105,12 @@ class Tile
 
     public function getRelativePixelCoordinates($wkt, &$reflection = null)
     {
-        $array = GIS::reproject($wkt, 4326);
+        $geo = GIS::create($wkt)->reproject(4326);
 
         { // determin rendering offset
             $min = $max = null;
             GIS::each(
-                $array,
+                $geo,
                 function($lonlat) use (&$min, &$max) {
                     $min = is_null($min) ? $lonlat[0] : min($min, $lonlat[0]);
                     $max = is_null($max) ? $lonlat[0] : max($max, $lonlat[0]);
@@ -124,7 +124,7 @@ class Tile
 
         foreach ($distance as $offset => &$dist) {
             $dist = GIS::each(
-                $array,
+                $geo,
                 function($lonlat) use ($offset) {
                     return [
                             (($lonlat[0] + 180 - $offset) / 360) * $this->size * pow(2, $this->z) - $this->topLeft[0],
@@ -152,10 +152,10 @@ class Tile
 
                 if ($this->wrap) {
                     foreach ($reflections as $reflection) {
-                        $this->resource->{'draw' . GIS::get_type($item->$property)}($reflection);
+                        $this->resource->{'draw' . GIS::create($item->$property)->type}($reflection);
                     }
                 } else {
-                    $this->resource->{'draw' . GIS::get_type($item->$property)}($primary);
+                    $this->resource->{'draw' . GIS::create($item->$property)->type}($primary);
                 }
             }
         }
