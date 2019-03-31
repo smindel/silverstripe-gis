@@ -6,6 +6,10 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use Smindel\GIS\GIS;
 
+/*
+gdaldem hillshade -of PNG public/assets/wellington-lidar-1m-dem-2013.4326.tif hillshade.png
+*/
+
 class Raster
 {
     use Configurable;
@@ -52,7 +56,7 @@ class Raster
             gdallocationinfo -wgs84 %1$s %2$s %3$s',
             $band ? sprintf('-b %d', $band) : '',
             $this->getFilename(),
-            $geo ? sprintf('%f %f', ...GIS::reproject(GIS::to_array($geo), 4326)['coordinates']) : ''
+            $geo ? sprintf('%f %f', ...GIS::create($geo)->reproject(4326)->coordinates) : ''
         );
 
         $output = `$cmd`;
@@ -68,13 +72,13 @@ class Raster
 
     public function translateRaster($topLeftGeo, $bottomRightGeo, $width, $height, $destFileName = '/dev/stdout')
     {
-        $topLeftGeo = GIS::to_array($topLeftGeo);
-        $bottomRightGeo = GIS::to_array($bottomRightGeo);
+        $topLeftGeo = GIS::create($topLeftGeo)->coordinates;
+        $bottomRightGeo = GIS::create($bottomRightGeo)->coordinates;
 
         $cmd = sprintf('
             gdal_translate -of PNG -q -projwin %1$f, %2$f, %3$f, %4$f -outsize %5$d %6$d %7$s %8$s',
-            $topLeftGeo['coordinates'][0], $topLeftGeo['coordinates'][1],
-            $bottomRightGeo['coordinates'][0], $bottomRightGeo['coordinates'][1],
+            $topLeftGeo[0], $topLeftGeo[1],
+            $bottomRightGeo[0], $bottomRightGeo[1],
             $width, $height,
             $this->getFilename(),
             $destFileName

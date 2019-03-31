@@ -1,5 +1,9 @@
 # Smindel\GIS\Model\Raster
 
+In order to use the raster feature you have to install gdal:
+
+    $ sudo apt-get install gdal-bin
+
 ## Methods
 
 ### public function Raster::__construct($filename = null)

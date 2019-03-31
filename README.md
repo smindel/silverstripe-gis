@@ -32,6 +32,7 @@ GIS developer toolkit for SilverStripe, turns SilverStripe into a [GeoCMS](https
 
 - MySQL 5.7+ or Postgres with PostGIS extension
 - SilverStripe framework 4
+- GDAL for raster support
 
 
 ## Installation

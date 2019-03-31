@@ -7,59 +7,122 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\DB;
 use Smindel\GIS\ORM\FieldType\DBGeography;
+use Smindel\GIS\ORM\FieldType\DBGeometry;
 use proj4php\Proj4php;
 use proj4php\Proj;
 use proj4php\Point;
 use Exception;
 
+/**
+ * @property string $array
+ * @property string $ewkt
+ * @property string $wkt
+ * @property string $srid
+ * @property string $type
+ * @property string $coordinates
+ */
 class GIS
 {
     use Configurable;
 
     use Injectable;
 
-    private static $default_srid = 4326;
-
+    const WKT_PATTERN = '/^(([A-Z]+)\s*(\(.+\)))$/i';
     const EWKT_PATTERN = '/^SRID=(\d+);(([A-Z]+)\s*(\(.+\)))$/i';
 
     const TYPES = [
         'point' => 'Point',
         'linestring' => 'LineString',
         'polygon' => 'Polygon',
+        'multipoint' => 'MultiPoint',
+        'multilinestring' => 'MultiLineString',
         'multipolygon' => 'MultiPolygon',
     ];
 
-    public static function of($dataObjectClass)
-    {
-        if ($field = $dataObjectClass::config()->get('default_geo_field')) {
-            return $field;
-        }
+    private static $default_srid = 4326;
 
-        foreach ($dataObjectClass::config()->get('db') ?: [] as $field => $type) {
-            if ($type == 'Geography' || $type == 'Geometry') {
-                return $field;
+    protected $value;
+
+    /**
+     * Constructor
+     *
+     * @param $value mixed geo value:
+     *      string: wkt (default srid) or ewkt
+     *      array: just coordinates (default srid, autodetect shape) or assoc with type, srid and coordinates
+     *      GIS: extract value
+     *      DBGeography: extract value
+     */
+    public function __construct($value)
+    {
+        if ($value instanceof GIS) {
+            $this->value = $value->value;
+        } else if ($value instanceof DBGeography) {
+            $this->value = $value->getValue();
+        } else if (is_string($value) && preg_match(self::WKT_PATTERN, $value)) {
+            $this->value = 'SRID=' . self::config()->default_srid . ';' . $value;
+        } else if (
+            (is_array($value) && count($value) == 3 && isset($value['type']))
+            || (is_string($value) && preg_match(self::EWKT_PATTERN, $value))
+        ) {
+            $this->value = $value;
+        } else if (empty($value) || isset($value['coordinates']) && empty($value['coordinates'])) {
+            $this->value = null;
+        } else if (is_array($value) && !isset($value['type'])) {
+            switch (true) {
+                case is_numeric($value[0]): $type = 'Point'; break;
+                case is_numeric($value[0][0]): $type = 'LineString'; break;
+                case is_numeric($value[0][0][0]): $type = 'Polygon'; break;
+                case is_numeric($value[0][0][0][0]): $type = 'MultiPolygon'; break;
             }
+            $this->value = [
+                'srid' => GIS::config()->default_srid,
+                'type' => $type,
+                'coordinates' => $value,
+            ];
+        } else {
+            throw new Exception('Invalid geo value');
         }
     }
 
-    public static function to_ewkt($geo)
+    public function __isset($property)
     {
-        if (is_string($geo)) return $geo;
+        return array_search($property, ['array', 'ewkt', 'srid', 'type', 'coordinates']) !== false;
+    }
 
-        if ($geo instanceof DBGeography) $geo = $geo->getValue();
-
-        $type = isset($geo['type']) ? strtoupper($geo['type']) : null;
-        $srid = isset($geo['srid']) ? $geo['srid'] : Config::inst()->get(self::class, 'default_srid');
-        $array = isset($geo['coordinates']) ? $geo['coordinates'] : $geo;
-
-        if (!$type) {
-            switch (true) {
-                case is_numeric($array[0]): $type = 'POINT'; break;
-                case is_numeric($array[0][0]): $type = 'LINESTRING'; break;
-                case is_numeric($array[0][0][0]): $type = 'POLYGON'; break;
-                case is_numeric($array[0][0][0][0]): $type = 'MULTIPOLYGON'; break;
-            }
+    public function __get($property)
+    {
+        if (isset($this->value[$property])) {
+            return $this->value[$property];
         }
+
+        switch ($property) {
+            case 'array': return ['srid' => $this->srid, 'type' => $this->type, 'coordinates' => $this->coordinates];
+            case 'ewkt': return (string)$this;
+            case 'wkt': return explode(';', (string)$this)[1];
+            case 'srid': return preg_match('/^SRID=(\d+);/i', $this->value, $matches) ? (int)$matches[1] : null;
+            case 'type': return preg_match('/^SRID=\d+;(' . implode('|', array_change_key_case(self::TYPES, CASE_UPPER)) . ')/i', $this->value, $matches) ? self::TYPES[strtolower($matches[1])] : null;
+            case 'coordinates':
+                if (preg_match(self::EWKT_PATTERN, $this->value, $matches)) {
+
+                    $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
+
+                    if (strtolower($matches[3]) != 'point') {
+                        $coords = "[$coords]";
+                    }
+
+                    return json_decode($coords, true)[0];
+                } else return null;
+            default: throw new Exception('Unkown property ' . $property);
+        }
+    }
+
+    public function __toString()
+    {
+        if (is_string($this->value)) return $this->value;
+
+        $type = isset($this->value['type']) ? strtoupper($this->value['type']) : null;
+        $srid = isset($this->value['srid']) ? $this->value['srid'] : GIS::config()->default_srid;
+        $array = isset($this->value['coordinates']) ? $this->value['coordinates'] : $this->value;
 
         $replacements = [
             '/(?<=\d),(?=-|\d)/' => ' ',
@@ -78,86 +141,32 @@ class GIS
         return sprintf('SRID=%d;%s%s', $srid, $type, $type == 'POINT' ? "($coords)" : $coords);
     }
 
-    public static function to_array($geo)
+    public function isNull()
     {
-        if ($geo instanceof DBGeography) $geo = $geo->getValue();
-
-        if (is_array($geo)) {
-
-            if (isset($geo['coordinates'])) return $geo;
-
-            switch (true) {
-                case is_numeric($geo[0]): $type = 'Point'; break;
-                case is_numeric($geo[0][0]): $type = 'LineString'; break;
-                case is_numeric($geo[0][0][0]): $type = 'Polygon'; break;
-                case is_numeric($geo[0][0][0][0]): $type = 'MultiPolygon'; break;
-            }
-
-            return [
-                'srid' => Config::inst()->get(self::class, 'default_srid'),
-                'type' => $type,
-                'coordinates' => $geo
-            ];
-        }
-
-        if (preg_match(self::EWKT_PATTERN, $geo, $matches)) {
-
-            $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
-
-            if (strtolower($matches[3]) != 'point') {
-                $coords = "[$coords]";
-            }
-
-            return [
-                'srid' => $matches[1],
-                'type' => self::TYPES[strtolower($matches[3])],
-                'coordinates' => json_decode($coords, true)[0],
-            ];
-        }
+        return empty($this->value) || isset($this->value['coordinates']) && empty($this->value['coordinates']);
     }
 
-    public static function split_ewkt($ewkt, $fallbackSrid = null)
+    public static function of($dataObjectClass)
     {
-        $fallbackSrid = $fallbackSrid ?: Config::inst()->get(self::class, 'default_srid');
-
-        if (preg_match(GIS::EWKT_PATTERN, $ewkt, $matches)) {
-            $wkt = $matches[2];
-            $srid = (int)$matches[1];
-        } else {
-            $wkt = $ewkt;
-            $srid = (int)$fallbackSrid;
+        if ($field = $dataObjectClass::config()->get('default_geo_field')) {
+            return $field;
         }
 
-        return [$wkt, $srid];
-    }
-
-    public static function get_type($geo)
-    {
-        if (is_array($geo) && isset($geo['type'])) {
-            return self::TYPES[strtolower($geo['type'])];
-        } elseif (is_array($geo)) {
-            $geo = self::to_ewkt($geo);
-        }
-
-        if (preg_match(
-            '/;(' . implode('|', array_keys(self::TYPES)) . ')\(/i',
-            strtolower(substr($geo, 8, 30)),
-            $matches
-        )) {
-            return self::TYPES[$matches[1]];
+        foreach ($dataObjectClass::config()->get('db') ?: [] as $field => $type) {
+            if ($type == 'Geography' || $type == 'Geometry') {
+                return $field;
+            }
         }
     }
 
     /**
      * reproject an array representation of a geometry to the given srid
      */
-    public static function reproject($geo, $toSrid = 4326)
+    public function reproject($toSrid = 4326)
     {
-        $array = self::to_array($geo);
-
-        $fromSrid = $array['srid'];
-        $fromCoordinates = $array['coordinates'];
-        $type = $array['type'];
+        $fromSrid = $this->srid;
+        $fromCoordinates = $this->coordinates;
+        $type = $this->type;
 
         if ($fromSrid != $toSrid) {
             $fromProj = self::get_proj4($fromSrid);
@@ -167,11 +176,11 @@ class GIS
             $toCoordinates = $fromCoordinates;
         }
 
-        return [
+        return GIS::create([
             'srid' => $toSrid,
             'type' => $type,
             'coordinates' => $toCoordinates,
-        ];
+        ]);
     }
 
     /**
@@ -206,8 +215,8 @@ class GIS
 
     public static function each($coordinates, $callback)
     {
-        if (isset($coordinates['coordinates'])) {
-            $coordinates = $coordinates['coordinates'];
+        if ($coordinates instanceof GIS) {
+            $coordinates = $coordinates->coordinates;
         }
 
         if (is_array($coordinates[0])) {
@@ -222,8 +231,8 @@ class GIS
         return $callback($coordinates);
     }
 
-    public static function distance($geo1, $geo2)
+    public function distance($geo)
     {
-        return DB::query('select ' . DB::get_schema()->translateDistanceQuery($geo1, $geo2))->value();
+        return DB::query('select ' . DB::get_schema()->translateDistanceQuery($this, GIS::create($geo)))->value();
     }
 }

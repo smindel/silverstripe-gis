@@ -39,12 +39,12 @@ class DBGeometry extends DBGeography
 
     public function prepValueForDB($value)
     {
-        if (!$value) {
+        $value = GIS::create($value);
+
+        if ($value->isNull()) {
             return null;
         }
 
-        list($wkt, $srid) = GIS::split_ewkt($value);
-
-        return ['ST_GeomFromText(?, ?)' => [$wkt, $srid]];
+        return ['ST_GeomFromText(?, ?)' => [$value->wkt, $value->srid]];
     }
 }
