@@ -1,5 +1,11 @@
 // Smart Layers
 
+/*
+- stop propagation of panel events to map
+- wrap panel content to avoid collapse animation
+- wrap panel content to archieve panel scrolling
+ */
+
 L.Control.SmartLayers = L.Class.extend({
     initialize: function(config) {
         defaults = {
@@ -9,26 +15,20 @@ L.Control.SmartLayers = L.Class.extend({
         this.config = L.Util.extend(defaults, config || {});
     },
     addTo: function(map) {
+        var ls = this,
+            panel = L.DomUtil.create(
+                'div',
+                'leaflet-smartlayers',
+                map.getContainer()
+            );
+
         this.map = map;
-        ls = this;
-        L.DomUtil.addClass(map.getContainer(), 'leaflet-smartlayers-' + this.config.position)
-        panel = L.DomUtil.create(
-            'div',
-            'leaflet-smartlayers',
-            map.getContainer()
-        );
-        panel.draggable = true;
-        panel.addEventListener('click drag dragstart', function(e){
-            // L.DomEvent.on(panel, 'mousemove click drag dragstart', function(e){
-            console.log(e);
-            e.dataTransfer.setData('text/plain', 'blah');
+        this.panel = panel;
 
-            e.stopPropagation();
-        });
+        L.DomUtil.addClass(map.getContainer(), 'leaflet-smartlayers-' + this.config.position);
 
-        // panel.addEventListener('mousemove click drag', function(e){
-        //     e.stopPropagation();
-        // });
+        L.DomEvent.disableClickPropagation(panel);
+        L.DomEvent.disableScrollPropagation(panel);
 
         this.config.elements.forEach(function(elem){
             ls.addElement(elem);
@@ -36,7 +36,6 @@ L.Control.SmartLayers = L.Class.extend({
         L.DomUtil.toFront(panel);
 
         this.addToggle(map);
-        this.panel = panel;
     },
     addToggle: function(map) {
         sl = this;
@@ -62,10 +61,10 @@ L.Control.SmartLayers = L.Class.extend({
     },
     addElement: function(elem){
         if (elem instanceof HTMLElement) {
-            return panel.appendChild(elem);
+            return this.panel.appendChild(elem);
         }
         if ('addToMap' in elem) {
-            return panel.appendChild(elem.addToMap(this.map));
+            return this.panel.appendChild(elem.addToMap(this.map));
         }
     }
 });
@@ -171,7 +170,7 @@ L.control.smartlayers.Layers.prototype.addToMap = function(map) {
         }
 
         if (options.transparencyControl && options.control == 'checkbox') {
-            attributes = {type: 'range', min:0, max: 1, step:.1, value:isNaN(layer.layer.opacity) ? 1 : layer.layer.opacity};
+            attributes = {type: 'range', min:0, max: 1, step:.01, value:isNaN(layer.layer.opacity) ? 1 : layer.layer.opacity};
             control = L.control.smartlayers.create('input', null, div, null, attributes)
             control.layer = layers[key];
             control.draggable = true;
@@ -179,7 +178,7 @@ L.control.smartlayers.Layers.prototype.addToMap = function(map) {
                 e.preventDefault();
                 e.stopPropagation();
             });
-            control.addEventListener('change', function(e){
+            control.addEventListener('input', function(e){
                 layer.layer.setOpacity(this.value);
             })
 
@@ -283,7 +282,6 @@ function sortableContainer(container, fn) {
                 }
 
                 if (getIndex(zone) < getIndex(data)) {
-                    console.log(container, container.placeholder, zone);
                     container.insertBefore(container.placeholder, zone);
                 } else if (zone.nextSibling) {
                     container.insertBefore(container.placeholder, zone.nextSibling);
