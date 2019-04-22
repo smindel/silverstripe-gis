@@ -16,10 +16,15 @@ L.Control.SmartLayers = L.Class.extend({
     },
     addTo: function(map) {
         var ls = this,
+            wrapper = L.DomUtil.create(
+                'div',
+                'leaflet-smartlayers-wrapper',
+                map.getContainer()
+            ),
             panel = L.DomUtil.create(
                 'div',
                 'leaflet-smartlayers',
-                map.getContainer()
+                wrapper
             );
 
         this.map = map;
@@ -27,8 +32,8 @@ L.Control.SmartLayers = L.Class.extend({
 
         L.DomUtil.addClass(map.getContainer(), 'leaflet-smartlayers-' + this.config.position);
 
-        L.DomEvent.disableClickPropagation(panel);
-        L.DomEvent.disableScrollPropagation(panel);
+        L.DomEvent.disableClickPropagation(wrapper);
+        L.DomEvent.disableScrollPropagation(wrapper);
 
         this.config.elements.forEach(function(elem){
             ls.addElement(elem);

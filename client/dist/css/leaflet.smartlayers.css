@@ -1,6 +1,6 @@
 /* SMART LAYERS */
 
-.leaflet-smartlayers {
+.leaflet-smartlayers-wrapper {
     width:30em;
     background:white;
     position:absolute;
@@ -9,6 +9,13 @@
     z-index:500;
     transition:1s all;
     overflow:hidden;
+}
+
+.leaflet-smartlayers {
+    width:30em;
+    height:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
 }
 
 .leaflet-container.leaflet-smartlayers-left .leaflet-map-pane,
@@ -21,10 +28,10 @@
     height:100%;
 }
 
-.leaflet-container.leaflet-smartlayers-left .leaflet-smartlayers {
+.leaflet-container.leaflet-smartlayers-left .leaflet-smartlayers-wrapper {
     left:0;
 }
-.leaflet-container.leaflet-smartlayers-right .leaflet-smartlayers {
+.leaflet-container.leaflet-smartlayers-right .leaflet-smartlayers-wrapper {
     right:0;
 }
 
@@ -41,7 +48,7 @@
 
 /* Collapsed */
 
-.leaflet-smartlayers-collapsed .leaflet-smartlayers {
+.leaflet-smartlayers-collapsed .leaflet-smartlayers-wrapper {
     width:0;
 }
 
