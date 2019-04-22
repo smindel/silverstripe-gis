@@ -156,7 +156,7 @@ class WebMapTileService extends AbstractGISWebServiceController
             if (!$file->canView()) {
                 return $this->getResponse()->setStatusCode(403);
             }
-            $raster = new Raster(PUBLIC_PATH . $file->getURL());
+            $raster = Raster::create(PUBLIC_PATH . $file->getURL());
         } else if (is_a($model, Raster::class, true)) {
             $raster = singleton($model);
         } else {
@@ -182,12 +182,24 @@ class WebMapTileService extends AbstractGISWebServiceController
         $tile_size_x = $tile_size_y = 256;
         $response = $this->getResponse();
 
-        return $response
-            ->addHeader('Content-Type', 'image/png')
-            ->setBody($raster->translateRaster(
+        if (in_array($dem = $request->requestVar('dem'), ['hillshade', 'color_relief'])) {
+            $destFileName = null;
+            $tile = $raster->translate(
+                [$x1, $y1], [$x2, $y2],
+                $tile_size_x, $tile_size_y,
+                $destFileName, 'GTiff'
+            );
+            $response->setBody(Raster::create($destFileName)->$dem());
+            unlink($destFileName);
+
+        } else {
+            $response->setBody($raster->translate(
                 [$x1, $y1], [$x2, $y2],
                 $tile_size_x, $tile_size_y
             ));
+        }
+
+        return $response->addHeader('Content-Type', 'image/png');
     }
 
     protected function cacheFile($cache)

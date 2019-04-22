@@ -1,0 +1,8 @@
+.leaflet-smartlayers-control {
+    border-radius: 2px;
+    padding: .1em .75em;
+    border: 2px solid rgba(0,0,0,0.2);
+    background: #fff;
+    min-width:30px;
+    box-sizing: border-box;
+}

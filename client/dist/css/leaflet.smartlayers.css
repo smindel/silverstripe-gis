@@ -1,0 +1,95 @@
+/* SMART LAYERS */
+
+.leaflet-smartlayers {
+    width:30em;
+    background:white;
+    position:absolute;
+    top:0;
+    height:100%;
+    z-index:500;
+    transition:1s all;
+    overflow:hidden;
+}
+
+.leaflet-container.leaflet-smartlayers-left .leaflet-map-pane,
+.leaflet-container.leaflet-smartlayers-right .leaflet-map-pane,
+.leaflet-container.leaflet-smartlayers-left .leaflet-control-container,
+.leaflet-container.leaflet-smartlayers-right .leaflet-control-container {
+    transition:left 1s, right 1s;
+    position: absolute;
+    top:0;
+    height:100%;
+}
+
+.leaflet-container.leaflet-smartlayers-left .leaflet-smartlayers {
+    left:0;
+}
+.leaflet-container.leaflet-smartlayers-right .leaflet-smartlayers {
+    right:0;
+}
+
+.leaflet-container.leaflet-smartlayers-left .leaflet-map-pane,
+.leaflet-container.leaflet-smartlayers-left .leaflet-control-container {
+    left:30em;
+    right:0;
+}
+.leaflet-container.leaflet-smartlayers-right .leaflet-map-pane,
+.leaflet-container.leaflet-smartlayers-right .leaflet-control-container {
+    left:0;
+    right:30em;
+}
+
+/* Collapsed */
+
+.leaflet-smartlayers-collapsed .leaflet-smartlayers {
+    width:0;
+}
+
+.leaflet-container.leaflet-smartlayers-left.leaflet-smartlayers-collapsed .leaflet-map-pane,
+.leaflet-container.leaflet-smartlayers-left.leaflet-smartlayers-collapsed .leaflet-control-container {
+    left:0;
+}
+.leaflet-container.leaflet-smartlayers-right.leaflet-smartlayers-collapsed .leaflet-map-pane,
+.leaflet-container.leaflet-smartlayers-right.leaflet-smartlayers-collapsed .leaflet-control-container {
+    right:0;
+}
+
+/* accessories */
+
+.leaflet-smartlayers > h1,
+.leaflet-smartlayers > h2,
+.leaflet-smartlayers > h3,
+.leaflet-smartlayers > h4,
+.leaflet-smartlayers > h5,
+.leaflet-smartlayers > h6,
+.leaflet-smartlayers > p,
+.leaflet-smartlayers > span
+.leaflet-smartlayers > a {
+    margin:.1em .5em;
+}
+
+.leaflet-smartlayers > hr {
+    border: 0 none;
+    border-top: 1px solid #ccc;
+    margin:.1em 0;
+}
+.leaflet-smartlayers-layer {
+    padding:.5em;
+    position: relative;
+}
+.leaflet-smartlayers-layer.placeholder {
+    background:#ddd;
+}
+.leaflet-smartlayers-layer input[type="range"] {
+    display:none;
+}
+.leaflet-smartlayers-layer:hover {
+    background:#eee;
+}
+.leaflet-smartlayers-layer:hover input[type="range"] {
+    display:block;
+}
+
+.leaflet-smartlayers-drag * {
+    pointer-events:none;
+}
