@@ -137,11 +137,11 @@ jQuery(function($) {
                 this.setMap(map);
 
                 if (!feature) {
-                    map.setView(this.data('defaultLocation'), 13);
+                    map.setView(this.data('defaultLocation'), this.data('defaultZoom'));
                 } else if (feature.getBounds) {
                     map.fitBounds(feature.getBounds());
                 } else if (feature.getLatLng) {
-                    map.setView(feature.getLatLng(), 13);
+                    map.setView(feature.getLatLng(), this.data('defaultZoom'));
                 }
             },
             getFormField: function() {
