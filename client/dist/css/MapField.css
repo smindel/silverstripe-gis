@@ -14,9 +14,10 @@ input.mapfield_readonly:focus {
 }
 .map-field-widget {
     width:100%;
-    height:150px;
-    transition:1s height;
+    height:25vh;
+    transition:0.05s height;
 }
-.map-field-widget:hover {
-    height:400px;
+
+.form__field-holder > .map-field-widget:hover {
+    height: 75vh;
 }
