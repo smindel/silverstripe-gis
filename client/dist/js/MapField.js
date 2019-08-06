@@ -78,14 +78,14 @@ jQuery(function($) {
 
                 var map = L.map(this[0], { worldCopyJump: true, maxBoundsViscosity: 1.0 });
                 var streets = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-                var satelite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                var satellite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
                     maxZoom: 20,
                     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
                 });
 
                 var baseMaps = {
                     "Streets": streets,
-                    "Satelite": satelite
+                    "Satelite": satellite
                 };
 
                 var feature = this.getFeatureFromFormFieldValue();
