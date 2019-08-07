@@ -22,6 +22,14 @@ class MapField extends FormField
     ];
 
     /**
+     * The initial layer to show when editing.  The only other permitted value is 'satellite', anything else will
+     * default to 'streets' in order that a map appears in the editing widget
+     *
+     * @var string
+     */
+    private static $initial_layer = 'streets';
+
+    /**
      * Zoom level of the map widget if the MapField is empty
      *
      * @var int
@@ -118,5 +126,10 @@ class MapField extends FormField
     public function getMultiEnabled()
     {
         return $this->multiEnabled;
+    }
+
+    public function getInitialLayer()
+    {
+        return Config::inst()->get(MapField::class, 'initial_layer');
     }
 }

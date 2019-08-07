@@ -77,15 +77,20 @@ jQuery(function($) {
                 var me = this;
 
                 var map = L.map(this[0], { worldCopyJump: true, maxBoundsViscosity: 1.0 });
-                var streets = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);
-                var satelite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                var streets = L.tileLayer('//{s}.tile.osm.org/{z}/{x}/{y}.png');
+                var satellite = L.tileLayer('//{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
                     maxZoom: 20,
                     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
                 });
 
+                var initialLayer = this.data('initialLayer');
+
+                // Add the satellite layer if the initial layer is set to satellite, otherwise fall back to street layer
+                initialLayer == 'satellite' ? satellite.addTo(map) : streets.addTo(map);
+
                 var baseMaps = {
                     "Streets": streets,
-                    "Satelite": satelite
+                    "Satelite": satellite
                 };
 
                 var feature = this.getFeatureFromFormFieldValue();
