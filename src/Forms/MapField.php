@@ -30,6 +30,13 @@ class MapField extends FormField
     private static $initial_layer = 'streets';
 
     /**
+     * Zoom level of the map widget if the MapField is empty
+     *
+     * @var int
+     */
+    private static $default_zoom = 13;
+
+    /**
      * Whether the user can create complex gemoetries like e.g. MultiPoints
      *
      * @var boolean
@@ -97,6 +104,11 @@ class MapField extends FormField
     public function getDefaultLocation()
     {
         return json_encode(Config::inst()->get(MapField::class, 'default_location'));
+    }
+
+    public static function getDefaultZoom()
+    {
+        return Config::inst()->get(MapField::class, 'default_zoom');
     }
 
     public function enableMulti($enable = true)
