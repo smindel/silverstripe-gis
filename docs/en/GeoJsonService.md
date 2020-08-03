@@ -44,15 +44,15 @@ private static $geojsonservice = [
 
 In order to access the endpoint for the tiles you have to use the namespaced class name with the backslashes replaced with dashes:
 
-    http://yourdomain/geojsonservice/VendorName-ProductName-DataObjectClassName.GeoJson
+    http://yourdomain/geojsonservice/VendorName-ProductName-DataObjectClassName
 
 If you want to filter records, you can do so by using the configured or default search fields. You can even use filter modifiers:
 
-    .../DataObjectClassName.GeoJson?FieldName:StartsWith:not=searchTerm
+    .../DataObjectClassName?FieldName:StartsWith:not=searchTerm
 
 A Leaflet layer can be created like this, if you add the Leaflet.AJAX plugin:
 
 ```javascript
-new L.GeoJSON.AJAX("http://yourdomain/geojsonservice/City.GeoJson")
+new L.GeoJSON.AJAX("http://yourdomain/geojsonservice/City")
     .bindPopup(function (layer) { return layer.feature.properties.Name; }).addTo(map);
 ```

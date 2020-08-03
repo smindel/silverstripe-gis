@@ -8,6 +8,11 @@ use Smindel\GIS\GIS;
 
 trait GISSchemaManager
 {
+    public function initialise()
+    {
+
+    }
+
     // Ellipsoidal spatial data type.
     public function geography($values)
     {
@@ -19,6 +24,7 @@ trait GISSchemaManager
     {
         return 'geometry';
     }
+
     public function translateStGenericFilter($field, $value, $inclusive, $hint)
     {
         $null = $inclusive ? '' : ' OR ' . DB::get_conn()->nullCheckClause($field, true);
@@ -97,5 +103,10 @@ trait GISSchemaManager
         $geo1 = GIS::create($geo1);
         $geo2 = GIS::create($geo2);
         return sprintf("ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d))", $geo1->wkt, $geo1->srid, $geo2->wkt, $geo2->srid);
+    }
+
+    public function translateBasicSelectGeo()
+    {
+        return 'CASE WHEN %s IS NULL THEN NULL ELSE CONCAT(\'SRID=\', ST_SRID(%s), \';\', ST_AsText(%s)) END AS "%s"';
     }
 }

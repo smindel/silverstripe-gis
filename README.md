@@ -20,7 +20,7 @@ GIS developer toolkit for SilverStripe, turns SilverStripe into a [GeoCMS](https
 - __Configurable projections:__ support for multiple projections through proj4
 - __Primitive and multipart geometries:__ Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
 - __Developer tools:__ heaps of useful helpers, e.g. for re-projecting, distance measuring, [EWKT](https://postgis.net/docs/manual-2.1/using_postgis_dbmanagement.html#EWKB_EWKT)
-- __MySQL and Postgres:__ supports Postgres with PostGIS, MySQL 5.7+, partial support for MariaDB
+- __MySQL, Postgres and Sqlite3:__ supports Postgres with PostGIS, MySQL 5.7+, partial support for MariaDB and Sqlite3 with SpatiaLite
 - __ORM integration:__ DataList filters, e.g. to find intersecting DataObjects or within distance
 - __GeoJSON imorter:__ import a GeoJSON source as DataObjects
 - __GeoJSON web service:__ GeoJSON API for DataObjects
@@ -30,7 +30,7 @@ GIS developer toolkit for SilverStripe, turns SilverStripe into a [GeoCMS](https
 
 ## Requirements
 
-- MySQL 5.7+ or Postgres with PostGIS extension
+- MySQL 5.7+ or Postgres with PostGIS extension or Sqlite3 with SpatiaLite
 - SilverStripe framework 4
 - GDAL for raster support
 
@@ -44,7 +44,7 @@ It's recommended to use composer to install the module
 
 __MySQL__ natively supports geometries since version 5.7.6 but not geographies or raster data.
 
-When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run the following commands:
+When using __Postgres__ you have to install PostGIS and `composer require silverstripe/postgresql`. On Ubuntu and Debian run the following commands:
 
     $ sudo apt-get install postgis
     $ sudo apt-get install postgresql-9.5-postgis-scripts
@@ -54,6 +54,14 @@ When using __Postgres__ you have to install PostGIS. On Ubuntu and Debian run th
 (replace 'SS\_gis' with your db name)
 
 Steps two and three may not be necessary, so you might want to try one and four first and if four fails, do two, three and four.
+
+In order to install __Sqlite3__ you have to install SpatiaLite and `composer require silverstripe/sqlite3`. On Ubuntu and Debian run the following commands:
+
+    $ sudo apt install sqlite3 php-sqlite3 libsqlite3-mod-spatialite
+    $ sudo updatedb & locate mod_spatialite.so
+    > /usr/lib/x86_64-linux-gnu/mod_spatialite.so
+    update php.ini, set:
+    sqlite3.extension_dir = /usr/lib/x86_64-linux-gnu
 
 ## Configuration
 

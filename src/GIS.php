@@ -54,6 +54,8 @@ class GIS
      */
     public function __construct($value)
     {
+        DB::get_schema()->initialise();
+
         if ($value instanceof GIS) {
             $this->value = $value->value;
         } else if ($value instanceof DBGeography) {

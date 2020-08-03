@@ -29,7 +29,14 @@ class DBGeography extends DBComposite
         $table = $this->getTable();
         $column = $this->getName();
         $identifier = $table ? sprintf('"%s"."%s"', $table, $column) : sprintf('"%s"', $column);
-        $select = sprintf('CASE WHEN %s IS NULL THEN NULL ELSE CONCAT(\'SRID=\', ST_SRID(%s), \';\', ST_AsText(%s)) END AS "%s"', $identifier, $identifier, $identifier, $column);
+        $sqlFragment = DB::get_schema()->translateBasicSelectGeo();
+        $select = sprintf(
+            $sqlFragment,
+            $identifier,
+            $identifier,
+            $identifier,
+            $column
+        );
         $query->selectField($select);
     }
 
