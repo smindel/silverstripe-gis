@@ -31,7 +31,7 @@ Filter geometries that are within [distance](https://postgis.net/docs/ST_Distanc
 $city = City::get()->filter('Name', 'Wellington')->first();
 $distance = 100000; // metres
 $degrees = $distance / 111195;
-$cities = Cities::get()->filter('Location:ST_Contains', [$city->Location, $degrees]);
+$cities = Cities::get()->filter('Location:ST_Distance', [$city->Location, $degrees]);
 ```
 
 __Note:__ important to note is that the distance is given in the projections unit. For SRID 4326 it is degrees. Others use metres or kilometres. You can check this on [epsg.io](http://epsg.io/) for the projection you are using.
