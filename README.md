@@ -24,6 +24,7 @@ GIS developer toolkit for SilverStripe, turns SilverStripe into a [GeoCMS](https
 - __ORM integration:__ DataList filters, e.g. to find intersecting DataObjects or within distance
 - __GeoJSON imorter:__ import a GeoJSON source as DataObjects
 - __GeoJSON web service:__ GeoJSON API for DataObjects
+- __WFS:__ WFS for DataObjects (experimental)
 - __WMTS:__ render DataObjects to ZXY tiles e.g. for a leaflet frontend
 - __Rasters:__ (Postgres only) import GeoTIFFs, access values, generate stats and render map tiles
 
@@ -83,6 +84,7 @@ silverstripe-gis, like any other SilverStripe module, can be [configured](https:
 - [MapField](docs/en/MapField.md) - Form field to edit geo types
 - [GeoJsonService](docs/en/GeoJsonService.md) - Expose your DataObjects dynamically in GeoJSON format though an API
 - [WebMapTileService](docs/en/WebMapTileService.md) - Generate map tiles for Leaflet or Openlayers from your DataObjects
+- [WebFeatureService](docs/en/WebFeatureService.md) - Generate WFS for Leaflet or Openlayers from your DataObjects (experimental)
 - [Rasters](docs/en/Raster.md) - Import raster files, access values and stats, render WMTS tiles
 
 ## Note

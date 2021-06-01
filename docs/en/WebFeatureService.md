@@ -1,6 +1,14 @@
-# Smindel\GIS\Control\GeoJsonService
+# Smindel\GIS\Control\WebFeatureService (experiemental)
 
-The configuration of the GeoJsonService applies to all GeoJSON Services you expose. They can be overwritten in [your DataObject classes](DataObject-Example.md).
+The configuration of the WebFeatureService applies to all WFS you expose. They can be overwritten in [your DataObject classes](DataObject-Example.md).
+
+## Disclaimer
+
+This service is not yet fully implemented. It supports the DescribeFeatureType and GetFeature operations, the GetCapabilities operation is missing. Leaflet works without it.
+
+Filters are implemented the same as in the GeoJson and WMS and *not* according to WFS. This will be fixed soon. Currently
+
+Transactions are not yet implemented.
 
 ## Configuration
 
@@ -9,13 +17,13 @@ The configuration of the GeoJsonService applies to all GeoJSON Services you expo
 The service can just be turned on in the DataObject class with the default settings like this:
 
 ```php
-private static $geojsonservice = true; // enables geojsonservice with default settings
+private static $webfeatureservice = true; // enables WFS with default settings
 ```
 
 ... or control one or all configurable aspects:
 
 ```php
-private static $geojsonservice = [
+private static $webfeatureservice = [
     'geometry_field' => 'Location',     // set geometry field explicitly
     'searchable_fields' => [            // set fields that can be searched by through the service
         'FirstName' => [
@@ -44,15 +52,22 @@ private static $geojsonservice = [
 
 In order to access the endpoint you have to use the namespaced class name with the backslashes replaced with dashes:
 
-    http://yourdomain/geojsonservice/VendorName-ProductName-DataObjectClassName
+    http://yourdomain/webfeatureservice/VendorName-ProductName-DataObjectClassName.GeoJson
 
 If you want to filter records, you can do so by using the configured or default search fields. You can even use filter modifiers:
 
-    .../DataObjectClassName?FieldName:StartsWith:not=searchTerm
+    .../DataObjectClassName.GeoJson?FieldName:StartsWith:not=searchTerm
 
-A Leaflet layer can be created like this, if you add the Leaflet.AJAX plugin:
+A Leaflet layer can be created like this, if you add the Leaflet.WFST and Proj4Leaflet plugins:
 
 ```javascript
-new L.GeoJSON.AJAX("http://yourdomain/geojsonservice/City")
+L.wfs({
+  url: 'webfeatureservice/City',
+  typeNS: 'myns',
+  typeName: 'City',
+  geometryField: 'Area',
+  crs: L.CRS.EPSG4326,
+})
+new L.GeoJSON.AJAX("http://yourdomain/geojsonservice/City.GeoJson")
     .bindPopup(function (layer) { return layer.feature.properties.Name; }).addTo(map);
 ```

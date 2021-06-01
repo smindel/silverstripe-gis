@@ -5,3 +5,4 @@ SilverStripe\Control\Director:
   rules:
     'geojsonservice': 'Smindel\GIS\Control\GeoJsonService'
     'webmaptileservice': 'Smindel\GIS\Control\WebMapTileService'
+    'webfeatureservice': 'Smindel\GIS\Control\WebFeatureService'

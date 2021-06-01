@@ -159,7 +159,7 @@ class GIS
         }
 
         foreach ($dataObjectClass::config()->get('db') ?: [] as $field => $type) {
-            if ($type == 'Geography' || $type == 'Geometry') {
+            if (in_array($type, ['Geography', 'Geometry', DBGeography::class, DBGeometry::class])) {
                 return $field;
             }
         }
