@@ -40,7 +40,7 @@ private static $webfeatureservice = [
         'SomeClass',                    // receives 2 parameters:
         'static_method'                 // the HTTPRequest and a reference which you can set to true
     ],                                  // in order to skip filtering further down in the stack
-    'property_map' => [                 // map DataObject fields to GeoJSON properties
+    'property_map' => [                 // map DataObject fields to WFS properties
         'ID' => 'id',
         'FirstName' => 'given name',
         'Surname' => 'name',
@@ -52,11 +52,11 @@ private static $webfeatureservice = [
 
 In order to access the endpoint you have to use the namespaced class name with the backslashes replaced with dashes:
 
-    http://yourdomain/webfeatureservice/VendorName-ProductName-DataObjectClassName.GeoJson
+    http://yourdomain/webfeatureservice/VendorName-ProductName-DataObjectClassName
 
 If you want to filter records, you can do so by using the configured or default search fields. You can even use filter modifiers:
 
-    .../DataObjectClassName.GeoJson?FieldName:StartsWith:not=searchTerm
+    http://yourdomain/webfeatureservice/VendorName-ProductName-DataObjectClassName?FieldName:StartsWith:not=searchTerm
 
 A Leaflet layer can be created like this, if you add the Leaflet.WFST and Proj4Leaflet plugins:
 
@@ -67,7 +67,5 @@ L.wfs({
   typeName: 'City',
   geometryField: 'Area',
   crs: L.CRS.EPSG4326,
-})
-new L.GeoJSON.AJAX("http://yourdomain/geojsonservice/City.GeoJson")
-    .bindPopup(function (layer) { return layer.feature.properties.Name; }).addTo(map);
+}).bindPopup(function (layer) { return layer.feature.properties.Name; }).addTo(map);
 ```

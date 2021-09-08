@@ -6,13 +6,15 @@ use SilverStripe\SQLite\SQLite3SchemaManager;
 use SilverStripe\ORM\DB;
 use Smindel\GIS\GIS;
 
+if (!class_exists(SQLite3SchemaManager::class)) return;
 class SQLite3GISSchemaManager extends SQLite3SchemaManager
 {
     use GISSchemaManager;
 
     protected static $is_initialised = false;
 
-    public function initialise() {
+    public function initialise()
+    {
         if (!self::$is_initialised) {
             $connector = DB::get_connector()->getRawConnector();
             $connector->loadExtension('mod_spatialite.so');

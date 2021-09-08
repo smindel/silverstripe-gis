@@ -2,10 +2,12 @@
 
 namespace Smindel\GIS\Control;
 
+use Exception;
 use DOMDocument;
 use Smindel\GIS\GIS;
 use ReflectionClass;
 use SimpleXMLElement;
+use SilverStripe\Control\Director;
 
 class WebFeatureService extends AbstractGISWebServiceController
 {
@@ -35,23 +37,8 @@ class WebFeatureService extends AbstractGISWebServiceController
         return is_array($modelConfig) ? array_merge($defaults, $modelConfig) : $defaults;
     }
 
-    public function index($request)
+    public function getRequestParams($request)
     {
-        $operation = $request->requestVars()['request'] ?? (new SimpleXMLElement($raw = $request->getBody()))->getName();
-
-        if (!in_array($operation, ['GetCapabilities', 'DescribeFeatureType', 'GetFeature'])) {
-            throw new Exception(sprintf('Unkown operation "%s" requested', $operation));
-        }
-
-        return $this->$operation($request);
-    }
-
-    public function DescribeFeatureType($request)
-    {
-        $model = $this->getModel($request);
-        $config = $this->getConfig($model);
-        $propertyMap = $config['property_map'];
-
         if (count(array_intersect_key($params = array_intersect_key($request->requestVars(), array_fill_keys([
             'service',
             'version',
@@ -76,53 +63,108 @@ class WebFeatureService extends AbstractGISWebServiceController
                 $typeNames[] = (string)$typeName;
             }
         }
+    }
+
+    public function index($request)
+    {
+        $operation = $request->requestVars()['request'] ?? (new SimpleXMLElement($raw = $request->getBody()))->getName();
+
+        if (!in_array(strtolower($operation), ['getcapabilities', 'describefeaturetype', 'getfeature'])) {
+            throw new Exception(sprintf('Unkown operation "%s" requested', $operation));
+        }
+
+        return $this->$operation($request);
+    }
+
+    public function GetCapabilities($request)
+    {
+        $model = $this->getModel($request);
+        $config = $this->getConfig($model);
+        $propertyMap = $config['property_map'];
+
+        $url = Director::absoluteURL($request->requestVar('url'));
 
         list($nsName, $nsUri) = explode('=', $config['ns']);
 
-        $dom = new DOMDocument('1.0','UTF-8');
-        $schema = $dom->createElementNS('http://www.w3.org/2001/XMLSchema', 'schema');
-        $schema->setAttribute('elementFormDefault', 'qualified');
-        $schema->setAttribute('targetNamespace', $nsUri);
-        $schema->setAttribute('xmlns:gml', 'http://www.opengis.net/gml/3.2');
-        $schema->setAttribute('xmlns:' . $nsName, $nsUri);
+        $xml = FluidXmlWriter::create('1.0','UTF-8')
+            ->make('WFS_Capabilities', 'http://www.opengis.net/wfs/2.0')
+                ->attribute('version', '2.0.0')
+                ->attribute('xmlns:wfs', 'http://www.opengis.net/wfs/2.0')
+                ->attribute('xmlns:ows', 'http://www.opengis.net/ows/1.1')
+                ->attribute('xmlns:ogc', 'http://www.opengis.net/ogc')
+                ->attribute('xmlns:fes', 'http://www.opengis.net/fes/2.0')
+                ->attribute('xmlns:gml', 'http://www.opengis.net/gml')
+                ->attribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+                ->attribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+                ->attribute('xsi:schemaLocation', 'http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd')
+            ->make('ows:ServiceIdentification')
+            ->make('ows:Title')->value('WFS 2.0.0 CITE Setup')->pop()
+            ->make('ows:Abstract')->pop()
+            ->make('ows:ServiceType')->attribute('codeSpace', 'http://www.opengeospatial.org/')->value('WFS')->pop()
+            ->make('ows:ServiceTypeVersion')->value('2.0.0')->pop(2)
+            ->make('ows:OperationsMetadata')
+            ->make('ows:Operation')->attribute('name', 'GetCapabilities')
+            ->make('ows:DCP')
+            ->make('ows:HTTP')
+            ->make('ows:Get')->attribute('xlink:href', $url . '?')->pop()
+            ->make('ows:Post')->attribute('xlink:href', $url)->pop(4)
+            ->make('ows:Operation')->attribute('name', 'DescribeFeatureType')
+            ->make('ows:DCP')
+            ->make('ows:HTTP')
+            ->make('ows:Get')->attribute('xlink:href', $url . '?')->pop()
+            ->make('ows:Post')->attribute('xlink:href', $url)->pop(4)
+            ->make('ows:Operation')->attribute('name', 'GetFeature')
+            ->make('ows:DCP')
+            ->make('ows:HTTP')
+            ->make('ows:Get')->attribute('xlink:href', $url . '?')->pop()
+            ->make('ows:Post')->attribute('xlink:href', $url)->pop(5)
+            ->make('FeatureTypeList')
+            ->make('FeatureType')
+            ->make('Name')->value($model)->pop()
+            ->make('Title')->value($model::config()->get('singular_name'))->pop()
+            ->make('DefaultCRS')->value('urn:ogc:def:crs:EPSG::4326')->pop()
+            ;
 
-        $complexType = $dom->createElement('complexType');
-        $complexType->setAttribute('name', $nsName . ':' . $config['feature_type_name']);
+        $this->getResponse()->addHeader('content-type', 'text/xml; charset=utf-8');
 
-        $complexContent = $dom->createElement('complexContent');
+        return $xml->toXML();
+    }
 
-        $extension = $dom->createElement('extension');
-        $extension->setAttribute('base', 'gml:AbstractFeatureType');
+    public function DescribeFeatureType($request)
+    {
+        $model = $this->getModel($request);
+        $config = $this->getConfig($model);
+        $propertyMap = $config['property_map'];
 
-        $sequence = $dom->createElement('sequence');
+        list($nsName, $nsUri) = explode('=', $config['ns']);
+
+        $xml = FluidXmlWriter::create('1.0','UTF-8')
+            ->make('schema', 'http://www.w3.org/2001/XMLSchema')
+                ->attribute('elementFormDefault', 'qualified')
+                ->attribute('targetNamespace', $nsUri)
+                ->attribute('xmlns:gml', 'http://www.opengis.net/gml/3.2')
+                ->attribute('xmlns:' . $nsName, $nsUri)
+            ->make('complexType')
+                ->attribute('name', $nsName . ':' . $config['feature_type_name'])
+            ->make('complexContent')
+            ->make('extension')
+                ->attribute('base', 'gml:AbstractFeatureType')
+            ->make('sequence');
 
         foreach ($propertyMap as $fieldName => $propertyName) {
-            $element = $dom->createElement('element');
-            $element->setAttribute('name', $propertyName);
-            $element->setAttribute('type', $this->config()->type_map[$model::config()->db[$fieldName]]);
-            $sequence->appendChild($element);
+            $xml->make('element')
+                ->attribute('name', $propertyName)
+                ->attribute('type', $this->config()->type_map[$model::config()->db[$fieldName]])
+                ->pop();
         }
 
-        $element = $dom->createElement('element');
-        $element->setAttribute('name', $config['geometry_field']);
-        $element->setAttribute('type', 'gml:GeometryPropertyType');
-        $sequence->appendChild($element);
+        $xml->make('element')
+            ->attribute('name', $config['geometry_field'])
+            ->attribute('type', 'gml:GeometryPropertyType');
 
-        $extension->appendChild($sequence);
+        $this->getResponse()->addHeader('content-type', 'text/xml; charset=utf-8');
 
-        $complexContent->appendChild($extension);
-
-        $complexType->appendChild($complexContent);
-
-        $schema->appendChild($complexType);
-
-        $dom->appendChild($schema);
-
-        $response = $this->getResponse();
-        $response->addHeader('content-type', 'text/xml; charset=utf-8');
-        $response->setBody($dom->saveXML());
-
-        return $response;
+        return $xml->toXML();
     }
 
     public function GetFeature($request)
@@ -131,123 +173,71 @@ class WebFeatureService extends AbstractGISWebServiceController
         $config = $this->getConfig($model);
         $list = $this->getRecords($request);
         $propertyMap = $config['property_map'];
-
-        if (count(array_intersect_key($params = array_intersect_key($request->requestVars(), array_fill_keys([
-            'service',
-            'version',
-            'request',
-            'typeNames',
-        ], null)), array_fill_keys([
-            'service',
-            'version',
-            'request',
-            'typeNames',
-        ], null))) == 4) {
-            extract($params);
-        } else {
-            $xml = new SimpleXMLElement($raw = $request->getBody());
-            $service = (string)$xml['service'];
-            $version = (string)$xml['version'];
-            $request = $xml->getName();
-            $typeNames = [];
-            foreach ($xml->xpath('TypeName') as $typeName) {
-                $typeNames[] = (string)$typeName;
-            }
-        }
+        $geometry_field = $config['geometry_field'];
 
         list($nsName, $nsUri) = explode('=', $config['ns']);
 
-        $dom = new DOMDocument('1.0','UTF-8');
-
-        $featureCollection = $dom->createElement('FeatureCollection');
-        $featureCollection->setAttribute('xmlns:gml', 'http://www.opengis.net/gml');
-        $featureCollection->setAttribute('xmlns:' . $nsName, $nsUri);
+        $xml = FluidXmlWriter::create('1.0','UTF-8')
+            ->make('FeatureCollection')
+                ->attribute('xmlns:gml', 'http://www.opengis.net/gml')
+                ->attribute('xmlns:' . $nsName, $nsUri);
 
         foreach($list as $item) {
             if (!$item->canView()) {
                 continue;
             }
 
-            $member = $dom->createElement('gml:featureMember');
+            $xml->make('gml:featureMember');
 
-            $record = $dom->createElement($nsName . ':' . $config['feature_type_name']);
-            $record->setAttribute('gml:id', $item->ID);
+            $xml->make($nsName . ':' . $config['feature_type_name'])
+                ->attribute('gml:id', $item->ID);
 
             foreach ($propertyMap as $fieldName => $propertyName) {
-                $property = $dom->createElement($propertyName, $item->$fieldName);
-                $record->appendChild($property);
+                $xml->make($propertyName)->value($item->$fieldName)->pop();
             }
 
-            $Geometry = $dom->createElement($nsName . ':' . $config['geometry_field']);
+            $xml->make($nsName . ':' . $config['geometry_field']);
 
-            $geometry_field = $config['geometry_field'];
-            $shape = $this->createGeometry($dom, $item->$geometry_field);
+            $this->createGeometry($xml, $item->$geometry_field);
 
-            $Geometry->appendChild($shape);
-
-            $record->appendChild($Geometry);
-
-            $member->appendChild($record);
-
-            $featureCollection->appendChild($member);
+            $xml->pop(3);
         }
 
-        $dom->appendChild($featureCollection);
+        $this->getResponse()->addHeader('content-type', 'text/xml; charset=utf-8');
 
-        $response = $this->getResponse();
-        $response->addHeader('content-type', 'text/xml; charset=utf-8');
-        $response->setBody($dom->saveXML());
-
-        return $response;
+        return $xml->toXML();
     }
 
-    function createGeometry(DOMDocument $dom, $value)
+    function createGeometry(FluidXmlWriter $xml, $value)
     {
-        return call_user_func([$this, 'create' . ($gis = GIS::create($value))->type . 'Geometry'], $dom, $gis);
+        return call_user_func([$this, 'create' . ($gis = GIS::create($value))->type . 'Geometry'], $xml, $gis);
     }
 
-    function createPointGeometry(DOMDocument $dom, GIS $gis)
+    function createPointGeometry(FluidXmlWriter $xml, GIS $gis)
     {
-        $point = $dom->createElement('gml:Point');
-        $point->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::4326');
-
-        $pos = $dom->createElement('gml:pos', implode(' ', $gis->coordinates));
-        $point->appendChild($pos);
-
-        return $point;
+        $xml->make('gml:Point')->attribute('srsName', 'urn:ogc:def:crs:EPSG::4326')
+            ->make('gml:pos')->value(implode(' ', $gis->coordinates))
+            ->pop(2);
     }
 
-    function createLineStringGeometry(DOMDocument $dom, GIS $gis)
+    function createLineStringGeometry(FluidXmlWriter $xml, GIS $gis)
     {
-        $line = $dom->createElement('gml:LineString');
-        $line->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
-
-        $posList = $dom->createElement('gml:posList', implode(' ', array_map(function($point){return implode(' ', $point);}, $gis->coordinates)));
-
-        $line->appendChild($posList);
-
-        return $line;
+        $xml->make('gml:LineString')->attribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid)
+            ->make('gml:posList')->value(implode(' ', array_map(function($point){return implode(' ', $point);}, $gis->coordinates)))
+            ->pop(2);
     }
 
-    function createPolygonGeometry(DOMDocument $dom, GIS $gis)
+    function createPolygonGeometry(FluidXmlWriter $xml, GIS $gis)
     {
-        $polygon = $dom->createElement('gml:Polygon');
-        $polygon->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
+        $xml->make('gml:Polygon')->attribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
 
         foreach ($gis->coordinates as $i => $ring) {
-            $exinterior = $dom->createElement('gml:' . ['exterior', 'interior'][$i]);
-
-            $linearRing = $dom->createElement('gml:LinearRing');
-
-            $posList = $dom->createElement('gml:posList', implode(' ', array_map(function($point){return implode(' ', $point);}, $ring)));
-
-            $linearRing->appendChild($posList);
-
-            $exinterior->appendChild($linearRing);
-
-            $polygon->appendChild($exinterior);
+            $xml->make('gml:' . ['exterior', 'interior'][$i])
+                ->make('gml:LinearRing')
+                ->make('gml:posList')->value(implode(' ', array_map(function($point){return implode(' ', $point);}, $ring)))
+                ->pop(3);
         }
 
-        return $polygon;
+        $xml->pop();
     }
 }
