@@ -152,12 +152,24 @@ jQuery(function($) {
             getFormField: function() {
                 return $('#' + $(this).data('field'));
             },
-            getFeatureFromFormFieldValue: function() {
-                var wkt = this.getFormField().val(),
-                    parts = wkt.match(/^srid=(\d+);(point|linestring|polygon|multipoint|multilinestring|multipolygon)\(([-\d\.\s\(\),]+)\)/i),
+            getFeatureFromFormFieldValue: function(reWkt) {
+                var me = this,
+                    wkt = reWkt ? reWkt : this.getFormField().val(),
+                    parts = wkt.match(/^srid=(\d+);(point|linestring|polygon|multipoint|multilinestring|multipolygon|geometrycollection)\(([-\d\.\s\(\),]+)\)/i),
                     srid, proj, type, json, coordinates;
 
-                if (!parts) return null;
+                if (!parts) {
+                    parts = wkt.match(/^srid=(\d+)+;geometrycollection\((.+)\)/i);
+                    if (!parts) return null;
+
+                    var collection = L.featureGroup([]);
+                    parts[2].split(/,(?=[a-z])/i).forEach(function(item){
+                        reWkt = 'SRID='+parts[1]+';'+item;
+                        console.log(reWkt);
+                        collection.addLayer(me.getFeatureFromFormFieldValue(reWkt));
+                    });
+                    return collection;
+                }
 
                 srid = parts[1];
                 proj = srid != '4326'

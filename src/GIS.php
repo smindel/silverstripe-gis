@@ -37,6 +37,7 @@ class GIS
         'multipoint' => 'MultiPoint',
         'multilinestring' => 'MultiLineString',
         'multipolygon' => 'MultiPolygon',
+        'geometrycollection' => 'GeometryCollection'
     ];
 
     private static $default_srid = 4326;
@@ -71,10 +72,18 @@ class GIS
             $this->value = null;
         } else if (is_array($value) && !isset($value['type'])) {
             switch (true) {
-                case is_numeric($value[0]): $type = 'Point'; break;
-                case is_numeric($value[0][0]): $type = 'LineString'; break;
-                case is_numeric($value[0][0][0]): $type = 'Polygon'; break;
-                case is_numeric($value[0][0][0][0]): $type = 'MultiPolygon'; break;
+                case is_numeric($value[0]):
+                    $type = 'Point';
+                    break;
+                case is_numeric($value[0][0]):
+                    $type = 'LineString';
+                    break;
+                case is_numeric($value[0][0][0]):
+                    $type = 'Polygon';
+                    break;
+                case is_numeric($value[0][0][0][0]):
+                    $type = 'MultiPolygon';
+                    break;
             }
             $this->value = [
                 'srid' => GIS::config()->default_srid,
@@ -98,11 +107,16 @@ class GIS
         }
 
         switch ($property) {
-            case 'array': return ['srid' => $this->srid, 'type' => $this->type, 'coordinates' => $this->coordinates];
-            case 'ewkt': return (string)$this;
-            case 'wkt': return explode(';', (string)$this)[1];
-            case 'srid': return preg_match('/^SRID=(\d+);/i', $this->value, $matches) ? (int)$matches[1] : null;
-            case 'type': return preg_match('/^SRID=\d+;(' . implode('|', array_change_key_case(self::TYPES, CASE_UPPER)) . ')/i', $this->value, $matches) ? self::TYPES[strtolower($matches[1])] : null;
+            case 'array':
+                return ['srid' => $this->srid, 'type' => $this->type, 'coordinates' => $this->coordinates];
+            case 'ewkt':
+                return (string)$this;
+            case 'wkt':
+                return explode(';', (string)$this)[1];
+            case 'srid':
+                return preg_match('/^SRID=(\d+);/i', $this->value, $matches) ? (int)$matches[1] : null;
+            case 'type':
+                return preg_match('/^SRID=\d+;(' . implode('|', array_change_key_case(self::TYPES, CASE_UPPER)) . ')/i', $this->value, $matches) ? self::TYPES[strtolower($matches[1])] : null;
             case 'coordinates':
                 if (preg_match(self::EWKT_PATTERN, $this->value, $matches)) {
 
@@ -116,7 +130,8 @@ class GIS
                 } else {
                     return null;
                 }
-            default: throw new Exception('Unkown property ' . $property);
+            default:
+                throw new Exception('Unkown property ' . $property);
         }
     }
 
@@ -214,7 +229,7 @@ class GIS
 
     protected static function reproject_array($coordinates, $fromProj, $toProj)
     {
-        return self::each($coordinates, function($coordinate) use ($fromProj, $toProj) {
+        return self::each($coordinates, function ($coordinate) use ($fromProj, $toProj) {
             return array_slice(self::$proj4->transform($toProj, new Point($coordinate[0], $coordinate[1], $fromProj))->toArray(), 0, 2);
         });
     }
