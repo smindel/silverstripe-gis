@@ -8,6 +8,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Permission;
 use Smindel\GIS\GIS;
 use Exception;
+use SilverStripe\Control\Director;
 
 class AbstractGISWebServiceController extends Controller
 {
@@ -26,6 +27,7 @@ class AbstractGISWebServiceController extends Controller
             return false;
         }
         $defaults['record_provider'] = null;
+        $defaults['access_control_allow_origin'] = Director::absoluteURL('/');
         $defaults['geometry_field'] = GIS::of($model);
         $defaults['searchable_fields'] = singleton($model)->searchableFields();
         return is_array($modelConfig) ? array_merge($defaults, $modelConfig) : $defaults;
@@ -57,7 +59,7 @@ class AbstractGISWebServiceController extends Controller
             $queryParams = array_intersect_ukey(
                 $request->requestVars(),
                 $config['searchable_fields'],
-                function($a, $b) {
+                function ($a, $b) {
                     $a = explode(':', $a)[0];
                     $b = explode(':', $b)[0];
                     return strcmp($a, $b);

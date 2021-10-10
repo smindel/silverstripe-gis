@@ -37,6 +37,7 @@ private static $geojsonservice = [
         'FirstName' => 'given name',
         'Surname' => 'name',
     ],
+    'access_control_allow_origin' => '*',
 ];
 ```
 

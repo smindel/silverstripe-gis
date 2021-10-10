@@ -33,6 +33,8 @@ class GeoJsonService extends AbstractGISWebServiceController
 
         $propertyMap = $config['property_map'];
 
+        header('Access-Control-Allow-Origin: ' . $config['access_control_allow_origin']);
+
         // The HTTP kernel keeps a copy of the response body, which
         // can exhaust the memory limit for large data sets. So we
         // opt out and flush the buffer after processing each feature.
