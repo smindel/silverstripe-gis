@@ -1,0 +1,8 @@
+---
+Name: gisfieldtypes
+---
+SilverStripe\Core\Injector\Injector:
+  Geometry:
+    class: Smindel\GIS\ORM\FieldType\DBGeometry
+  Geography:
+    class: Smindel\GIS\ORM\FieldType\DBGeography
