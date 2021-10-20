@@ -57,16 +57,25 @@ class GeoJsonService extends AbstractGISWebServiceController
                 $properties[$propertyName] = $item->$fieldName;
             }
 
-            echo json_encode([
+            $feature = [
                 'type' => 'Feature',
-                'geometry' => [
-                    'type' => $geo->type,
-                    'coordinates' => $geo->coordinates
-                ],
                 'properties' => $properties,
-            ]);
+                'geometry' => ['type' => $geo->type]
+            ];
+            if ($geo->type == GIS::TYPES['geometrycollection']) {
+                $geometries = [];
+                foreach ($geo->geometries as $geometry) {
+                    $geometries[] = [
+                        'type' => $geometry->type,
+                        'coordinates' => $geometry->coordinates,
+                    ];
+                }
+                $feature['geometry']['geometries'] =  $geometries;
+            } else {
+                $feature['geometry']['coordinates'] =  $geo->coordinates;
+            }
+            echo json_encode($feature);
         }
-
         echo ']}';
         if (!$is_test) {
             die;

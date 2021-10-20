@@ -56,17 +56,15 @@ class GIS
     public function __construct($value)
     {
         DB::get_schema()->initialise();
-
         if ($value instanceof GIS) {
             $this->value = $value->value;
         } else if ($value instanceof DBGeography) {
             $this->value = $value->getValue();
         } else if (is_string($value) && preg_match(self::WKT_PATTERN, $value)) {
             $this->value = 'SRID=' . self::config()->default_srid . ';' . $value;
-        } else if (
-            (is_array($value) && count($value) == 3 && isset($value['type']))
-            || (is_string($value) && preg_match(self::EWKT_PATTERN, $value))
-        ) {
+        } else if (is_array($value) && count($value) == 3 && isset($value['type'])) {
+            $this->value = $value;
+        } else if (is_string($value) && preg_match(self::EWKT_PATTERN, $value)) {
             $this->value = $value;
         } else if (empty($value) || isset($value['coordinates']) && empty($value['coordinates'])) {
             $this->value = null;
@@ -91,7 +89,7 @@ class GIS
                 'coordinates' => $value,
             ];
         } else {
-            throw new Exception('Invalid geo value');
+            throw new Exception('Invalid geo value: "' . var_export($value) . '"');
         }
     }
 
@@ -130,6 +128,17 @@ class GIS
                 } else {
                     return null;
                 }
+            case 'geometries':
+                // primarily used for GeometryCollections
+                // @todo: what's supposed to be returned for non-GeometryCollections?
+                if (preg_match(self::EWKT_PATTERN, $this->value, $matches)) {
+                    $geometries = preg_split('/,(?=[a-zA-Z])/', substr($matches[4], 1, -1));
+                    $srid = $this->srid;
+                    return array_map(function ($geometry) use ($srid) {
+                        return GIS::create('SRID=' . $srid . ';' . $geometry);
+                    }, $geometries);
+                }
+                return null;
             default:
                 throw new Exception('Unkown property ' . $property);
         }
@@ -186,16 +195,17 @@ class GIS
     public function reproject($toSrid = 4326)
     {
         $fromSrid = $this->srid;
+
+        if ($fromSrid == $toSrid) {
+            return clone $this;
+        }
+
         $fromCoordinates = $this->coordinates;
         $type = $this->type;
 
-        if ($fromSrid != $toSrid) {
-            $fromProj = self::get_proj4($fromSrid);
-            $toProj = self::get_proj4($toSrid);
-            $toCoordinates = self::reproject_array($fromCoordinates, $fromProj, $toProj);
-        } else {
-            $toCoordinates = $fromCoordinates;
-        }
+        $fromProj = self::get_proj4($fromSrid);
+        $toProj = self::get_proj4($toSrid);
+        $toCoordinates = self::reproject_array($fromCoordinates, $fromProj, $toProj);
 
         return GIS::create([
             'srid' => $toSrid,
