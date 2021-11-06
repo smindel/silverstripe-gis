@@ -1,0 +1,14 @@
+---
+Name: gissearchaliases
+---
+SilverStripe\Core\Injector\Injector:
+  StContainsFilter: '%$DataListFilter.ST_Contains'
+  StCrossesFilter: '%$DataListFilter.ST_Crosses'
+  StDisjointFilter: '%$DataListFilter.ST_Disjoint'
+  StDistanceFilter: '%$DataListFilter.ST_Distance'
+  StEqualsFilter: '%$DataListFilter.ST_Equals'
+  StGeometryTypeFilter: '%$DataListFilter.ST_GeometryType'
+  StIntersectsFilter: '%$DataListFilter.ST_Intersects'
+  StOverlapsFilter: '%$DataListFilter.ST_Overlaps'
+  StTouchesFilter: '%$DataListFilter.ST_Touches'
+  StWithinFilter: '%$DataListFilter.ST_Within'

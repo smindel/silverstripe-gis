@@ -1,0 +1,24 @@
+---
+Name: gissearchfilters
+---
+SilverStripe\Core\Injector\Injector:
+  DataListFilter.ST_Contains:
+    class: Smindel\GIS\ORM\Filters\StContainsFilter
+  DataListFilter.ST_Crosses:
+    class: Smindel\GIS\ORM\Filters\StCrossesFilter
+  DataListFilter.ST_Disjoint:
+    class: Smindel\GIS\ORM\Filters\StDisjointFilter
+  DataListFilter.ST_Distance:
+    class: Smindel\GIS\ORM\Filters\StDistanceFilter
+  DataListFilter.ST_Equals:
+    class: Smindel\GIS\ORM\Filters\StEqualsFilter
+  DataListFilter.ST_GeometryType:
+    class: Smindel\GIS\ORM\Filters\StGeometryTypeFilter
+  DataListFilter.ST_Intersects:
+    class: Smindel\GIS\ORM\Filters\StIntersectsFilter
+  DataListFilter.ST_Overlaps:
+    class: Smindel\GIS\ORM\Filters\StOverlapsFilter
+  DataListFilter.ST_Touches:
+    class: Smindel\GIS\ORM\Filters\StTouchesFilter
+  DataListFilter.ST_Within:
+    class: Smindel\GIS\ORM\Filters\StWithinFilter
