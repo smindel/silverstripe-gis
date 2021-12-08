@@ -11,13 +11,12 @@ jobs:
   UNIT-TESTS-74:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
+      debian-packages: gdal-bin
 
   UNIT-TESTS-74-POSTGRESQL:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       database: postgresql
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
       debian-packages: gdal-bin
       database-script: CREATE EXTENSION postgis;
 
@@ -27,31 +26,31 @@ jobs:
       run-php-unit-coverage: true
       # Only wish to phpdbg with coverage enabled, no need to run tests without also
       run-php-unit: false
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
+      debian-packages: gdal-bin
 
   UNIT-TESTS-73:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       php-version: 7.3
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
+      debian-packages: gdal-bin
 
   UNIT-TESTS-SS47:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       silverstripe-version: 4.7
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
+      debian-packages: gdal-bin
 
   UNIT-TESTS-SS48:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       silverstripe-version: 4.8
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
+      debian-packages: gdal-bin
 
   UNIT-TESTS-SS4xDev:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       silverstripe-version: 4.x-dev
-      test-config-flag: UNIT_TESTING_CKH_CONFIG_ENABLED
+      debian-packages: gdal-bin
 
   LINTING:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
