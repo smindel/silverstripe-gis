@@ -52,6 +52,13 @@ jobs:
       silverstripe-version: 4.x-dev
       debian-packages: gdal-bin
 
+  UNIT-TESTS-POSTGRESQL-SS4xDev:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      silverstripe-version: 4.x-dev
+      debian-packages: gdal-bin
+      database: postgresql
+
   LINTING:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
