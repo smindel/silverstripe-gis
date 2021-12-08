@@ -57,7 +57,6 @@ jobs:
     with:
       run-php-lint: true
       run-phpstan: true
-      run-todo: true
+      #run-todo: true
       run-php-unit: false
-      run-duplicate-code-check: true
-
+      #run-duplicate-code-check: true
