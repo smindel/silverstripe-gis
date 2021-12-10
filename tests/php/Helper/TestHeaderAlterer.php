@@ -7,8 +7,20 @@ use Smindel\GIS\Interfaces\HeaderAltererInterface;
 class TestHeaderAlterer implements HeaderAltererInterface
 {
 
+    private static $recordedHeaders = [];
+
+    public static function getRecordedHeaders()
+    {
+        return self::$recordedHeaders;
+    }
+
+    public static function resetRecordedHeaders()
+    {
+        self::$recordedHeaders = [];
+    }
+
     public function setHeader($headerString)
     {
-        error_log('TEST HEADER: ' . $headerString);
+        self::$recordedHeaders[] = $headerString;
     }
 }

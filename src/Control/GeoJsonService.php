@@ -73,8 +73,8 @@ class GeoJsonService extends AbstractGISWebServiceController
 
             $feature = [
                 'type' => 'Feature',
+                'geometry' => ['type' => $geo->type],
                 'properties' => $properties,
-                'geometry' => ['type' => $geo->type]
             ];
             if ($geo->type == GIS::TYPES['geometrycollection']) {
                 $geometries = [];
