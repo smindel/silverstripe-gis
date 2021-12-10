@@ -72,6 +72,9 @@ class GeographyTest extends SapphireTest
         // debug for now
         error_log('Database server:' . DB::get_conn()->getDatabaseServer());
 
+        $databaseVersion = DB::query('select version()')->value();
+        error_log('Database Version: ' . $databaseVersion);
+
         $class = $this->getExtraDataObjects()[0];
 
         $reference = $this->objFromFixture($class, 'reference');
