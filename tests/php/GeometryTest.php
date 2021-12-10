@@ -12,7 +12,7 @@ class GeometryTest extends GeographyTest
 
     protected static $mysql_test_methods = [
         'Contains' => ['Contains', 'Equals'],
-        'Crosses' => ['Crosses', 'Wibble'],
+        'Crosses' => ['Crosses'],
         'Disjoint' => ['Disjoint', 'Distance', 'GeometryType'],
         'Equals' => ['Equals'],
         'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
