@@ -76,10 +76,6 @@ class GeographyTest extends SapphireTest
         }
 
         $client = DB::get_conn()->getDatabaseServer();
-
-        // debug for now
-        error_log('Database server:' . $client);
-
         $databaseVersion = DB::query('select version()')->value();
 
         if ($client == 'mysql') {
@@ -101,15 +97,11 @@ class GeographyTest extends SapphireTest
 
         $class = $this->getExtraDataObjects()[0];
 
-        error_log('CLASS: ' . $class);
-
         $reference = $this->objFromFixture($class, 'reference');
 
         $all = $class::get()->exclude('ID', $reference->ID)
             ->map()
             ->toArray();
-
-        error_log('ALL:' . print_r($all, true));
 
         error_log('Test methods');
         error_log(print_r($methodsToTest, true));
