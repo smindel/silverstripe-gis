@@ -58,6 +58,8 @@ class GeographyTest extends SapphireTest
         $this->assertEquals((string)$wkt, $class::get()->byID($id)->GeoLocation);
     }
 
+
+    // @TODO This test fails with mariadb (10.7) as the database
     public function testStGenericFilter()
     {
         if (
@@ -66,6 +68,9 @@ class GeographyTest extends SapphireTest
         ) {
             $this->markTestSkipped('MySQL does not support Geography.');
         }
+
+        // debug for now
+        error_log('Database server:' . DB::get_conn()->getDatabaseServer());
 
         $class = $this->getExtraDataObjects()[0];
 
