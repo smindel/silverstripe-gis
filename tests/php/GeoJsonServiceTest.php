@@ -29,6 +29,7 @@ class GeoJsonServiceTest extends FunctionalTest
         $this->get('geojsonservice/Smindel-GIS-Tests-TestLocation.GeoJson');
     }
 
+
     public function testServiceFilter()
     {
         $this->expectOutputString('{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[10,53.5]},"properties":{"Name":"Hamburg"}}]}');

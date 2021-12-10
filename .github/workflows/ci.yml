@@ -12,12 +12,14 @@ jobs:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-74-MARIADB:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       database: mariadb
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-74-POSTGRESQL:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
@@ -25,6 +27,7 @@ jobs:
       database: postgresql
       debian-packages: gdal-bin
       database-script: CREATE EXTENSION postgis;
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-COVERAGE-74:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
@@ -33,30 +36,35 @@ jobs:
       # Only wish to phpdbg with coverage enabled, no need to run tests without also
       run-php-unit: false
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-73:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       php-version: 7.3
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-SS47:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       silverstripe-version: 4.7
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-SS48:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       silverstripe-version: 4.8
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-SS4xDev:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       silverstripe-version: 4.x-dev
       debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-POSTGRESQL-SS4xDev:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
@@ -64,6 +72,7 @@ jobs:
       silverstripe-version: 4.x-dev
       debian-packages: gdal-bin
       database: postgresql
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   LINTING:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main

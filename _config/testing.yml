@@ -1,0 +1,10 @@
+---
+Name: gisconfigtesting
+After: gisconfig
+Only:
+  envvarset:
+    - UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+---
+SilverStripe\Core\Injector\Injector:
+  Smindel\GIS\Helper\HeaderAlterer:
+    class: Smindel\GIS\Tests\Helper\TestHeaderAlterer
