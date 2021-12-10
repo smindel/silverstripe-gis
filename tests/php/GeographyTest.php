@@ -92,20 +92,43 @@ class GeographyTest extends SapphireTest
 
         $class = $this->getExtraDataObjects()[0];
 
+        error_log('CLASS: ' . $class);
+
         $reference = $this->objFromFixture($class, 'reference');
 
         $all = $class::get()->exclude('ID', $reference->ID)
             ->map()
             ->toArray();
 
+        error_log('ALL:' . print_r($all, true));
+
+        error_log('Test methods');
+        error_log(print_r(static::$test_methods, true));
+
         foreach (static::$test_methods as $filter => $geometries) {
+            error_log('FILTER: ' . $filter);
             $matches = $class::get()
                 ->exclude('ID', $reference->ID)
                 ->filter('GeoLocation:ST_' . $filter, $reference->GeoLocation)
                 ->map()
                 ->toArray();
             asort($matches);
-            $this->assertEquals($geometries, array_values($matches), $filter);
+
+            error_log('GEOMS: ' . print_r($geometries, true));
+            error_log('MATCHES:' . print_r($matches, true));
+
+
+            switch($databaseServer) {
+                case 'mysql':
+                    $this->assertEquals($geometries, array_values($matches), $filter);
+                    break;
+
+                case 'mariadb':
+                    $this->assertEquals($geometries, array_values($matches), $filter);
+                    break;
+
+            }
+
 
             $matches = $class::get()
                 ->exclude('ID', $reference->ID)
