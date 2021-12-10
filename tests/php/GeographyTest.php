@@ -9,7 +9,11 @@ use Smindel\GIS\GIS;
 
 class GeographyTest extends SapphireTest
 {
-    protected static $test_methods = [
+    protected static $mysql_test_methods = [
+        'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
+    ];
+
+    protected static $mariadb_test_methods = [
         'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
     ];
 
@@ -87,6 +91,11 @@ class GeographyTest extends SapphireTest
             }
         }
 
+        $methodsToTest = static::$mysql_test_methods;
+        if ($databaseServer == 'mariadb') {
+            $methodsToTest = static::$mariadb_test_methods;
+        }
+
         error_log('Database Server: ' . $databaseServer);
 
 
@@ -103,9 +112,9 @@ class GeographyTest extends SapphireTest
         error_log('ALL:' . print_r($all, true));
 
         error_log('Test methods');
-        error_log(print_r(static::$test_methods, true));
+        error_log(print_r($methodsToTest, true));
 
-        foreach (static::$test_methods as $filter => $geometries) {
+        foreach ($methodsToTest as $filter => $geometries) {
             error_log('FILTER: ' . $filter);
             $matches = $class::get()
                 ->exclude('ID', $reference->ID)

@@ -10,8 +10,18 @@ class GeometryTest extends GeographyTest
 {
     protected static $fixture_file = 'TestGeometry.yml';
 
-    // @todo Are these changes correct?
-    protected static $test_methods = [
+    protected static $mysql_test_methods = [
+        'Contains' => ['Contains', 'Equals'],
+        'Crosses' => ['Crosses'],
+        'Disjoint' => ['Disjoint', 'Distance', 'GeometryType'],
+        'Equals' => ['Equals'],
+        'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
+        'Overlaps' => ['Intersects', 'Overlaps'],
+        'Touches' => ['Touches'],
+        'Within' => ['Equals', 'Within'],
+    ];
+
+    protected static $mariadb_test_methods = [
         'Contains' => ['Contains', 'Equals'],
         'Crosses' => ['Crosses', 'Intersects', 'Overlaps', 'Touches'],
         'Disjoint' => ['Disjoint', 'Distance', 'GeometryType'],
