@@ -77,6 +77,7 @@ class GeographyTest extends SapphireTest
 
         $client = DB::get_conn()->getDatabaseServer();
         $databaseVersion = DB::query('select version()')->value();
+        error_log('**** database version: ' . $databaseVersion);
 
         if ($client == 'mysql') {
             if (self::stringContains('MariaDB', $databaseVersion)) {
