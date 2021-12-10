@@ -77,7 +77,7 @@ class GeographyTest extends SapphireTest
 
         $client = DB::get_conn()->getDatabaseServer();
         $databaseVersion = DB::query('select version()')->value();
-        error_log('**** database version: ' . $databaseVersion);
+  #      error_log('**** database version: ' . $databaseVersion);
 
         if ($client == 'mysql') {
             if (strpos($databaseVersion, 'MariaDB') !== false) {
@@ -93,7 +93,7 @@ class GeographyTest extends SapphireTest
             $methodsToTest = static::$mariadb_test_methods;
         }
 
-        error_log('Database Server: ' . $databaseServer);
+     #   error_log('Database Server: ' . $databaseServer);
 
 
         $class = $this->getExtraDataObjects()[0];
@@ -104,11 +104,11 @@ class GeographyTest extends SapphireTest
             ->map()
             ->toArray();
 
-        error_log('Test methods');
-        error_log(print_r($methodsToTest, true));
+  #      error_log('Test methods');
+   #     error_log(print_r($methodsToTest, true));
 
         foreach ($methodsToTest as $filter => $geometries) {
-            error_log('FILTER: ' . $filter);
+            #error_log('FILTER: ' . $filter);
             $matches = $class::get()
                 ->exclude('ID', $reference->ID)
                 ->filter('GeoLocation:ST_' . $filter, $reference->GeoLocation)
@@ -116,8 +116,8 @@ class GeographyTest extends SapphireTest
                 ->toArray();
             asort($matches);
 
-            error_log('GEOMS: ' . print_r($geometries, true));
-            error_log('MATCHES:' . print_r($matches, true));
+      #      error_log('GEOMS: ' . print_r($geometries, true));
+       #     error_log('MATCHES:' . print_r($matches, true));
 
 
             switch($databaseServer) {
