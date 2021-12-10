@@ -13,6 +13,12 @@ jobs:
     with:
       debian-packages: gdal-bin
 
+  UNIT-TESTS-74-MARIADB:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      database: mariadb
+      debian-packages: gdal-bin
+
   UNIT-TESTS-74-POSTGRESQL:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
