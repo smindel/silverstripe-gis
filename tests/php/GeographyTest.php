@@ -62,6 +62,8 @@ class GeographyTest extends SapphireTest
     // @TODO This test fails with mariadb (10.7) as the database
     public function testStGenericFilter()
     {
+        $databaseServer = 'UNKNOWN';
+
         if (
             static::class == GeographyTest::class &&
             DB::get_schema()->geography(null) != 'geography'
@@ -69,11 +71,24 @@ class GeographyTest extends SapphireTest
             $this->markTestSkipped('MySQL does not support Geography.');
         }
 
+        $client = DB::get_conn()->getDatabaseServer();
+
         // debug for now
-        error_log('Database server:' . DB::get_conn()->getDatabaseServer());
+        error_log('Database server:' . $client);
 
         $databaseVersion = DB::query('select version()')->value();
-        error_log('Database Version: ' . $databaseVersion);
+
+        if ($client == 'mysql') {
+            if (self::stringContains('MariaDB', $databaseVersion)) {
+                $databaseServer = 'mariadb';
+            } else {
+                // mysql only spits out a version number
+                $databaseServer = 'mysql';
+            }
+        }
+
+        error_log('Database Server: ' . $databaseServer);
+
 
         $class = $this->getExtraDataObjects()[0];
 
