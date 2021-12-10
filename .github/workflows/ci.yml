@@ -26,7 +26,7 @@ jobs:
     with:
       database: postgresql
       debian-packages: gdal-bin
-      database-script: CREATE EXTENSION postgis;
+      #database-script: CREATE EXTENSION postgis;
       test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
   UNIT-TESTS-COVERAGE-74:
