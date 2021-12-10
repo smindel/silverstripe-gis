@@ -80,7 +80,7 @@ class GeographyTest extends SapphireTest
         error_log('**** database version: ' . $databaseVersion);
 
         if ($client == 'mysql') {
-            if (self::stringContains('MariaDB', $databaseVersion)) {
+            if (strpos($databaseVersion, 'MariaDB') !== false) {
                 $databaseServer = 'mariadb';
             } else {
                 // mysql only spits out a version number
