@@ -62,6 +62,7 @@ class Raster
             }
             */
 
+            // @TODO HACK!!!!!!
             $splits = explode(',', $output);
             $last = array_pop($splits);
             $last = str_replace(']', '', $last);
