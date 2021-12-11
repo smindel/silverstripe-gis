@@ -33,7 +33,7 @@ class Raster
 
     public function getSrid()
     {
-        $output = `gdalsrsinfo --version`;
+        $output = `gdalsrsinfo --version && cat /etc/issue`;
         error_log('T0: gdalsrsinfo --version = ' . print_r($output, true));
         if (empty($this->info['srid'])) {
 
