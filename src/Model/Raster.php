@@ -50,6 +50,8 @@ class Raster
             if (preg_match('/\WAUTHORITY\["EPSG","([^"]+)"\]\]$/', $output, $matches)) {
                 error_log('T4: MATCHES: ' . print_r($matches, true));
                 $this->info['srid'] = $matches[1];
+            } else {
+                error_log('T5: No match!!');
             }
         }
 
