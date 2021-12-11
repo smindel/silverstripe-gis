@@ -35,12 +35,17 @@ class Raster
     {
         if (empty($this->info['srid'])) {
 
+            error_log('T1: SRID empty');
+
             $cmd = sprintf('
                 gdalsrsinfo -o wkt %1$s',
                 $this->getFilename()
             );
 
+            error_log('T2: command=' . $cmd);
+
             $output = `$cmd`;
+            error_log('T3:' . print_r($output, true));
 
             if (preg_match('/\WAUTHORITY\["EPSG","([^"]+)"\]\]$/', $output, $matches)) {
                 $this->info['srid'] = $matches[1];
