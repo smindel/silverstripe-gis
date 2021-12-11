@@ -33,12 +33,15 @@ class Raster
 
     public function getSrid()
     {
+        $output = `gdalsrsinfo --version`;
+        error_log('T0: gdalsrsinfo --version = ');
+        var_dump($output);
         if (empty($this->info['srid'])) {
 
             error_log('T1: SRID empty');
 
             $cmd = sprintf('
-                gdalsrsinfo -o wkt %1$s',
+                gdalsrsinfo  -o wkt %1$s',
                 $this->getFilename()
             );
 
