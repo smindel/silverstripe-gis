@@ -39,8 +39,9 @@ class Raster
 
             error_log('T1: SRID empty');
 
+            // @TODO This fails with gdalsrsinfo version < 3 (the --single-line flag errors out)
             $cmd = sprintf('
-                gdalsrsinfo  -o wkt %1$s',
+                gdalsrsinfo --single-line  -o wkt %1$s',
                 $this->getFilename()
             );
 
@@ -51,12 +52,21 @@ class Raster
 
             var_dump($output);
 
+            /*
             if (preg_match('/\WAUTHORITY\["EPSG","([^"]+)"\]\]$/', $output, $matches)) {
                 error_log('T4: MATCHES: ' . print_r($matches, true));
                 $this->info['srid'] = $matches[1];
             } else {
                 error_log('T5: No match!!');
+                error_log(preg_last_error_msg());
             }
+            */
+
+            $splits = explode(',', $output);
+            $last = array_pop($splits);
+            $last = str_replace(']', '', $last);
+            error_log($last);
+            $this->info['srid'] = intval($last);
         }
 
         return $this->info['srid'];
