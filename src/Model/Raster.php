@@ -34,8 +34,7 @@ class Raster
     public function getSrid()
     {
         $output = `gdalsrsinfo --version`;
-        error_log('T0: gdalsrsinfo --version = ');
-        var_dump($output);
+        error_log('T0: gdalsrsinfo --version = ' . print_r($output, true));
         if (empty($this->info['srid'])) {
 
             error_log('T1: SRID empty');
