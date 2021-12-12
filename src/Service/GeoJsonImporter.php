@@ -20,7 +20,10 @@ class GeoJsonImporter
             }
 
             if ($propertyMap === null) {
-                $propertyMap = array_intersect(array_keys($class::config()->get('db')), array_keys($feature['properties']));
+                $propertyMap = array_intersect(
+                    array_keys($class::config()->get('db')),
+                    array_keys($feature['properties'])
+                );
                 $propertyMap = array_combine($propertyMap, $propertyMap);
             }
 

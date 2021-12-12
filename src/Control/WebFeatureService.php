@@ -202,12 +202,12 @@ class WebFeatureService extends AbstractGISWebServiceController
         return $response;
     }
 
-    function createGeometry(DOMDocument $dom, $value)
+    public function createGeometry(DOMDocument $dom, $value)
     {
         return call_user_func([$this, 'create' . ($gis = GIS::create($value))->type . 'Geometry'], $dom, $gis);
     }
 
-    function createPointGeometry(DOMDocument $dom, GIS $gis)
+    public function createPointGeometry(DOMDocument $dom, GIS $gis)
     {
         $point = $dom->createElement('gml:Point');
         $point->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::4326');
@@ -218,7 +218,7 @@ class WebFeatureService extends AbstractGISWebServiceController
         return $point;
     }
 
-    function createLineStringGeometry(DOMDocument $dom, GIS $gis)
+    public function createLineStringGeometry(DOMDocument $dom, GIS $gis)
     {
         $line = $dom->createElement('gml:LineString');
         $line->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
@@ -232,7 +232,7 @@ class WebFeatureService extends AbstractGISWebServiceController
         return $line;
     }
 
-    function createPolygonGeometry(DOMDocument $dom, GIS $gis)
+    public function createPolygonGeometry(DOMDocument $dom, GIS $gis)
     {
         $polygon = $dom->createElement('gml:Polygon');
         $polygon->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);

@@ -15,6 +15,7 @@ use Exception;
 http://postgis.net/docs/PostGIS_Special_Functions_Index.html#PostGIS_3D_Functions
 */
 
+// @phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 if (!class_exists(PostgreSQLSchemaManager::class)) {
     return;
 }

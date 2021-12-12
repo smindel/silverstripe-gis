@@ -45,7 +45,8 @@ class ImagickRenderer
                     $this->defaultStyle['marker_offset_x'] = 0;
                     break;
                 case 'center':
-                    $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0] / 2;
+                    $this->defaultStyle['marker_offset_x'] =
+                        getimagesize($this->defaultStyle['marker']['image'])[0] / 2;
                     break;
                 case 'right':
                     $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0];
@@ -58,10 +59,12 @@ class ImagickRenderer
                     $this->defaultStyle['marker_offset_y'] = 0;
                     break;
                 case 'middle':
-                    $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1] / 2;
+                    $this->defaultStyle['marker_offset_y'] =
+                        getimagesize($this->defaultStyle['marker']['image'])[1] / 2;
                     break;
                 case 'bottom':
-                    $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1];
+                    $this->defaultStyle['marker_offset_y'] =
+                        getimagesize($this->defaultStyle['marker']['image'])[1];
                     break;
                 default:
                     $this->defaultStyle['marker_offset_y'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
@@ -140,7 +143,12 @@ class ImagickRenderer
             $this->getDraw($style);
         }
 
-        $this->image->compositeImage($style['marker_image'], imagick::COMPOSITE_OVER, $coordinates[0] - $style['marker_offset_x'], $coordinates[1] - $style['marker_offset_y']);
+        $this->image->compositeImage(
+            $style['marker_image'],
+            imagick::COMPOSITE_OVER,
+            $coordinates[0] - $style['marker_offset_x'],
+            $coordinates[1] - $style['marker_offset_y']
+        );
     }
 
     public function drawCircle($coordinates, $style = [])

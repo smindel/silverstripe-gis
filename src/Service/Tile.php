@@ -72,7 +72,8 @@ class Tile
 
         $this->topLeft = [
             (($lon + 180) / 360) * $this->size * pow(2, $this->z),
-            (0.5 - log((1 + sin($lat * pi() / 180)) / (1 - sin($lat * pi() / 180))) / (4 * pi())) * $this->size * pow(2, $this->z),
+            (0.5 - log((1 + sin($lat * pi() / 180)) / (1 - sin($lat * pi() / 180))) /
+                (4 * pi())) * $this->size * pow(2, $this->z),
         ];
 
         $this->resource = Injector::inst()->get('TileRenderer', false, [$this->size, $this->size, $defaultStyle]);
@@ -128,7 +129,9 @@ class Tile
                 function ($lonlat) use ($offset) {
                     return [
                             (($lonlat[0] + 180 - $offset) / 360) * $this->size * pow(2, $this->z) - $this->topLeft[0],
-                            (0.5 - log((1 + sin($lonlat[1] * pi() / 180)) / (1 - sin($lonlat[1] * pi() / 180))) / (4 * pi())) * $this->size * pow(2, $this->z) - $this->topLeft[1],
+                            (0.5 - log((1 + sin($lonlat[1] * pi() / 180)) /
+                                    (1 - sin($lonlat[1] * pi() / 180))) /
+                                (4 * pi())) * $this->size * pow(2, $this->z) - $this->topLeft[1],
                         ];
                 }
             );
