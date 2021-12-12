@@ -26,6 +26,7 @@ class MapFieldTest extends SapphireTest
 
         $html = (string)$field->Field();
 
+        error_log('RESULT T6: ' . $html);
         $this->assertRegExp('/\Wclass="map-field-widget"\W/', $html);
         $this->assertRegExp('/\Wdata-field="Location"\W/', $html);
         $this->assertRegExp('/\Wdata-default-srid="3857"\W/', $html);
