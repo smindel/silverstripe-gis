@@ -10,9 +10,9 @@ use Smindel\GIS\Interfaces\HeaderAltererInterface;
 
 class GeoJsonService extends AbstractGISWebServiceController
 {
-    private static $url_handlers = array(
+    private static $url_handlers = [
         '$Model' => 'handleAction',
-    );
+    ];
 
     /**
      * @var HeaderAltererInterface

@@ -54,7 +54,7 @@ class MapField extends FormField
         'circlemarker' => false
     ];
 
-    public function Field($properties = array())
+    public function Field($properties = [])
     {
         $type = $this->hideFormField ? 'hidden' : 'readonly';
         $this->setAttribute($type, $type);

@@ -15,10 +15,10 @@ use Exception;
 
 class WebMapTileService extends AbstractGISWebServiceController
 {
-    private static $url_handlers = array(
+    private static $url_handlers = [
         '$Model//$ID!/$z!/$x!/$y!' => 'handleAction',
         '$Model//$z!/$x!/$y!' => 'handleAction',
-    );
+    ];
 
     /**
      * Buffer in pixel by wich the tile box is enlarged, which is used for
