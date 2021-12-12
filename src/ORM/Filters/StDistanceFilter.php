@@ -17,7 +17,8 @@ class StDistanceFilter extends SearchFilter
      */
     protected function applyOne(DataQuery $query)
     {
-        throw new InvalidArgumentException(static::class . " is used by supplying an array containing a geometry and a distance.");
+        throw new InvalidArgumentException(static::class .
+            " is used by supplying an array containing a geometry and a distance.");
     }
 
     protected function applyMany(DataQuery $query)
@@ -33,7 +34,8 @@ class StDistanceFilter extends SearchFilter
      */
     protected function excludeOne(DataQuery $query)
     {
-        throw new InvalidArgumentException(static::class . " is used by supplying an array containing a geometry and a distance.");
+        throw new InvalidArgumentException(static::class .
+            " is used by supplying an array containing a geometry and a distance.");
     }
 
     protected function excludeMany(DataQuery $query)

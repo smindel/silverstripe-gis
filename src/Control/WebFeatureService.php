@@ -37,7 +37,8 @@ class WebFeatureService extends AbstractGISWebServiceController
 
     public function index($request)
     {
-        $operation = $request->requestVars()['request'] ?? (new SimpleXMLElement($raw = $request->getBody()))->getName();
+        $operation = $request->requestVars()['request'] ??
+            (new SimpleXMLElement($raw = $request->getBody()))->getName();
 
         if (!in_array($operation, ['GetCapabilities', 'DescribeFeatureType', 'GetFeature'])) {
             throw new Exception(sprintf('Unkown operation "%s" requested', $operation));
