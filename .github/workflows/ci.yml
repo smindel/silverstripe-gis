@@ -32,6 +32,7 @@ jobs:
   UNIT-TESTS-COVERAGE-74:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
+      database: postgresql
       run-php-unit-coverage: true
       # Only wish to phpdbg with coverage enabled, no need to run tests without also
       run-php-unit: false
