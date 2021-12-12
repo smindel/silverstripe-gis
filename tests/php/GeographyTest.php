@@ -25,8 +25,7 @@ class GeographyTest extends SapphireTest
 
     public static function getExtraDataObjects()
     {
-        if (
-            static::class == self::class &&
+        if (static::class == self::class &&
             DB::get_schema()->geography(null) == 'geography'
         ) {
             static::$fixture_file = 'TestGeography.yml';
@@ -36,8 +35,7 @@ class GeographyTest extends SapphireTest
 
     public function testDbRoundTrip()
     {
-        if (
-            static::class == GeographyTest::class &&
+        if (static::class == GeographyTest::class &&
             DB::get_schema()->geography(null) != 'geography'
         ) {
             $this->markTestSkipped('MySQL does not support Geography.');
@@ -66,8 +64,7 @@ class GeographyTest extends SapphireTest
     {
         $databaseServer = 'UNKNOWN';
 
-        if (
-            static::class == GeographyTest::class &&
+        if (static::class == GeographyTest::class &&
             DB::get_schema()->geography(null) != 'geography'
         ) {
             $this->markTestSkipped('MySQL does not support Geography.');
@@ -117,7 +114,7 @@ class GeographyTest extends SapphireTest
        #     error_log('MATCHES:' . print_r($matches, true));
 
 
-            switch($databaseServer) {
+            switch ($databaseServer) {
                 case 'mysql':
                     $this->assertEquals($geometries, array_values($matches), $filter);
                     break;
@@ -125,7 +122,6 @@ class GeographyTest extends SapphireTest
                 case 'mariadb':
                     $this->assertEquals($geometries, array_values($matches), $filter);
                     break;
-
             }
 
 
@@ -143,8 +139,7 @@ class GeographyTest extends SapphireTest
 
     public function testStDistanceFilter()
     {
-        if (
-            static::class == GeographyTest::class &&
+        if (static::class == GeographyTest::class &&
             DB::get_schema()->geography(null) != 'geography'
         ) {
             $this->markTestSkipped('MySQL does not support Geography.');
@@ -170,8 +165,7 @@ class GeographyTest extends SapphireTest
 
     public function testGeometryTypeFilter()
     {
-        if (
-            static::class == GeographyTest::class &&
+        if (static::class == GeographyTest::class &&
             DB::get_schema()->geography(null) != 'geography'
         ) {
             $this->markTestSkipped('MySQL does not support Geography.');

@@ -95,7 +95,7 @@ class GISTest extends SapphireTest
                 [ -8,35],
                 [-10,35],
                 [-10,40],
-        ]]])->ewkt;
+            ]]])->ewkt;
         $this->assertEquals('SRID=4326;POLYGON((-10 40,-8 40,-8 35,-10 35,-10 40))', $ewkt);
     }
 

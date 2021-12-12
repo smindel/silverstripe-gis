@@ -41,16 +41,30 @@ class ImagickRenderer
 
         if ($this->defaultStyle['marker'] ?? 0) {
             switch ($this->defaultStyle['marker']['offset'][0] ?? 0) {
-                case 'left': $this->defaultStyle['marker_offset_x'] = 0; break;
-                case 'center': $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0] / 2; break;
-                case 'right': $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0]; break;
-                default: $this->defaultStyle['marker_offset_x'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
+                case 'left':
+                    $this->defaultStyle['marker_offset_x'] = 0;
+                    break;
+                case 'center':
+                    $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0] / 2;
+                    break;
+                case 'right':
+                    $this->defaultStyle['marker_offset_x'] = getimagesize($this->defaultStyle['marker']['image'])[0];
+                    break;
+                default:
+                    $this->defaultStyle['marker_offset_x'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
             }
             switch ($this->defaultStyle['marker']['offset'][1] ?? 0) {
-                case 'top': $this->defaultStyle['marker_offset_y'] = 0; break;
-                case 'middle': $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1] / 2; break;
-                case 'bottom': $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1]; break;
-                default: $this->defaultStyle['marker_offset_y'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
+                case 'top':
+                    $this->defaultStyle['marker_offset_y'] = 0;
+                    break;
+                case 'middle':
+                    $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1] / 2;
+                    break;
+                case 'bottom':
+                    $this->defaultStyle['marker_offset_y'] = getimagesize($this->defaultStyle['marker']['image'])[1];
+                    break;
+                default:
+                    $this->defaultStyle['marker_offset_y'] = $this->defaultStyle['marker']['offset'][0] ?? 0;
             }
 
             $this->defaultStyle['marker_image'] = new Imagick();

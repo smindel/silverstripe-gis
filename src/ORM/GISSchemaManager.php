@@ -10,7 +10,6 @@ trait GISSchemaManager
 {
     public function initialise()
     {
-
     }
 
     // Ellipsoidal spatial data type.

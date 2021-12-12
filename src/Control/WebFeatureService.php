@@ -79,7 +79,7 @@ class WebFeatureService extends AbstractGISWebServiceController
 
         list($nsName, $nsUri) = explode('=', $config['ns']);
 
-        $dom = new DOMDocument('1.0','UTF-8');
+        $dom = new DOMDocument('1.0', 'UTF-8');
         $schema = $dom->createElementNS('http://www.w3.org/2001/XMLSchema', 'schema');
         $schema->setAttribute('elementFormDefault', 'qualified');
         $schema->setAttribute('targetNamespace', $nsUri);
@@ -157,13 +157,13 @@ class WebFeatureService extends AbstractGISWebServiceController
 
         list($nsName, $nsUri) = explode('=', $config['ns']);
 
-        $dom = new DOMDocument('1.0','UTF-8');
+        $dom = new DOMDocument('1.0', 'UTF-8');
 
         $featureCollection = $dom->createElement('FeatureCollection');
         $featureCollection->setAttribute('xmlns:gml', 'http://www.opengis.net/gml');
         $featureCollection->setAttribute('xmlns:' . $nsName, $nsUri);
 
-        foreach($list as $item) {
+        foreach ($list as $item) {
             if (!$item->canView()) {
                 continue;
             }
@@ -222,7 +222,9 @@ class WebFeatureService extends AbstractGISWebServiceController
         $line = $dom->createElement('gml:LineString');
         $line->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
 
-        $posList = $dom->createElement('gml:posList', implode(' ', array_map(function($point){return implode(' ', $point);}, $gis->coordinates)));
+        $posList = $dom->createElement('gml:posList', implode(' ', array_map(function ($point) {
+            return implode(' ', $point);
+        }, $gis->coordinates)));
 
         $line->appendChild($posList);
 
@@ -239,7 +241,9 @@ class WebFeatureService extends AbstractGISWebServiceController
 
             $linearRing = $dom->createElement('gml:LinearRing');
 
-            $posList = $dom->createElement('gml:posList', implode(' ', array_map(function($point){return implode(' ', $point);}, $ring)));
+            $posList = $dom->createElement('gml:posList', implode(' ', array_map(function ($point) {
+                return implode(' ', $point);
+            }, $ring)));
 
             $linearRing->appendChild($posList);
 
