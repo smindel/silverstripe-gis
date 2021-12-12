@@ -44,8 +44,8 @@
             "@phpcs"
         ],
         "php-lint": "parallel-lint src tests",
-        "phpcs": "phpcs src tests --standard=vendor/jdolba/silverstripe-coding-standards/definitions/php/phpcs-ss4.xml --extensions=php --encoding=utf-8",
-        "phpcbf": "phpcbf src tests --standard=vendor/jdolba/silverstripe-coding-standards/definitions/php/phpcs-ss4.xml --extensions=php --encoding=utf-8",
+        "phpcs": "phpcs src tests --standard=ruleset.xml --extensions=php --encoding=utf-8",
+        "phpcbf": "phpcbf src tests --standard=ruleset.xml --extensions=php --encoding=utf-8",
         "phpcs-fix": "@phpcbf"
     }
 }
