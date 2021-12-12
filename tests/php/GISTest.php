@@ -7,6 +7,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\ORM\DB;
 use Smindel\GIS\GIS;
 
+// @phpcs:disable Generic.Files.LineLength.TooLong
 class GISTest extends SapphireTest
 {
     public function setUp()

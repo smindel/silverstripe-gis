@@ -7,6 +7,7 @@ use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
 use Smindel\GIS\Forms\MapField;
 
+// @phpcs:disable Generic.Files.LineLength.TooLong
 class MapFieldTest extends SapphireTest
 {
     public function setUp()

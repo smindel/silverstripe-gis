@@ -7,6 +7,7 @@ use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
 use Smindel\GIS\Tests\Helper\TestHeaderAlterer;
 
+// @phpcs:disable Generic.Files.LineLength.TooLong
 class GeoJsonServiceTest extends FunctionalTest
 {
     protected static $fixture_file = 'TestLocation.yml';

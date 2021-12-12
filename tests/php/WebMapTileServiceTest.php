@@ -6,6 +6,7 @@ use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
 
+// @phpcs:disable Generic.Files.LineLength.TooLong
 class WebMapTileServiceTest extends FunctionalTest
 {
     use RenderingAssertion;
