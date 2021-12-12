@@ -19,7 +19,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "~5.7",
-        "php-parallel-lint/php-parallel-lint": "^1.3"
+        "php-parallel-lint/php-parallel-lint": "^1.3",
+        "jdolba/silverstripe-coding-standards": "^0.1.1"
     },
     "suggest": {
         "ext-gd": "to use GD library based tile rendering.",
@@ -35,5 +36,16 @@
             "Smindel\\GIS\\": "src/",
             "Smindel\\GIS\\Tests\\": "tests/php/"
         }
+    },
+
+    "scripts": {
+        "silverstripe-standards": [
+            "@php-lint",
+            "@phpcs"
+        ],
+        "php-lint": "parallel-lint src tests",
+        "phpcs": "phpcs src tests --standard=vendor/jdolba/silverstripe-coding-standards/definitions/php/phpcs-ss4.xml --extensions=php --encoding=utf-8",
+        "phpcbf": "phpcbf src tests --standard=vendor/jdolba/silverstripe-coding-standards/definitions/php/phpcs-ss4.xml --extensions=php --encoding=utf-8",
+        "phpcs-fix": "@phpcbf"
     }
 }
