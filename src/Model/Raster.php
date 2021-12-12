@@ -34,10 +34,7 @@ class Raster
     public function getSrid()
     {
         $output = `gdalsrsinfo --version && cat /etc/issue`;
-        error_log('T0: gdalsrsinfo --version = ' . print_r($output, true));
         if (empty($this->info['srid'])) {
-
-            error_log('T1: SRID empty');
 
             // @TODO This fails with gdalsrsinfo version < 3 (the --single-line flag errors out)
             $cmd = sprintf('
@@ -45,12 +42,7 @@ class Raster
                 $this->getFilename()
             );
 
-            error_log('T2: command=' . $cmd);
-
             $output = `$cmd`;
-            error_log('T3:' . print_r($output, true));
-
-            var_dump($output);
 
             /*
             if (preg_match('/\WAUTHORITY\["EPSG","([^"]+)"\]\]$/', $output, $matches)) {
@@ -62,11 +54,10 @@ class Raster
             }
             */
 
-            // @TODO HACK!!!!!!
+            // @TODO FIX HACK!!!!!!
             $splits = explode(',', $output);
             $last = array_pop($splits);
             $last = str_replace(']', '', $last);
-            error_log($last);
             $this->info['srid'] = intval($last);
         }
 
