@@ -34,5 +34,6 @@
             "Smindel\\GIS\\": "src/",
             "Smindel\\GIS\\Tests\\": "tests/php/"
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
