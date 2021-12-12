@@ -62,8 +62,6 @@ class GeographyTest extends SapphireTest
         $this->assertEquals((string)$wkt, $class::get()->byID($id)->GeoLocation);
     }
 
-
-    // @TODO This test fails with mariadb (10.7) as the database
     public function testStGenericFilter()
     {
         $databaseServer = 'UNKNOWN';
@@ -77,7 +75,6 @@ class GeographyTest extends SapphireTest
 
         $client = DB::get_conn()->getDatabaseServer();
         $databaseVersion = DB::query('select version()')->value();
-  #      error_log('**** database version: ' . $databaseVersion);
 
         if ($client == 'mysql') {
             if (strpos($databaseVersion, 'MariaDB') !== false) {
