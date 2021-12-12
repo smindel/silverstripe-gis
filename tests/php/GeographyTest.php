@@ -192,6 +192,7 @@ class GeographyTest extends SapphireTest
         $result =  DB::query('SELECT     table_schema,    table_name,    table_collation    FROM information_schema.tables');
         error_log('T2: ' . print_r($result, true));
 
+        $this->assertEquals(0, $class::get()->filter('GeoLocation:ST_GeometryType', 'Wibble')->count());
         $this->assertEquals(1, $class::get()->filter('GeoLocation:ST_GeometryType', 'MultiLineString')->count());
         $this->assertEquals(3, $class::get()->filter('GeoLocation:ST_GeometryType:not', 'Polygon')->count());
     }
