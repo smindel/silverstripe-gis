@@ -186,6 +186,12 @@ class GeographyTest extends SapphireTest
             $this->markTestSkipped('GeometryTypeFilter does not yet work with Geography');
         }
 
+        $result = DB::query('SELECT @@character_set_database, @@collation_database;');
+        error_log('T1: ' . print_r($result, true));
+
+        $result =  DB::query('SELECT     table_schema,    table_name,    table_collation    FROM information_schema.tables');
+        error_log('T2: ' . print_r($result, true));
+
         $this->assertEquals(1, $class::get()->filter('GeoLocation:ST_GeometryType', 'MultiLineString')->count());
         $this->assertEquals(3, $class::get()->filter('GeoLocation:ST_GeometryType:not', 'Polygon')->count());
     }
