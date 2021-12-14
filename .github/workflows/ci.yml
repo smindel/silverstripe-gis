@@ -29,10 +29,29 @@ jobs:
       #database-script: CREATE EXTENSION postgis;
       test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
 
-  UNIT-TESTS-COVERAGE-74:
+  UNIT-TESTS-COVERAGE-POSTGRESQL-74:
     uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
     with:
       database: postgresql
+      run-php-unit-coverage: true
+      # Only wish to phpdbg with coverage enabled, no need to run tests without also
+      run-php-unit: false
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-COVERAGE-MYSQL-74:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      run-php-unit-coverage: true
+      # Only wish to phpdbg with coverage enabled, no need to run tests without also
+      run-php-unit: false
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-COVERAGE-MARIADB-74:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      database: mariadb
       run-php-unit-coverage: true
       # Only wish to phpdbg with coverage enabled, no need to run tests without also
       run-php-unit: false
