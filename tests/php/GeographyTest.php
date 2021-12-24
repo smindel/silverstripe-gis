@@ -17,6 +17,10 @@ class GeographyTest extends SapphireTest
         'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
     ];
 
+    protected static $pgsql_test_methods = [
+        'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
+    ];
+
     protected static $test_distances = [
         1000755 => 2,
         1111950 => 8,
@@ -88,6 +92,8 @@ class GeographyTest extends SapphireTest
         $methodsToTest = static::$mysql_test_methods;
         if ($databaseServer == 'mariadb') {
             $methodsToTest = static::$mariadb_test_methods;
+        } elseif ($databaseServer == 'pgsql') {
+            $methodsToTest = static::$pgsql_test_methods;
         }
 
         $class = $this->getExtraDataObjects()[0];
@@ -111,6 +117,10 @@ class GeographyTest extends SapphireTest
                     break;
 
                 case 'mariadb':
+                    $this->assertEquals($geometries, array_values($matches), $filter);
+                    break;
+
+                case 'pgsql':
                     $this->assertEquals($geometries, array_values($matches), $filter);
                     break;
             }
