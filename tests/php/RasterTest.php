@@ -32,7 +32,6 @@ class RasterTest extends FunctionalTest
 
     public function testRasterTile()
     {
-        $this->markTestSkipped();
         $response = $this->get('webmaptileservice/Smindel-GIS-Tests-TestRaster/18/258340/164145.png');
         $this->assertRenders($response->getBody(), 255, 1, [195, 195, 195]);
     }
