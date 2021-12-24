@@ -58,17 +58,17 @@ class GIS
         DB::get_schema()->initialise();
         if ($value instanceof GIS) {
             $this->value = $value->value;
-        } else if ($value instanceof DBGeography) {
+        } elseif ($value instanceof DBGeography) {
             $this->value = $value->getValue();
-        } else if (is_string($value) && preg_match(self::WKT_PATTERN, $value)) {
+        } elseif (is_string($value) && preg_match(self::WKT_PATTERN, $value)) {
             $this->value = 'SRID=' . self::config()->default_srid . ';' . $value;
-        } else if (is_array($value) && count($value) == 3 && isset($value['type'])) {
+        } elseif (is_array($value) && count($value) == 3 && isset($value['type'])) {
             $this->value = $value;
-        } else if (is_string($value) && preg_match(self::EWKT_PATTERN, $value)) {
+        } elseif (is_string($value) && preg_match(self::EWKT_PATTERN, $value)) {
             $this->value = $value;
-        } else if (empty($value) || isset($value['coordinates']) && empty($value['coordinates'])) {
+        } elseif (empty($value) || isset($value['coordinates']) && empty($value['coordinates'])) {
             $this->value = null;
-        } else if (is_array($value) && !isset($value['type'])) {
+        } elseif (is_array($value) && !isset($value['type'])) {
             switch (true) {
                 case is_numeric($value[0]):
                     $type = 'Point';
@@ -114,11 +114,19 @@ class GIS
             case 'srid':
                 return preg_match('/^SRID=(\d+);/i', $this->value, $matches) ? (int)$matches[1] : null;
             case 'type':
-                return preg_match('/^SRID=\d+;(' . implode('|', array_change_key_case(self::TYPES, CASE_UPPER)) . ')/i', $this->value, $matches) ? self::TYPES[strtolower($matches[1])] : null;
+                return preg_match(
+                    '/^SRID=\d+;(' .
+                    implode('|', array_change_key_case(self::TYPES, CASE_UPPER)) . ')/i',
+                    $this->value,
+                    $matches
+                ) ? self::TYPES[strtolower($matches[1])] : null;
             case 'coordinates':
                 if (preg_match(self::EWKT_PATTERN, $this->value, $matches)) {
-
-                    $coords = str_replace(['(', ')'], ['[', ']'], preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4]));
+                    $coords = str_replace(
+                        ['(', ')'],
+                        ['[', ']'],
+                        preg_replace('/([\d\.-]+)\s+([\d\.-]+)/', "[$1,$2]", $matches[4])
+                    );
 
                     if (strtolower($matches[3]) != 'point') {
                         $coords = "[$coords]";
@@ -224,11 +232,12 @@ class GIS
         self::$proj4 = self::$proj4 ?: new Proj4php();
 
         if (!self::$proj4->hasDef('EPSG:' . $srid)) {
-
             $projDefs = Config::inst()->get(self::class, 'projections');
 
             if (!isset($projDefs[$srid])) {
-                throw new Exception("Cannot use unregistered SRID $srid. Register it's <a href=\"http://spatialreference.org/ref/epsg/$srid/proj4/\">PROJ.4 definition</a> in GIS::projections.");
+                throw new Exception("Cannot use unregistered SRID $srid. Register it's " .
+                    "<a href=\"http://spatialreference.org/ref/epsg/$srid/proj4/\">" .
+                    "PROJ.4 definition</a> in GIS::projections.");
             }
 
             self::$proj4->addDef('EPSG:' . $srid, $projDefs[$srid]);
@@ -240,7 +249,14 @@ class GIS
     protected static function reproject_array($coordinates, $fromProj, $toProj)
     {
         return self::each($coordinates, function ($coordinate) use ($fromProj, $toProj) {
-            return array_slice(self::$proj4->transform($toProj, new Point($coordinate[0], $coordinate[1], $fromProj))->toArray(), 0, 2);
+            return array_slice(self::$proj4->transform(
+                $toProj,
+                new Point(
+                    $coordinate[0],
+                    $coordinate[1],
+                    $fromProj
+                )
+            )->toArray(), 0, 2);
         });
     }
 
@@ -251,7 +267,6 @@ class GIS
         }
 
         if (is_array($coordinates[0])) {
-
             foreach ($coordinates as &$coordinate) {
                 $coordinate = self::each($coordinate, $callback);
             }

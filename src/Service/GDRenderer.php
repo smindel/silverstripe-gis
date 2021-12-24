@@ -42,7 +42,7 @@ class GDRenderer
 
             switch ($key) {
                 case 'pointradius':
-                    continue;
+                    break;
                 case 'backgroundcolor':
                 case 'strokecolor':
                 case 'fillcolor':
@@ -78,8 +78,27 @@ class GDRenderer
     public function drawPoint($coordinates)
     {
         list($x, $y) = $coordinates;
-        imagefilledarc($this->image, $x, $y, 2 * $this->defaultStyle['gd']['pointradius'], 2 * $this->defaultStyle['gd']['pointradius'], 0, 360, $this->fillcolor, IMG_ARC_PIE);
-        imagearc($this->image, $x, $y, 2 * $this->defaultStyle['gd']['pointradius'], 2 * $this->defaultStyle['gd']['pointradius'], 0, 360, $this->strokecolor);
+        imagefilledarc(
+            $this->image,
+            $x,
+            $y,
+            2 * $this->defaultStyle['gd']['pointradius'],
+            2 * $this->defaultStyle['gd']['pointradius'],
+            0,
+            360,
+            $this->fillcolor,
+            IMG_ARC_PIE
+        );
+        imagearc(
+            $this->image,
+            $x,
+            $y,
+            2 * $this->defaultStyle['gd']['pointradius'],
+            2 * $this->defaultStyle['gd']['pointradius'],
+            0,
+            360,
+            $this->strokecolor
+        );
     }
 
     public function drawLineString($coordinates)

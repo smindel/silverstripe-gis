@@ -8,6 +8,7 @@ use SilverStripe\ORM\DB;
 use Smindel\GIS\GIS;
 use Smindel\GIS\Service\Tile;
 
+// @phpcs:disable Generic.Files.LineLength.TooLong
 class TileTest extends SapphireTest
 {
     use RenderingAssertion;

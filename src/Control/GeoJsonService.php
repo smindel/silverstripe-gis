@@ -6,12 +6,25 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
+use Smindel\GIS\Interfaces\HeaderAltererInterface;
 
 class GeoJsonService extends AbstractGISWebServiceController
 {
-    private static $url_handlers = array(
+    private static $url_handlers = [
         '$Model' => 'handleAction',
-    );
+    ];
+
+    /**
+     * @var HeaderAltererInterface
+     */
+    private $headerAlterer;
+
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->headerAlterer = Injector::inst()->get('Smindel\GIS\Helper\HeaderAlterer');
+    }
 
     public function getConfig($model)
     {
@@ -33,13 +46,14 @@ class GeoJsonService extends AbstractGISWebServiceController
 
         $propertyMap = $config['property_map'];
 
-        header('Access-Control-Allow-Origin: ' . $config['access_control_allow_origin']);
+
+        $this->headerAlterer->setHeader('Access-Control-Allow-Origin: ' . $config['access_control_allow_origin']);
 
         // The HTTP kernel keeps a copy of the response body, which
         // can exhaust the memory limit for large data sets. So we
         // opt out and flush the buffer after processing each feature.
         if (!($is_test = headers_sent())) {
-            header('Content-Type: application/geo+json');
+            $this->headerAlterer->setHeader('Content-Type: application/geo+json');
         }
         echo '{"type":"FeatureCollection","features":[';
 
@@ -59,8 +73,8 @@ class GeoJsonService extends AbstractGISWebServiceController
 
             $feature = [
                 'type' => 'Feature',
+                'geometry' => ['type' => $geo->type],
                 'properties' => $properties,
-                'geometry' => ['type' => $geo->type]
             ];
             if ($geo->type == GIS::TYPES['geometrycollection']) {
                 $geometries = [];

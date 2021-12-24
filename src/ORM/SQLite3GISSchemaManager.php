@@ -6,7 +6,9 @@ use SilverStripe\SQLite\SQLite3SchemaManager;
 use SilverStripe\ORM\DB;
 use Smindel\GIS\GIS;
 
-if (!class_exists(SQLite3SchemaManager::class)) return;
+if (!class_exists(SQLite3SchemaManager::class)) {
+    return;
+}
 
 class SQLite3GISSchemaManager extends SQLite3SchemaManager
 {

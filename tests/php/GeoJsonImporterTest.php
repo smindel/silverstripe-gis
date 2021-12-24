@@ -7,6 +7,7 @@ use SilverStripe\Core\Config\Config;
 use Smindel\GIS\GIS;
 use Smindel\GIS\Service\GeoJsonImporter;
 
+// @phpcs:disable Generic.Files.LineLength.TooLong
 class GeoJsonImporterTest extends SapphireTest
 {
     public static function getExtraDataObjects()

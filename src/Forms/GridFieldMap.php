@@ -55,7 +55,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
 
         $defaultLocation = Config::inst()->get(MapField::class, 'default_location');
 
-        return array(
+        return [
             'before' => sprintf(
                 '<div class="grid-field-map" data-map-center="%s" data-list="%s" style="z-index:0;"></div>',
                 GIS::create([$defaultLocation['lon'], $defaultLocation['lat']]),
@@ -68,7 +68,7 @@ class GridFieldMap implements GridField_HTMLProvider, GridField_DataManipulator
                     'UTF-8'
                 )
             ),
-        );
+        ];
     }
 
     public static function get_geojson_from_list($list, $geometryField = null)

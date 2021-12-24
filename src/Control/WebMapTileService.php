@@ -15,10 +15,10 @@ use Exception;
 
 class WebMapTileService extends AbstractGISWebServiceController
 {
-    private static $url_handlers = array(
+    private static $url_handlers = [
         '$Model//$ID!/$z!/$x!/$y!' => 'handleAction',
         '$Model//$z!/$x!/$y!' => 'handleAction',
-    );
+    ];
 
     /**
      * Buffer in pixel by wich the tile box is enlarged, which is used for
@@ -62,8 +62,7 @@ class WebMapTileService extends AbstractGISWebServiceController
         $model = $this->model = $this->getModel($request);
         $config = $this->getConfig($model);
 
-        if (
-            ($cache = $config['cache_ttl'] ? sha1(json_encode($request->getVars())) : false)
+        if (($cache = $config['cache_ttl'] ? sha1(json_encode($request->getVars())) : false)
             && ($age = $this->cacheAge($cache)) !== false
             && $config['cache_ttl'] > $age
         ) {
@@ -157,7 +156,7 @@ class WebMapTileService extends AbstractGISWebServiceController
                 return $this->getResponse()->setStatusCode(403);
             }
             $raster = new Raster(PUBLIC_PATH . $file->getURL());
-        } else if (is_a($model, Raster::class, true)) {
+        } elseif (is_a($model, Raster::class, true)) {
             $raster = singleton($model);
         } else {
             throw new Exception('Cannot render tile from ' . $model);
@@ -185,8 +184,10 @@ class WebMapTileService extends AbstractGISWebServiceController
         return $response
             ->addHeader('Content-Type', 'image/png')
             ->setBody($raster->translateRaster(
-                [$x1, $y1], [$x2, $y2],
-                $tile_size_x, $tile_size_y
+                [$x1, $y1],
+                [$x2, $y2],
+                $tile_size_x,
+                $tile_size_y
             ));
     }
 

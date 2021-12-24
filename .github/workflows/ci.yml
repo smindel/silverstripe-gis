@@ -1,0 +1,120 @@
+name: Module CI
+
+on:
+  push:
+    branches: [ main, GITHUB_ACTIONS, CODING_STANDARDS_2 ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 7.4 is the default
+  UNIT-TESTS-74:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-74-MARIADB:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      database: mariadb
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-74-POSTGRESQL:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      database: postgresql
+      debian-packages: gdal-bin
+      #database-script: CREATE EXTENSION postgis;
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-COVERAGE-POSTGRESQL-74:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      database: postgresql
+      run-php-unit-coverage: true
+      # Only wish to phpdbg with coverage enabled, no need to run tests without also
+      run-php-unit: false
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-COVERAGE-MYSQL-74:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      run-php-unit-coverage: true
+      # Only wish to phpdbg with coverage enabled, no need to run tests without also
+      run-php-unit: false
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-COVERAGE-MARIADB-74:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      database: mariadb
+      run-php-unit-coverage: true
+      # Only wish to phpdbg with coverage enabled, no need to run tests without also
+      run-php-unit: false
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-73:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      php-version: 7.3
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-73-POSTGRESQL:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      php-version: 7.3
+      database: postgresql
+      debian-packages: gdal-bin
+      #database-script: CREATE EXTENSION postgis;
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-SS48:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      silverstripe-version: 4.8
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-SS47:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      silverstripe-version: 4.7
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-SS46:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      silverstripe-version: 4.6
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-SS45:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      silverstripe-version: 4.5
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  UNIT-TESTS-SS44:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      silverstripe-version: 4.4
+      debian-packages: gdal-bin
+      test-config-flag: UNIT_TESTING_SILVERSTRIPE_GIS_ENABLED
+
+  LINTING:
+    uses: gordonbanderson/actions/.github/workflows/silverstripemodule.yml@main
+    with:
+      run-php-unit: false
+
+      run-php-lint: true
+      run-todo: true
+      run-duplicate-code-check: true
+      run-check-coding-standards: true

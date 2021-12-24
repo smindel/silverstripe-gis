@@ -37,7 +37,8 @@ class WebFeatureService extends AbstractGISWebServiceController
 
     public function index($request)
     {
-        $operation = $request->requestVars()['request'] ?? (new SimpleXMLElement($raw = $request->getBody()))->getName();
+        $operation = $request->requestVars()['request'] ??
+            (new SimpleXMLElement($raw = $request->getBody()))->getName();
 
         if (!in_array($operation, ['GetCapabilities', 'DescribeFeatureType', 'GetFeature'])) {
             throw new Exception(sprintf('Unkown operation "%s" requested', $operation));
@@ -79,7 +80,7 @@ class WebFeatureService extends AbstractGISWebServiceController
 
         list($nsName, $nsUri) = explode('=', $config['ns']);
 
-        $dom = new DOMDocument('1.0','UTF-8');
+        $dom = new DOMDocument('1.0', 'UTF-8');
         $schema = $dom->createElementNS('http://www.w3.org/2001/XMLSchema', 'schema');
         $schema->setAttribute('elementFormDefault', 'qualified');
         $schema->setAttribute('targetNamespace', $nsUri);
@@ -157,13 +158,13 @@ class WebFeatureService extends AbstractGISWebServiceController
 
         list($nsName, $nsUri) = explode('=', $config['ns']);
 
-        $dom = new DOMDocument('1.0','UTF-8');
+        $dom = new DOMDocument('1.0', 'UTF-8');
 
         $featureCollection = $dom->createElement('FeatureCollection');
         $featureCollection->setAttribute('xmlns:gml', 'http://www.opengis.net/gml');
         $featureCollection->setAttribute('xmlns:' . $nsName, $nsUri);
 
-        foreach($list as $item) {
+        foreach ($list as $item) {
             if (!$item->canView()) {
                 continue;
             }
@@ -201,12 +202,12 @@ class WebFeatureService extends AbstractGISWebServiceController
         return $response;
     }
 
-    function createGeometry(DOMDocument $dom, $value)
+    public function createGeometry(DOMDocument $dom, $value)
     {
         return call_user_func([$this, 'create' . ($gis = GIS::create($value))->type . 'Geometry'], $dom, $gis);
     }
 
-    function createPointGeometry(DOMDocument $dom, GIS $gis)
+    public function createPointGeometry(DOMDocument $dom, GIS $gis)
     {
         $point = $dom->createElement('gml:Point');
         $point->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::4326');
@@ -217,19 +218,21 @@ class WebFeatureService extends AbstractGISWebServiceController
         return $point;
     }
 
-    function createLineStringGeometry(DOMDocument $dom, GIS $gis)
+    public function createLineStringGeometry(DOMDocument $dom, GIS $gis)
     {
         $line = $dom->createElement('gml:LineString');
         $line->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
 
-        $posList = $dom->createElement('gml:posList', implode(' ', array_map(function($point){return implode(' ', $point);}, $gis->coordinates)));
+        $posList = $dom->createElement('gml:posList', implode(' ', array_map(function ($point) {
+            return implode(' ', $point);
+        }, $gis->coordinates)));
 
         $line->appendChild($posList);
 
         return $line;
     }
 
-    function createPolygonGeometry(DOMDocument $dom, GIS $gis)
+    public function createPolygonGeometry(DOMDocument $dom, GIS $gis)
     {
         $polygon = $dom->createElement('gml:Polygon');
         $polygon->setAttribute('srsName', 'urn:ogc:def:crs:EPSG::' . $gis->srid);
@@ -239,7 +242,9 @@ class WebFeatureService extends AbstractGISWebServiceController
 
             $linearRing = $dom->createElement('gml:LinearRing');
 
-            $posList = $dom->createElement('gml:posList', implode(' ', array_map(function($point){return implode(' ', $point);}, $ring)));
+            $posList = $dom->createElement('gml:posList', implode(' ', array_map(function ($point) {
+                return implode(' ', $point);
+            }, $ring)));
 
             $linearRing->appendChild($posList);
 

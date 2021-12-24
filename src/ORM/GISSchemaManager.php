@@ -10,7 +10,6 @@ trait GISSchemaManager
 {
     public function initialise()
     {
-
     }
 
     // Ellipsoidal spatial data type.
@@ -102,7 +101,13 @@ trait GISSchemaManager
     {
         $geo1 = GIS::create($geo1);
         $geo2 = GIS::create($geo2);
-        return sprintf("ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d))", $geo1->wkt, $geo1->srid, $geo2->wkt, $geo2->srid);
+        return sprintf(
+            "ST_Distance(ST_GeomFromText('%s', %d),ST_GeomFromText('%s', %d))",
+            $geo1->wkt,
+            $geo1->srid,
+            $geo2->wkt,
+            $geo2->srid
+        );
     }
 
     public function translateBasicSelectGeo()
