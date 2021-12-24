@@ -58,28 +58,12 @@ class GeographyTest extends SapphireTest
 
     public function testStGenericFilter()
     {
-        $databaseServer = 'UNKNOWN';
-
         if (static::class == GeographyTest::class &&
             DB::get_schema()->geography(null) != 'geography'
         ) {
             $this->markTestSkipped('MySQL does not support Geography.');
         }
-
-        $client = DB::get_conn()->getDatabaseServer();
-        $databaseVersion = DB::query('select version()')->value();
-
-        if ($client == 'mysql') {
-            if (strpos($databaseVersion, 'MariaDB') !== false) {
-                $databaseServer = 'mariadb';
-            } else {
-                // mysql only spits out a version number
-                $databaseServer = 'mysql';
-            }
-        }
-
-        $methodsToTest = static::$test_methods;
-
+        
         $class = $this->getExtraDataObjects()[0];
         $reference = $this->objFromFixture($class, 'reference');
 
@@ -87,7 +71,7 @@ class GeographyTest extends SapphireTest
             ->map()
             ->toArray();
 
-        foreach ($methodsToTest as $filter => $geometries) {
+        foreach (static::$test_methods as $filter => $geometries) {
             $matches = $class::get()
                 ->exclude('ID', $reference->ID)
                 ->filter('GeoLocation:ST_' . $filter, $reference->GeoLocation)
