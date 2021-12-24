@@ -9,15 +9,7 @@ use Smindel\GIS\GIS;
 
 class GeographyTest extends SapphireTest
 {
-    protected static $mysql_test_methods = [
-        'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
-    ];
-
-    protected static $mariadb_test_methods = [
-        'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
-    ];
-
-    protected static $pgsql_test_methods = [
+    protected static $test_methods = [
         'Intersects' => ['Contains', 'Crosses', 'Equals', 'Intersects', 'Overlaps', 'Touches', 'Within'],
     ];
 
@@ -86,12 +78,7 @@ class GeographyTest extends SapphireTest
             }
         }
 
-        $methodsToTest = static::$mysql_test_methods;
-        if ($databaseServer == 'mariadb') {
-            $methodsToTest = static::$mariadb_test_methods;
-        } elseif ($databaseServer == 'pgsql') {
-            $methodsToTest = static::$pgsql_test_methods;
-        }
+        $methodsToTest = static::$test_methods;
 
         $class = $this->getExtraDataObjects()[0];
         $reference = $this->objFromFixture($class, 'reference');
@@ -108,20 +95,7 @@ class GeographyTest extends SapphireTest
                 ->toArray();
             asort($matches);
 
-            switch ($databaseServer) {
-                case 'mysql':
-                    $this->assertEquals($geometries, array_values($matches), $filter);
-                    break;
-
-                case 'mariadb':
-                    $this->assertEquals($geometries, array_values($matches), $filter);
-                    break;
-
-                case 'pgsql':
-                    $this->assertEquals($geometries, array_values($matches), $filter);
-                    break;
-            }
-
+            $this->assertEquals($geometries, array_values($matches), $filter);
 
             $matches = $class::get()
                 ->exclude('ID', $reference->ID)
