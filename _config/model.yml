@@ -35,21 +35,13 @@ Name: gissearchaliases
 ---
 SilverStripe\Core\Injector\Injector:
   StContainsFilter: '%$DataListFilter.ST_Contains'
-SilverStripe\Core\Injector\Injector:
   StCrossesFilter: '%$DataListFilter.ST_Crosses'
-SilverStripe\Core\Injector\Injector:
   StDisjointFilter: '%$DataListFilter.ST_Disjoint'
-SilverStripe\Core\Injector\Injector:
   StDistanceFilter: '%$DataListFilter.ST_Distance'
-SilverStripe\Core\Injector\Injector:
   StEqualsFilter: '%$DataListFilter.ST_Equals'
-SilverStripe\Core\Injector\Injector:
   StGeometryTypeFilter: '%$DataListFilter.ST_GeometryType'
-SilverStripe\Core\Injector\Injector:
   StIntersectsFilter: '%$DataListFilter.ST_Intersects'
-SilverStripe\Core\Injector\Injector:
   StOverlapsFilter: '%$DataListFilter.ST_Overlaps'
-SilverStripe\Core\Injector\Injector:
   StTouchesFilter: '%$DataListFilter.ST_Touches'
-SilverStripe\Core\Injector\Injector:
   StWithinFilter: '%$DataListFilter.ST_Within'
+
